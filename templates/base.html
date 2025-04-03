@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Money Lender{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+        .sidebar {
+            width: 240px;
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .profile img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .profile h2 {
+            margin: 10px 0 5px;
+            font-size: 18px;
+        }
+        .profile p {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+        .sidebar ul li {
+            width: 100%;
+        }
+        .sidebar ul li a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            text-align: center;
+            background: #34495e;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+        }
+        .sidebar ul li a:hover {
+            background: #1abc9c;
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            background: #ecf0f1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .content-box {
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="profile">
+            <img src="profile.jpg" alt="Profile Picture">
+            <h2>John Doe</h2>
+        </div>
+        <ul>
+            <li><a href="{% url 'dashboard'%}">Dashboard</a></li>
+            <li><a href="{% url 'borrowers'%}">Borrowers</a></li>
+            <li><a href="{% url 'dashboard'%}">this month Payments</a></li>
+            <li><a href="{% url 'dashboard'%}">paid Members</a></li>
+            <li><a href="{% url 'dashboard'%}">overdue members</a></li>
+            <li><a href="{% url 'dashboard'%}">Transactions</a></li>
+        </ul>
+    </div>
+        <div class="content-box">
+            {% block content %}{% endblock %}
+        
+    </div>
+</body>
+</html>

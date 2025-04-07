@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-3_zmzc3c$+9b$1frks0^6b22d0vh+2a*&j6nrgv2j8=12m61nq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,7 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'dashboard'
+    'dashboard',
+    'accounts',
+    'loans',
+    'myprofile',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'myprofile.context_processor.user_profile'
             ],
         },
     },
@@ -76,8 +80,12 @@ WSGI_APPLICATION = 'money.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'money',
+        'USER' : 'postgres',
+        'PASSWORD' : '1234',
+        'HOST' :'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -106,21 +114,24 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+
 
 USE_I18N = True
 
 USE_TZ = True
+TIME_ZONE = 'Asia/Kolkata'
+
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILESDIR = [os.path.join(BASE_DIR,'static')]
-STATICROOT = os.path.join(BASE_DIR,'assets')
+STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
+STATIC_ROOT = os.path.join(BASE_DIR,'assets')
 
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

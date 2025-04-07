@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Verification</title> 
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+        }
+
+        .container {
+            padding: 30px;
+            background: #fff;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1 solid black;
+            font-size: 15px;
+            margin-right: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        thead {
+            background-color: #fbeded;
+        }
+
+        tbody tr:hover {
+            background-color: #d8d8d8;
+        }
+
+        .highlight-id {
+            color: #2980b9;
+            font-weight: bold;
+        }
+
+        .highlight-amount {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .highlight-interest {
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        .highlight-referral {
+            font-style: italic;
+            font-weight: bold;
+            color: #b6690c;
+        }
+
+        .status {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 13px;
+            color: #fff;
+            background-color: #27ae60;
+        }
+        .status1 {
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 13px;
+            color: #fff;
+            background-color: #bb0f02;
+        }
+        
+
+        .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+        }
+
+        .empty-box .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .empty-box h3 {
+            font-size: 20px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Payment Verification - Loans</h2>
+
+    {% if loans %}
+    <table>
+        <thead>
+            <tr>
+                <th>Apply Date</th>
+                <th>Token ID</th>
+                <th>Borrower</th>
+                <th>Contact</th>
+                <th>Loan Item</th>
+                <th>Amount</th>
+                <th>Interest</th>
+                <th>Start Date</th>
+                <th>Return Date</th>
+                <th>Reason</th>
+                <th>Referral</th>
+                <th>Status</th>
+                <th>Payment Details provided</th>
+                <th>payment Proof</th>
+                <th>Remark</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for loan in loans %}
+            <tr>
+                <td>{{ loan.apply_date }}</td>
+                <td class="highlight-id">{{ loan.id }}</td>
+                <td>{{ loan.borrower.name }}</td>
+                <td>{{ loan.borrower.phone }}<br>{{ loan.borrower.email|default:"" }}</td>
+                <td>{{ loan.loan_item }}</td>
+                <td class="highlight-amount">₹{{ loan.amount }}</td>
+                <td class="highlight-interest">{{ loan.interest }}%</td>
+                <td>{{ loan.taken_date }}</td>
+                <td>{{ loan.return_date }}</td>
+                <td>{{ loan.reason|default:"-" }}</td>
+                <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
+                <td>
+                    {% if loan.status == "paymentdone"%}
+                    <span class="status">{{ loan.status|capfirst }}</span>
+                    {%else %}
+                    
+                    <span class="status1">Payment not received</span>
+                    {% endif%}
+                </td>
+                <td style="text-align: left; min-width:100px;">
+                    <div style="display: flex; gap: 10px;">
+                        <strong>Type :</strong>
+                        <span>{{ loan.payment.payment_method }}</span>
+                    </div>
+                
+                    {% if loan.payment.payment_method == "cash" %}
+                        <div style="display: flex; gap: 10px;">
+                            <strong>Cash From :</strong>
+                            <span>{{ loan.payment.cash_from }}</span>
+                        </div>
+                    {% elif loan.payment.payment_method == "online" %}
+                        {% if loan.payment.online_method == "bank" %}
+                            <div style="display: flex; gap: 10px;">
+                                <strong>Bank :</strong>
+                                <span>{{ loan.payment.bank_name }}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <strong>Account_number :</strong>
+                                <span>{{ loan.payment.account_number }}</span>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <strong>IFSC :</strong>
+                                <span>{{ loan.payment.ifsc }}</span>
+                            </div>
+                        {% else %}
+                            <div style="display: flex; gap: 10px;">
+                                <strong>UPI_ID:</strong>
+                                <span>{{ loan.payment.upi_number }}</span>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                
+                <td>
+                    
+                        {% if loan.payment.utr %}
+                            UTR: {{ loan.payment.utr }}
+                        {% elif loan.payment.person %}
+                            Cash by: {{ loan.payment.person }}
+                        {% elif loan.payment.bank %}
+                            Ref No: {{ loan.payment.bank }}
+                        
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                
+                <td  {% if loan.status == "paymentdone"%} {%else%} style="color: red; min-width:120px;" {%endif %} >{{ loan.remark|default:"-" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3>No payments are currently under verification.</h3>
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
+{% endblock %}

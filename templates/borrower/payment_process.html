@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Under Process</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #e8f8f5, #f4f9fd);
+      color: #2c3e50;
+    }
+
+    .header {
+      background-color: #1abc9c;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .header p {
+      margin-top: 6px;
+      font-size: 15px;
+      font-style: italic;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    .message {
+      text-align: center;
+      font-size: 16px;
+      margin-bottom: 30px;
+      color: #555;
+    }
+
+    .toggle-btn {
+      background-color: #257776c6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      margin: 10px auto;
+      display: inline;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-left: 20px;
+    }
+
+    .toggle-btn:hover {
+      background-color: #2ba9f7;
+    }
+
+    .details-section {
+      display: none;
+      margin-top: 25px;
+      padding: 20px;
+      background: #f9f9f9;
+      border-radius: 12px;
+      border: 1px solid #ddd;
+    }
+
+    .details-section .row {
+      display: flex;
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    .label {
+      min-width: 160px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .value {
+      color: #555;
+    }
+    
+    
+  .loan-details {
+      display: none;
+      text-align: left;
+      margin-top: 30px;
+      padding: 20px 25px;
+      background-color: #fefefe;
+      border-radius: 10px;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+      animation: slideIn 0.3s ease;
+      overflow-x: auto;
+  }
+
+  .loan-details p {
+      margin: 6px 0;
+      font-size: 14px;
+      color: #333;
+  }
+
+  .loan-details span {
+      font-weight: 600;
+      display: inline-block;
+      width: 140px;
+  }
+
+  @keyframes fadeInUp {
+      0% {
+          opacity: 0;
+          transform: translateY(40px);
+      }
+      100% {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes slideIn {
+      0% {
+          opacity: 0;
+          transform: scaleY(0.95);
+      }
+      100% {
+          opacity: 1;
+          transform: scaleY(1);
+      }
+  }
+
+  @media (max-width: 600px) {
+      .loan-details span {
+          width: 120px;
+      }
+      .message-box {
+          padding: 30px 20px;
+      }
+  }
+  
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>{{ profile.company_name }}</h1>
+    <p>({{ profile.tagline }})</p>
+  </div>
+
+  <div class="container">
+    <h2>🟢 Payment Under Process</h2>
+    <div class="message">
+      ✅ Thank you! Your payment details have been submitted successfully.<br><br>
+      ⏳ Please wait while we verify your payment and send the money....."
+    </div>
+
+    <button style="margin-left: 50px;" class="toggle-btn" id="loan" onclick="toggleSection('loanDetails')">Show Loan Details</button>
+    <button class="toggle-btn" id="payment" onclick="toggleSection('paymentDetails')">Show Payment Details</button>
+    <button onclick="toggleContact()" class="toggle-btn" id="contact-btn">Lender Contact Details</button>
+    <div class="details-section" id="loanDetails">
+      
+        <div class="row"><div class="label">Your Name</div><div class="value">{{ loan.borrower.name }}</div></div>
+        <div class="row"><div class="label">Phone</div><div class="value">{{ loan.borrower.phone }}</div></div>
+        <div class="row"><div class="label">Email</div><div class="value">{{ loan.borrower.email|default:"-" }}</div></div>
+        <div class="row"><div class="label">Loan Item</div><div class="value">{{ loan.loan_item }}</div></div>
+        <div class="row"><div class="label">Amount</div><div class="value" style="color: #13e948f3;">₹ {{ loan.amount }}</div></div>
+        <div class="row"><div class="label">Interest</div><div class="value" style="color: rgb(238, 9, 9);">{{ loan.interest }}</div></div>
+        <div class="row"><div class="label">Start Date</div><div class="value">{{ loan.taken_date }}</div></div>
+        <div class="row"><div class="label">Return Date</div><div class="value">{{ loan.return_date }}</div></div>
+        <div class="row"><div class="label">Reason</div><div class="value">{{ loan.reason|default:"-" }}</div></div>
+        <div class="row"><div class="label">Referral</div><div class="value">{{ loan.referral|default:"-" }}</div></div>
+        <div class="row"><div class="label">Token Id</div><div class="value">{{ loan.id }}</div></div>
+       
+      
+        
+    
+    </div>
+
+    
+    <div class="details-section" id="paymentDetails">
+        <div class="row"><div class="label">Payment Method</div><div class="value">{{ payment.payment_method|capfirst }}</div></div>
+        <div class="row"><div class="label">Given On</div><div class="value">{{ payment.created_at|date:"d M Y, H:i" }}</div></div>
+        
+        {% if payment.payment_method == 'cash' %}
+          <div class="row"><div class="label">Cash From</div><div class="value">{{ payment.cash_from }}</div></div>
+        
+        {% elif payment.payment_method == 'online' %}
+          <div class="row"><div class="label">Online Platform</div><div class="value">{{ payment.online_method|capfirst }}</div></div>
+        
+          {% if payment.online_method == 'bank' %}
+            <div class="row"><div class="label">Bank Name</div><div class="value">{{ payment.bank_name }}</div></div>
+            <div class="row"><div class="label">Account Number</div><div class="value">{{ payment.account_number }}</div></div>
+            <div class="row"><div class="label">IFSC Code</div><div class="value">{{ payment.ifsc }}</div></div>
+        
+          {% else %}
+            <div class="row"><div class="label">UPI/Phone</div><div class="value">{{ payment.upi_number }}</div></div>
+            {% if payment.upi_screenshot %}
+              <div class="row"><div class="label">Screenshot</div>
+                <div class="value"><a href="{{ payment.upi_screenshot.url }}" target="_blank">View Screenshot</a></div>
+              </div>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+        
+    </div>
+       
+    <div class="loan-details" id="contact-details">
+      <p><span>Lender Name</span> {{ loan.lender.profile.name }}</p>
+      <p><span>Phone</span> {{ loan.lender.profile.phone }}</p>
+      <p><span>Email</span> {{ loan.lender.profile.email }}</p>
+      <p><span>Bio</span> {{ loan.lender.profile.bio }}</p>
+    </div>
+  </div>
+
+  <script>
+    function toggleSection(id) {
+      
+      if (id==="loanDetails") {
+        const contact = document.getElementById(id);
+      const button = document.getElementById('loan');
+      if (contact.style.display === 'none' || contact.style.display === '') {
+        contact.style.display = 'block';
+        button.innerText = 'Hide Loan Details';
+      } else {
+        contact.style.display = 'none';
+        button.innerText = 'View Loan Details';
+      }
+      }
+      else{
+        const contact = document.getElementById(id);
+        const button = document.getElementById('payment');
+        if (contact.style.display === 'none' || contact.style.display === '') {
+          contact.style.display = 'block';
+          button.innerText = 'Hide Payment Details';
+        } else {
+          contact.style.display = 'none';
+          button.innerText = 'View Payment Details';
+        }
+
+      }
+    }
+    function toggleContact() {
+      const contact = document.getElementById('contact-details');
+      const button = document.getElementById('contact-btn');
+      if (contact.style.display === 'none' || contact.style.display === '') {
+        contact.style.display = 'block';
+        button.innerText = 'Hide Contact Details';
+      } else {
+        contact.style.display = 'none';
+        button.innerText = 'Lender Contact Details';
+      }
+    }
+  </script>
+
+</body>
+</html>

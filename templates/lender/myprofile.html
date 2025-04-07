@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Profile</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f7f7f7;
+        }
+        .profile-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+        }
+        .profile-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #1e90ff;
+            transition: transform 0.2s ease-in-out;
+        }
+        .profile-pic:hover {
+            transform: scale(1.05);
+        }
+        #profile_picture_input {
+            display: none;
+        }
+        .change-pic-btn {
+            margin-top: 8px;
+            background-color: #f0f0f0;
+            color: #1e90ff;
+            border: 1px solid #1e90ff;
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .change-pic-btn:hover {
+            background-color: #e6f2ff;
+        }
+        label {
+            font-weight: 600;
+            margin-top: 15px;
+            display: block;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        input[readonly] {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+        .save-btn {
+            margin-top: 30px;
+            background-color: #1e90ff;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .save-btn:hover {
+            background-color: #0f75d6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="profile-container">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+    
+        <div class="profile-header">
+            {% if profile.company_logo %}
+                <img src="{{ profile.company_logo.url }}" alt="Profile Picture" class="profile-pic" id="profileImagePreview">
+            {% else %}
+                <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Profile Picture" class="profile-pic" id="profileImagePreview">
+            {% endif %}
+            <input type="file" name="profile_picture" id="profile_picture_input" accept="image/*">
+            <br>
+            <!-- Change Profile Button -->
+<button type="button" class="change-pic-btn" id="changeBtn" onclick="triggerImageUpload()">Change Logo</button>
+
+        </div>
+    
+        <label for="name">Name</label>
+        <input type="text" name="name" id="name" value="{% if profile.name %}{{ profile.name }}{% else %}{{ request.user.first_name }}{% endif %}" placeholder="Enter your full name" required>
+    
+        
+        <label for="phone_number">Phone Number</label>
+        <input type="text" name="phone_number" id="phone_number" value="{{ profile.phone }}" placeholder="e.g. +1234567890">
+    
+        <label for="company_name">Company Name</label>
+        <input type="text" name="company_name" id="company_name" value="{{ profile.company_name }}" placeholder="Your company name">
+    
+        <label for="company_email">Company Email</label>
+        <input type="email" name="company_email" id="company_email"value="{% if profile.email %}{{ profile.email }}{% else %}{{ request.user.email }}{% endif %}" placeholder="Company official email">
+    
+        <label for="tagline">Company Tagline</label>
+        <input type="text" name="tagline" id="tagline" value="{{ profile.tagline }}" placeholder="Company slogan or tagline">
+    
+        <label for="bio">Bio</label>
+        <textarea name="bio" id="bio" rows="4" placeholder="Write a short bio about yourself..." style="width: 100%; padding: 10px; margin-top: 6px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">{{ profile.bio }}</textarea>
+    
+        <button type="submit" class="save-btn">Save Details</button>
+    </form>
+    
+</div>
+<script>
+    const changeBtn = document.getElementById('changeBtn');
+    const profileInput = document.getElementById('profile_picture_input');
+    const profilePreview = document.getElementById('profileImagePreview');
+    const form = document.querySelector('form');
+
+    function triggerImageUpload() {
+        profileInput.click();
+    }
+
+    profileInput.addEventListener('change', function (event) {
+        if (event.target.files && event.target.files[0]) {
+            // Preview the image
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                profilePreview.src = e.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+
+            // Change button to "Save Profile" and submit on click
+            changeBtn.textContent = "Save Profile";
+            changeBtn.onclick = function () {
+                form.submit(); // Submit the form manually
+            };
+        }
+    });
+</script>
+
+</body>
+</html>
+{% endblock %}

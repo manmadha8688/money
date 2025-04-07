@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .form-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 50px auto;
+        }
+        .form-container label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            text-align: left;
+        }
+        .form-container input,
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .form-container button {
+            background: #1abc9c;
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .form-container button:hover {
+            background: #16a085;
+        }
+        .share-container {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .copy-btn, .whatsapp-btn {
+            background: #3498db;
+            color: white;
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background: #2980b9;
+        }
+        .whatsapp-btn {
+            background: #25D366;
+        }
+        .whatsapp-btn:hover {
+            background: #1ebea5;
+        }
+        .hidden-input {
+            position: absolute;
+            left: -9999px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <h3>Apply for a Loan</h3>
+
+    <div class="share-container">
+        <button class="copy-btn" onclick="copyLink()">Generate & Copy Link</button>
+        <button class="whatsapp-btn" onclick="shareOnWhatsApp()">Share on WhatsApp</button>
+    </div>
+
+    <input type="text" id="loanLink" class="hidden-input" readonly>
+</div>
+
+<script>
+    function generateLoanLink() {
+        let lenderId = {{ request.user.id }};  // Injected from Django
+        let uniqueId = Math.random().toString(36).substr(2, 9);
+    
+        let loanLink = `${window.location.origin}/loans/new-loan/${lenderId}/${uniqueId}/`;
+        document.getElementById("loanLink").value = loanLink;  // Show in input field
+    
+        let draftUrl = `${window.location.origin}/loans/draft-loan/${lenderId}/${uniqueId}/`;
+    
+        fetch(draftUrl, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ draft: true })  // Optional flag
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Failed to create loan draft.");
+            }
+            console.log("Draft loan created successfully.");
+        })
+        .catch(error => {
+            console.error("Error creating draft:", error);
+        });
+    }
+    
+
+    function copyLink() {
+        generateLoanLink();
+        let loanLinkInput = document.getElementById("loanLink");
+        loanLinkInput.select();
+        document.execCommand("copy");
+        alert("Loan form link copied!");
+    }
+
+    function shareOnWhatsApp() {
+        generateLoanLink();
+        let loanLink = document.getElementById("loanLink").value;
+        let message = "Hello! Click the link to apply for a loan: " + loanLink;
+        let whatsappUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(message);
+        window.open(whatsappUrl, "_blank");
+    }
+</script>
+
+</body>
+</html>
+{% endblock%}

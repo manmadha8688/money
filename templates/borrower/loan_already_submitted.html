@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Loan Submitted</title>
+  <style>
+    :root {
+      --primary: #1abc9c;
+      --primary-dark: #16a085;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --danger-dark: #c0392b;
+      --bg: #f4f4f4;
+      --text: #333;
+      --card-bg: #fff;
+      --border-radius: 12px;
+      --shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 10px 10px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+    }
+
+    .header p {
+      margin-top: 4px;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    .success-container {
+      max-width: 700px;
+      margin:auto;
+      margin-bottom: 5%;
+      animation: fadeIn 0.5s ease-in-out;
+      
+    }
+
+    h2 {
+      color: var(--success);
+      margin-bottom: 20px;
+      font-size: 28px;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    td {
+      padding: 12px 8px;
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-weight: 600;
+      width: 40%;
+      color: #555;
+      text-align: left;
+      padding-left: 15%;
+      position: relative;
+    }
+
+    td:first-child::after {
+      content: ":";
+      position: absolute;
+      right: 20px;
+      font-weight: bold;
+    }
+
+    td:last-child {
+      color: #222;
+    }
+
+    .btn-cancle {
+      margin: 30px auto 10px;
+      display: flex;
+      padding: 12px 24px;
+      background: var(--danger);
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.3s;
+      font-weight: 500;
+      width: fit-content;
+    }
+
+    .btn-cancle:hover {
+      background: var(--danger-dark);
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .success-container {
+        padding: 25px 20px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+      }
+
+      td:first-child {
+        padding-left: 10%;
+      }
+    }
+    .no-colon td:first-child::after {
+      content: none !important;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-box {
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    
+    .modal-box h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+    
+    .modal-box textarea {
+      width: 100%;
+      padding: 10px;
+      resize: none;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 20px;
+    }
+    
+    .btn-confirm {
+      background-color: var(--danger);
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-left: 30%;
+    }
+    
+    .btn-close {
+      background-color: #0a6cad;
+      color: white;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn-confirm:hover{
+       background-color: red;
+    }
+    .btn-close:hover{
+      background-color: rgb(13, 13, 213);
+    }
+    .blink {
+      animation: blinkBorder 0.3s linear 3;
+      border-color: red !important;
+    }
+    
+    @keyframes blinkBorder {
+      0% { border-color: red; }
+      50% { border-color: #ccc; }
+      100% { border-color: red; }
+    }
+    
+    
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>{{ loan.lender.profile.company_name }}</h1>
+    <p>({{ loan.lender.profile.tagline }})</p>
+  </div>
+
+  <div class="success-container">
+    <h2>🎉 Loan Submitted Successfully!</h2>
+
+    <table>
+      <tr>
+        <tr>
+          <td>Applied Date</td>
+          <td>{{ loan.apply_date }}</td>
+        </tr>
+        <td>Your Name</td>
+        <td>{{ loan.borrower.name }}</td>
+      </tr>
+      <tr>
+        <td>Phone</td>
+        <td>{{ loan.borrower.phone }}</td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td>{{ loan.borrower.email|default:"Not provided" }}</td>
+      </tr>
+      <tr>
+        <td>Loan Security Item</td>
+        <td>{{ loan.loan_item }}</td>
+      </tr>
+      <tr>
+        <td>Amount</td>
+        <td  style="color: green;">₹ {{ loan.amount }}</td>
+      </tr>
+
+      <tr>
+        <td>Loan Start Date</td>
+        <td>{{ loan.taken_date|default:"Not Taken Yet" }}</td>
+      </tr>
+      <tr>
+        <td>Loan Return Date</td>
+        <td>{{ loan.return_date|default:"No Return Date Set" }}</td>
+      </tr>
+      <tr>
+        <td>Referral</td>
+        <td>{{ loan.referral|default:"No Referral" }}</td>
+      </tr>
+      <tr>
+        <td>Reason</td>
+        <td>{{ loan.reason|default:"No reason provided." }}</td>
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td style="color: rgb(252, 172, 24);">{{ loan.status|default:"Pending" }}</td>
+      </tr>
+      <tr>
+        <td>Token Id</td>
+        <td>{{ loan.id|default:"" }}</td>
+      </tr>
+    <tr><td>Image provided</td>
+      <td>
+    {% if loan.image %}
+    <div>
+        
+        <img src="{{ loan.image.url }}" alt="Loan Item Photo" style="max-width: 30%;height:50%; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    </div>
+{% else %}
+    <div style=" font-style: italic; color: #777;">
+        No image provided.
+    </div>
+{% endif %}
+</td>
+</tr>
+
+<tr class="no-colon">
+  <td colspan="2" style="text-align: center;">
+    <button class="btn-cancle" onclick="openCancelModal()">Cancel</button>
+
+    <!-- Hidden Cancel Form -->
+    <form id="cancelForm" method="POST" action="{% url 'cancle-loan' loan.id %}" style="display: none;">
+      {% csrf_token %}
+      <input type="hidden" name="remark" id="cancelRemark">
+    </form>
+    
+    <!-- Cancel Modal -->
+    <div id="cancelModal" class="modal-overlay">
+      <div class="modal-box">
+        <h3>Enter Reason to Cancel</h3>
+        <textarea id="cancelInput" placeholder="Type reason..." rows="4"></textarea>
+        <div class="modal-buttons">
+          <button onclick="submitCancel()" class="btn-confirm">Ok</button>
+          <button onclick="closeCancelModal()" class="btn-close">Close</button>
+        </div>
+      </div>
+    </div>
+    
+  </td>
+</tr>
+<tr class="no-colon">
+  <td colspan="2" style="font-weight: bold; font-size: 22px; color: #2c3e50;">
+    Lender Details
+  </td>
+
+  <tr>
+    <td>Name</td>
+    <td>{{ loan.lender.profile.name|default:"" }}</td>
+  </tr>
+  <tr>
+    <td>Phone Number</td>
+    <td>{{ loan.lender.profile.phone|default:"" }}</td>
+  </tr>
+  <tr>
+    <td>Email Id</td>
+    <td>{{ loan.lender.profile.email|default:"" }}</td>
+  </tr>
+  <tr>
+    <td>Bio</td>
+    <td>{{ loan.lender.profile.bio|default:" - " }}</td>
+  </tr>
+</tr>
+
+
+
+  </table>
+  </div>
+  <script>
+    function openCancelModal() {
+      document.getElementById("cancelModal").style.display = "flex";
+    }
+  
+    function closeCancelModal() {
+      document.getElementById("cancelModal").style.display = "none";
+      const input = document.getElementById("cancelInput");
+      input.classList.remove("blink");
+      input.value = "";
+    }
+  
+    function submitCancel() {
+      const input = document.getElementById("cancelInput");
+      const reason = input.value.trim();
+  
+      if (reason !== "") {
+        document.getElementById("cancelRemark").value = reason;
+        document.getElementById("cancelForm").submit();
+      } else {
+        input.classList.add("blink");
+        setTimeout(() => input.classList.remove("blink"), 1000);
+      }
+    }
+  </script>
+  
+  
+</body>
+</html>

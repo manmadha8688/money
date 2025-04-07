@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Cancelled</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #e0f7fa, #ffffff);
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #16a085;
+            color: white;
+            padding: 20px 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+        }
+
+        .header p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            font-style: italic;
+        }
+
+        .cancel-box {
+            background-color: #ffffff;
+            margin: 50px auto;
+            max-width: 600px;
+            padding: 20px 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .cancel-box h2 {
+            color: #e67e22;
+            margin-bottom: 15px;
+        }
+
+        .cancel-box p {
+            color: #555;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .button-group {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        
+
+        .btn-view {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background-color: #2980b9;
+        }
+
+        .loan-details {
+            display: none;
+            text-align: left;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #fdfdfd;
+            border-left: 4px solid #16a085;
+            border-radius: 8px;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.05);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .loan-details p {
+            margin: 6px 0;
+            font-size: 14px;
+        }
+
+        .loan-details span {
+            font-weight: bold;
+            display: inline-block;
+            width: 140px;
+            color: #333;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            .cancel-box {
+                margin: 20px;
+                padding: 30px 20px;
+            }
+            .loan-details span {
+                width: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>{{ loan.lender.profile.company_name }}</h1>
+        <p>({{ loan.lender.profile.tagline }})</p>
+      </div>
+
+    <div class="cancel-box">
+        <h2>Loan Request Cancelled</h2>
+        <p>Your loan request has been successfully cancelled.</p>
+        <p>
+            You can apply for a new loan anytime. Below, you can find the contact details of the lender in case you have any questions or need further assistance.
+          </p>
+          
+        <p>We’re here for any financial help you need.</p>
+
+        <div class="button-group">
+            <button onclick="toggleDetails()" class="btn btn-view" id="toggle-btn">View Loan Details</button>
+            <button onclick="toggleContact()" class="btn btn-view" id="contact-btn">Lender Contact Details</button>
+        </div>
+
+        <div class="loan-details" id="loan-details">
+            <p><span>Your Name</span> {{ loan.borrower.name }}</p>
+            <p><span>Phone</span> {{ loan.borrower.phone }}</p>
+            <p><span>Email</span> {{ loan.borrower.email }}</p>
+            <p><span>Loan Item</span> {{ loan.loan_item }}</p>
+            <p><span>Amount</span> ₹{{ loan.amount }}</p>
+            <p><span>Apply Date</span> {{ loan.apply_date }}</p>
+            <p><span>Start Date</span> {{ loan.taken_date }}</p>
+            <p><span>Return Date</span> {{ loan.return_date }}</p>
+            <p><span>Reason</span> {{ loan.reason|default:"-" }}</p>
+            <p><span>Referral</span> {{ loan.referral|default:"-" }}</p>
+            
+            <p><span>Token Id</span> {{ loan.id|default:"" }}</p>
+            <p><span>Remark</span> {{ loan.remark|default:"" }}</p>
+        </div>
+
+        <div class="loan-details" id="contact-details">
+            <p><span>Lender Name</span> {{ loan.lender.profile.name }}</p>
+            <p><span>Phone</span> {{ loan.lender.profile.phone }}</p>
+            <p><span>Email</span> {{ loan.lender.profile.email }}</p>
+            <p><span>Bio</span> {{ loan.lender.profile.bio }}</p>
+          </div>
+           
+    </div>
+
+    <script>
+        function toggleDetails() {
+            const details = document.getElementById('loan-details');
+            const button = document.getElementById('toggle-btn');
+            if (details.style.display === 'none' || details.style.display === '') {
+                details.style.display = 'block';
+                button.innerText = 'Hide Loan Details';
+            } else {
+                details.style.display = 'none';
+                button.innerText = 'View Loan Details';
+            }
+        }
+
+        function toggleContact() {
+            const contact = document.getElementById('contact-details');
+            const button = document.getElementById('contact-btn');
+            if (contact.style.display === 'none' || contact.style.display === '') {
+              contact.style.display = 'block';
+              button.innerText = 'Hide Contact Details';
+            } else {
+              contact.style.display = 'none';
+              button.innerText = 'Lender Contact Details';
+            }
+          }
+    </script>
+
+</body>
+</html>

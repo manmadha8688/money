@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bhageratha | Loan Application</title>
+  <style>
+    :root {
+      --primary-color: #1abc9c;
+      --primary-dark: #16a085;
+      --bg-light: #ecf0f1;
+      --text-dark: #2c3e50;
+      --input-bg: #fff;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+    }
+
+    .header {
+      background: var(--primary-color);
+      color: white;
+      text-align: center;
+      padding: 30px 10px 10px;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 36px;
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      margin: 10px 0 0;
+      font-size: 16px;
+      font-style: italic;
+    }
+
+    h3 {
+      text-align: center;
+      margin: 30px auto 20px;
+      font-size: 26px;
+    }
+
+    form {
+      max-width: 700px;
+      background: white;
+      margin: 20px auto;
+      padding: 40px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      animation: fadeIn 0.6s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      background: var(--input-bg);
+      font-size: 15px;
+      transition: border-color 0.3s ease;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+    }
+
+    textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    button {
+      width: 100%;
+      background: var(--primary-color);
+      color: white;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+    }
+
+    @media (max-width: 600px) {
+      form {
+        padding: 25px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>{{ loan.lender.profile.company_name }}</h1>
+    <p>({{ loan.lender.profile.tagline }})</p>
+  </div>
+
+  <h3>Apply for a Loan</h3>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" id="apply_date" name="apply_date" />
+
+    <div class="form-group">
+      <label for="borrower_name">Your Name:</label>
+      <input type="text" id="borrower_name" name="borrower_name" required />
+    </div>
+
+    <div class="form-group">
+      <label for="phone">Phone Number:</label>
+      <input type="text" id="phone" name="phone" minlength="10" maxlength="10" pattern="\d{10}" required />
+
+    </div>
+
+    <div class="form-group">
+      <label for="email">Email Address (Optional):</label>
+      <input type="email" id="email" name="email" />
+    </div>
+
+    <div class="form-group">
+      <label for="loan_item">Loan Security Item:</label>
+      <input type="text" id="loan_item" name="loan_item" list="loan_items" placeholder="Select or type an item" required />
+      <datalist id="loan_items">
+        <option value="Mobile">
+        <option value="Laptop">
+        <option value="Camera">
+      </datalist>
+    </div>
+
+    <div class="form-group">
+      <label for="amount">Loan Amount:</label>
+      <input type="number" id="amount" name="amount" step="0.01" required />
+    </div>
+
+    <div class="form-group">
+      <label for="taken_date">Loan Start Date:</label>
+      <input type="date" id="taken_date" name="taken_date" required />
+    </div>
+
+    <div class="form-group">
+      <label for="return_date">Loan Return Date:</label>
+      <input type="date" id="return_date" name="return_date" required />
+    </div>
+
+    <div class="form-group">
+      <label for="referral">Referral (Optional):</label>
+      <input type="text" id="referral" name="referral" placeholder="Enter referral name" />
+    </div>
+
+    <div class="form-group">
+      <label id="photo-label" for="photos">Upload Photos (Optional):</label>
+      <input type="file" id="photos" name="photos" accept="image/*" multiple />
+    </div>
+    
+
+    <div class="form-group">
+      <label for="notes">Reason for Loan:</label>
+      <textarea id="notes" name="reason" required></textarea>
+    </div>
+
+    <button type="submit">Submit Request</button>
+  </form>
+
+  <script>
+    const todayDate = new Date();
+  
+    // Format date as yyyy-mm-dd (required for input[type="date"])
+    const yyyy = todayDate.getFullYear();
+    const mm = String(todayDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(todayDate.getDate()).padStart(2, '0');
+    const today = `${yyyy}-${mm}-${dd}`;
+  
+    // Set value for apply_date input
+    document.getElementById("apply_date").value = today;
+  
+    // Set min attribute to prevent selecting past dates
+    const takenDateInput = document.getElementById("taken_date");
+    const returnDateInput = document.getElementById("return_date");
+  
+    takenDateInput.setAttribute("min", today);
+    returnDateInput.setAttribute("min", today);
+  
+  
+
+  takenDateInput.addEventListener("change", function () {
+    const selectedStartDate = takenDateInput.value;
+    returnDateInput.setAttribute("min", selectedStartDate);
+  });
+
+    const loanItemInput = document.getElementById("loan_item");
+  const photoLabel = document.getElementById("photo-label");
+
+  loanItemInput.addEventListener("input", function () {
+    const item = loanItemInput.value.trim();
+    if (item) {
+      photoLabel.innerText = `Upload ${item} Photos (Optional):`;
+    } else {
+      photoLabel.innerText = "Upload Photos (Optional):";
+    }
+  });
+
+  const form = document.querySelector('form');
+  const phoneInput = document.getElementById('phone');
+  const phoneError = document.getElementById('phone-error');
+
+  
+  </script>
+  
+
+</body>
+</html>

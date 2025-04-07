@@ -1,3 +1,4 @@
+{% load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,18 +7,17 @@
     <title>{% block title %}Money Lender{% endblock %}</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, sans-serif; 
             margin: 0;
             padding: 0;
             display: flex;
-            height: 100vh;
         }
         .sidebar {
             width: 240px;
             background: #2c3e50;
             color: white;
             padding: 20px;
-            height: 100vh;
+            height: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -40,6 +40,14 @@
             font-size: 14px;
             opacity: 0.8;
         }
+        .sidebar ul li ul {
+            padding-left: 10px;
+        }
+        .sidebar ul li ul li a {
+            background: #116e7a;
+            font-size: 14px;
+        }
+        
         .sidebar ul {
             list-style: none;
             padding: 0;
@@ -72,29 +80,118 @@
         }
         .content-box {
             padding: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            margin: 0 4px 10px 20px;
             width: 100%;
+            
+            height: auto;
         }
+        .log {
+            display: flex;
+            gap: 10px; /* Space between buttons */
+        }
+        
+        .login, .register {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        
+        .login {
+            background: #3498db;
+            color: white;
+        }
+        
+        .login:hover {
+            background: #2980b9;
+        }
+        
+        .register {
+            background: #2ecc71;
+            color: white;
+        }
+        
+        .register:hover {
+            background: #27ae60;
+        }
+        
     </style>
 </head>
-<body>
+<body> 
     <div class="sidebar">
         <div class="profile">
-            <img src="profile.jpg" alt="Profile Picture">
-            <h2>John Doe</h2>
+            {% if user.is_authenticated %}
+            {% if profile %}
+                {% if profile.company_logo %}
+                    <img src="{{ profile.company_logo.url }}" alt="Profile Picture" style="width: 120px; height: auto;">
+                {% else %}
+                    <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" style="width: 120px; height: auto;">
+                {% endif %}
+                <h2>{{ profile.company_name|default:'Company Name'}}</h2>
+                <h5>({{ profile.tagline|default:'tagline' }})</h5>
+            {% else %}
+                <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" style="width: 120px; height: auto;">
+                <h2>Company Name</h2>
+                <h5>(tagline)</h5>
+                <p style="color: red;">You have not added a company profile yet.Add below</p>
+            {% endif %}
+        {% else %}
+            <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" style="width: 120px; height: auto;">
+            <h2>Company Name</h2>
+            <h5>(tagline)</h5>
+            
+        {% endif %}
+                </div>
+        {% if user.is_authenticated %}
+        {% else %}
+        <div class="log">
+            <button class="login" onclick="window.location.href='{% url 'login' %}'">login</button>
+            
+            <button class="register" onclick="window.location.href='{% url 'register' %}'" >Rgister</button>
         </div>
+        {% endif%}
         <ul>
             <li><a href="{% url 'dashboard'%}">Dashboard</a></li>
+
+            <li>
+                <a href="javascript:void(0);" onclick="toggleLoanMenu()">📂 Loans</a>
+                <ul id="loanMenu" style="display: none; padding-left: 15px;">
+                    <li><a href="{% url 'new-loan' %}">New Loan</a></li>
+                    <li><a href="{% url 'loan-request-list' %}">Requests</a></li>
+                    <li><a href="{% url 'accepted-list' %}">Accepted & Under Payment</a></li>
+                    <li><a href="{% url 'payment-done-list' %}">Payment under Verify</a></li>
+                    <li><a href="{% url 'cancel-reject-list' %}">Cancelled & Rejected</a></li>
+                </ul>
+            </li>
+            
+            
+
+
+
             <li><a href="{% url 'borrowers'%}">Borrowers</a></li>
             <li><a href="{% url 'dashboard'%}">this month Payments</a></li>
             <li><a href="{% url 'dashboard'%}">paid Members</a></li>
             <li><a href="{% url 'dashboard'%}">overdue members</a></li>
             <li><a href="{% url 'dashboard'%}">Transactions</a></li>
+            <li><a href="{% url 'myprofile'%}">My Profile</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'logout'%}">Logout</a></li>
+            {% endif %}
         </ul>
     </div>
         <div class="content-box">
             {% block content %}{% endblock %}
         
     </div>
+    <script>
+        function toggleLoanMenu() {
+            const menu = document.getElementById("loanMenu");
+            menu.style.display = menu.style.display === "none" ? "block" : "none";
+        }
+    </script>
+    
 </body>
 </html>

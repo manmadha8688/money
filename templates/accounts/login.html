@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm" method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
+        
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<style>
+    .login-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 400px;
+        margin: 50px auto;
+        text-align: center;
+    }
+    .login-container h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+    .login-container label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    .login-container input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    .login-container button {
+        background: #1abc9c;
+        color: white;
+        border: none;
+        padding: 10px;
+        width: 100%;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        margin-top: 15px;
+    }
+    .login-container button:hover {
+        background: #16a085;
+    }
+</style>
+
+<script>
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+
+        if (username.trim() === "" || password.trim() === "") {
+            alert("Both fields are required!");
+            event.preventDefault();
+        }
+    });
+</script>
+{% endblock %}

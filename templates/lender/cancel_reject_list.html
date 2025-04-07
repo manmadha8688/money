@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancelled & Rejected Loan Requests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        thead {
+            background-color: #fffafa;
+        }
+
+        tbody tr:hover {
+            background-color: #d2baba;
+        }
+
+        .highlight-id {
+            color: #2980b9;
+            font-weight: bold;
+        }
+
+        .highlight-amount {
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .highlight-interest {
+            color: #d35400;
+            font-weight: bold;
+        }
+
+        .highlight-referral {
+            font-style: italic;
+            
+            font-weight: bold;
+            color: #b6690c;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .badge-cancelled {
+            background-color: #e74c3c;
+        }
+
+        .badge-rejected {
+            background-color: #c0392b;
+        }
+
+        .row-cancelled {
+            background-color: #fdecea;
+        }
+
+        .row-rejected {
+            background-color: #fdf3f2;
+        }
+        .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .empty-box .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        
+        .empty-box h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .empty-box p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 4px 0;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Cancelled & Rejected Loan Requests</h2>
+
+    {% if loans %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Apply Date</th>
+                    <th>Token ID</th>
+                    <th>Borrower Name</th>
+                    <th>Contact</th>
+                    <th>Loan Item</th>
+                    <th>Amount</th>
+                    <th>Interest</th>
+                    <th>Loan Start Date</th>
+                    <th>Loan Return Date</th>
+                    <th>Reason</th>
+                    <th>Referral</th>
+                    <th>Status</th>
+                    <th>Remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for loan in loans %}
+                    <tr class="row-{{ loan.status }}">
+                        <td>{{ loan.apply_date }}</td>
+                        <td class="highlight-id">{{ loan.id }}</td>
+                        <td>{{ loan.borrower.name }}</td>
+                        <td>{{ loan.borrower.phone }}<br>{{ loan.borrower.email|default:"" }}</td>
+                        <td>{{ loan.loan_item }}</td>
+                        <td class="highlight-amount">₹{{ loan.amount }}</td>
+                        <td class="highlight-interest">{{ loan.interest }}%</td>
+                        <td>{{ loan.taken_date }}</td>
+                        <td>{{ loan.return_date }}</td>
+                        <td>{{ loan.reason|default:"-" }}</td>
+                        <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
+                        <td>
+                            {% if loan.status == 'cancelled' %}
+                                <span class="badge badge-cancelled">Cancelled</span>
+                            {% elif loan.status == 'rejected' %}
+                                <span class="badge badge-rejected">Rejected</span>
+                            {% else %}
+                                <span>{{ loan.status|capfirst }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ loan.remark|default:"-" }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+    <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3><p>Looks like there are no cancelled or rejected loan requests right now.</p></h3>
+
+    </div>
+    {% endif %}
+</div>
+</body>
+</html>
+{% endblock %}

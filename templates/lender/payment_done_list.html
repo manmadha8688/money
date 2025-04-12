@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 
+{% load custom_tag %}
+
 {% block content %}
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,7 +26,8 @@
         h2 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            margin-top: 50px;
         }
 
         table {
@@ -39,8 +45,16 @@
         }
 
         thead {
-            background-color: #fbeded;
+            background-color: #f8f6f6;
         }
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+
+        }
+        
 
         tbody tr:hover {
             background-color: #d8d8d8;
@@ -106,26 +120,115 @@
             font-size: 20px;
             color: #2c3e50;
         }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .filter-sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #fffefe;
+            padding: 10px  0;
+            border-bottom: 1px solid #ddd;
+            width: max-content;
+            margin-top: -100px;
+        }
+        
+        
+        .filter-bar {
+            min-width: 1200px; /* Match or exceed your table width */
+            background: #f6f7f7;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+          }
+          
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>Payment Verification - Loans</h2>
+    <div class="filter-sticky-wrapper">
+        <div class="filter-bar">
+        <form method="GET" action="" class="filter-form">
+            <div class="filter-group">
+                <label for="borrower">Borrower Name:</label>
+                <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="token">Token ID:</label>
+                <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="status">Status:</label>
+                <select name="status" id="status">
+                    <option value="">All</option>
+                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
+                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
+                </select>
+            </div>
+    
+            <div class="filter-group">
+                <label for="from_date">From:</label>
+                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="to_date">To:</label>
+                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
+            </div>
+    
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-done">Filter</button>
+                <a href="." class="btn btn-close">Reset</a>
+            </div>
+        </form>
+    </div>
+    </div>
+    <h2>Payment Confirmation - Loans</h2>
 
     {% if loans %}
     <table>
         <thead>
-            <tr>
-                <th>Apply Date</th>
+            <tr><th>#</th>
+                <th>Payment Date</th>
                 <th>Token ID</th>
-                <th>Borrower</th>
-                <th>Contact</th>
+                <th>Borrower Details</th>
                 <th>Loan Item</th>
                 <th>Amount</th>
                 <th>Interest</th>
                 <th>Start Date</th>
                 <th>Return Date</th>
-                <th>Reason</th>
+                
                 <th>Referral</th>
                 <th>Status</th>
                 <th>Payment Details provided</th>
@@ -135,21 +238,22 @@
         </thead>
         <tbody>
             {% for loan in loans %}
-            <tr>
-                <td>{{ loan.apply_date }}</td>
+            <tr> 
+                <td>{{ forloop.counter }}</td>
+                <td>{{ status|dict_get:loan.id }}</td>
+
                 <td class="highlight-id">{{ loan.id }}</td>
-                <td>{{ loan.borrower.name }}</td>
-                <td>{{ loan.borrower.phone }}<br>{{ loan.borrower.email|default:"" }}</td>
+                <td>{{ loan.borrower.name }}<br>
+                {{ loan.borrower.phone }}<br>{{ loan.borrower.email|default:"" }}</td>
                 <td>{{ loan.loan_item }}</td>
                 <td class="highlight-amount">₹{{ loan.amount }}</td>
                 <td class="highlight-interest">{{ loan.interest }}%</td>
                 <td>{{ loan.taken_date }}</td>
                 <td>{{ loan.return_date }}</td>
-                <td>{{ loan.reason|default:"-" }}</td>
                 <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
                 <td>
                     {% if loan.status == "paymentdone"%}
-                    <span class="status">{{ loan.status|capfirst }}</span>
+                    <span class="status">Paymeny under verification</span>
                     {%else %}
                     
                     <span class="status1">Payment not received</span>
@@ -182,7 +286,7 @@
                             </div>
                         {% else %}
                             <div style="display: flex; gap: 10px;">
-                                <strong>UPI_ID:</strong>
+                                <strong>UPI_ID</strong>
                                 <span>{{ loan.payment.upi_number }}</span>
                             </div>
                         {% endif %}
@@ -192,16 +296,18 @@
                 <td>
                     
                         {% if loan.payment.utr %}
-                            UTR: {{ loan.payment.utr }}
+                           <strong> UTR :</strong> {{ loan.payment.utr }}
                         {% elif loan.payment.person %}
-                            Cash by: {{ loan.payment.person }}
+                            <strong>Cash by :</strong> {{ loan.payment.person }}
                         {% elif loan.payment.bank %}
-                            Ref No: {{ loan.payment.bank }}
+                            <strong>Ref No :</strong>
+                             {{ loan.payment.bank }}
                         
                     {% else %}
                         -
                     {% endif %}
                 </td>
+                
                 
                 <td  {% if loan.status == "paymentdone"%} {%else%} style="color: red; min-width:120px;" {%endif %} >{{ loan.remark|default:"-" }}</td>
             </tr>

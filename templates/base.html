@@ -13,33 +13,29 @@
             display: flex;
         }
         .sidebar {
-            width: 240px;
-            background: #2c3e50;
+            width: 260px;
+            background-color: #1f2937;
             color: white;
             padding: 20px;
-            height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
-        }
-        .profile {
+            transition: all 0.3s ease;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+          }
+          .profile {
             text-align: center;
-            margin-bottom: 20px;
-        }
-        .profile img {
+            margin-bottom: 30px;
+          }
+          .profile img {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            border: 2px solid white;
-        }
-        .profile h2 {
-            margin: 10px 0 5px;
-            font-size: 18px;
-        }
-        .profile p {
-            font-size: 14px;
-            opacity: 0.8;
-        }
+            border: 2px solid #fff;
+            object-fit: cover;
+          }
+          .profile h2, .profile h5 {
+            margin: 5px 0;
+          }
         .sidebar ul li ul {
             padding-left: 10px;
         }
@@ -70,6 +66,15 @@
         .sidebar ul li a:hover {
             background: #1abc9c;
         }
+        .submenu {
+            display: none;
+            list-style: none;
+            padding-left: 20px;
+        }
+        .submenu.active {
+            display: block;
+        }
+        
         .main-content {
             flex-grow: 1;
             padding: 20px;
@@ -130,7 +135,7 @@
                 {% else %}
                     <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" style="width: 120px; height: auto;">
                 {% endif %}
-                <h2>{{ profile.company_name|default:'Company Name'}}</h2>
+                <h3>{{ profile.company_name|default:'Company Name'}}</h3>
                 <h5>({{ profile.tagline|default:'tagline' }})</h5>
             {% else %}
                 <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" style="width: 120px; height: auto;">
@@ -155,17 +160,31 @@
         {% endif%}
         <ul>
             <li><a href="{% url 'dashboard'%}">Dashboard</a></li>
-
+            <li><a href="{% url 'new-loan'%}">🆕 Create New Loan</a></li>
             <li>
-                <a href="javascript:void(0);" onclick="toggleLoanMenu()">📂 Loans</a>
-                <ul id="loanMenu" style="display: none; padding-left: 15px;">
-                    <li><a href="{% url 'new-loan' %}">New Loan</a></li>
-                    <li><a href="{% url 'loan-request-list' %}">Requests</a></li>
-                    <li><a href="{% url 'accepted-list' %}">Accepted & Under Payment</a></li>
-                    <li><a href="{% url 'payment-done-list' %}">Payment under Verify</a></li>
-                    <li><a href="{% url 'cancel-reject-list' %}">Cancelled & Rejected</a></li>
+                <a href="javascript:void(0);" onclick="toggleDropdown('loan-submenu')" id="loan-toggle" class="dropdown-toggle">▼ 📋 New Loans Management </a>
+                <ul class="submenu" id="loan-submenu">
+                  
+                  <li><a href="{% url 'loan-request-list'%}">📥 Loan Requests</a></li>
+                  <li><a href="{% url 'accepted-list'%}">✅ Accepted Loans (Awaiting Payment)</a></li>
+                  <li><a href="{% url 'payment-done-list'%}">💳 Payments Confirmation</a></li>
+                  <li><a href="{% url 'cancel-reject-list'%}">❌ Cancelled / Rejected Loans</a></li>
+                  
+                
                 </ul>
             </li>
+              
+              
+              <li>
+                <a href="javascript:void(0);" onclick="toggleDropdown('reports-submenu')" id="reports-toggle" class="dropdown-toggle">📊 Reports ▼</a>
+                <ul class="submenu" id="reports-submenu">
+                    <li><a href="{% url 'accepted-list'%}">Accepted & Under Payment</a></li>
+                    <li><a href="{% url 'payment-done-list'%}">Payment Verify</a></li>
+                    <li><a href="{% url 'cancel-reject-list'%}">Cancelled & Rejected</a></li>
+                </ul>
+              </li>
+              
+            
             
             
 
@@ -175,7 +194,8 @@
             <li><a href="{% url 'dashboard'%}">this month Payments</a></li>
             <li><a href="{% url 'dashboard'%}">paid Members</a></li>
             <li><a href="{% url 'dashboard'%}">overdue members</a></li>
-            <li><a href="{% url 'dashboard'%}">Transactions</a></li>
+            <li><a href="{% url 'loan-status-records'%}">Loan Requests Records</a></li>
+            <li><a href="{% url 'all-transactions'%}">Transactions History</a></li>
             <li><a href="{% url 'myprofile'%}">My Profile</a></li>
             {% if user.is_authenticated %}
             <li><a href="{% url 'logout'%}">Logout</a></li>
@@ -186,12 +206,47 @@
             {% block content %}{% endblock %}
         
     </div>
+    
     <script>
-        function toggleLoanMenu() {
-            const menu = document.getElementById("loanMenu");
-            menu.style.display = menu.style.display === "none" ? "block" : "none";
+        function toggleDropdown(targetId) {
+            const menu = document.getElementById(targetId);
+            const isActive = menu.classList.contains('active');
+    
+            // Close all submenus
+            document.querySelectorAll('.submenu').forEach(m => m.classList.remove('active'));
+    
+            // Toggle current if it wasn't already open
+            if (!isActive) {
+                menu.classList.add('active');
+                localStorage.setItem('openDropdown', targetId);
+            } else {
+                localStorage.removeItem('openDropdown');
+            }
         }
+    
+        // Keep dropdown open on page reload if previously open
+        window.addEventListener('DOMContentLoaded', () => {
+            const openDropdown = localStorage.getItem('openDropdown');
+            if (openDropdown) {
+                const menu = document.getElementById(openDropdown);
+                if (menu) menu.classList.add('active');
+            }
+        });
+    
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const isToggle = event.target.classList.contains('dropdown-toggle');
+            const isInsideSubmenu = event.target.closest('.submenu');
+    
+            if (!isToggle && !isInsideSubmenu) {
+                document.querySelectorAll('.submenu').forEach(m => m.classList.remove('active'));
+                localStorage.removeItem('openDropdown');
+            }
+        });
     </script>
+    
+        
+        
     
 </body>
 </html>

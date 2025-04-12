@@ -8,7 +8,7 @@ def myprofile(request):
     if request.method == 'POST':
         # Check if only profile picture is being updated
         if 'profile_picture' in request.FILES:
-            profile.profile_image = request.FILES['profile_picture']
+            profile.company_logo = request.FILES['profile_picture']
             profile.save()
             return redirect('myprofile')
 

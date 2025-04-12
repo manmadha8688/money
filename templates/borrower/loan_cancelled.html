@@ -1,3 +1,4 @@
+{% load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,23 +13,46 @@
         }
 
         .header {
-            background-color: #16a085;
+            background: var(--primary-color);
             color: white;
-            padding: 20px 10px;
+            padding: 20px 30px;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          
+          .logo-wrapper {
+            position: absolute;
+            left: 30px;
+          }
+          
+          .company-logo {
+            width: 80px;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+          
+          .company-info {
             text-align: center;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .header h1 {
+          }
+          
+          .company-info h1 {
             margin: 0;
-            font-size: 32px;
-        }
-
-        .header p {
+            font-size: 28px;
+            letter-spacing: 1px;
+          }
+          
+          .company-info p {
             margin: 5px 0 0;
-            font-size: 16px;
+            font-size: 14px;
             font-style: italic;
-        }
+          }
+          
 
         .cancel-box {
             background-color: #ffffff;
@@ -129,10 +153,20 @@
 <body>
 
     <div class="header">
-        <h1>{{ loan.lender.profile.company_name }}</h1>
-        <p>({{ loan.lender.profile.tagline }})</p>
+        <div class="logo-wrapper">
+          {% if loan.lender.profile.company_logo %}
+            <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+          {% else %}
+            <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
+          {% endif %}
+        </div>
+      
+        <div class="company-info">
+          <h1>{{ loan.lender.profile.company_name }}</h1>
+          <p>({{ loan.lender.profile.tagline }})</p>
+        </div>
       </div>
-
+      
     <div class="cancel-box">
         <h2>Loan Request Cancelled</h2>
         <p>Your loan request has been successfully cancelled.</p>

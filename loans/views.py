@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.models import User
-from .models import LoanRequest, Borrower , PaymentDetail
+from .models import LoanRequest, Borrower , PaymentDetail ,LoanStatusHistory ,LoanImage
 from datetime import date
 from django.http import JsonResponse
 from django.utils.timezone import now
@@ -38,12 +38,21 @@ def draft_loan(request, lender_id, unique_id):
 def loan_request(request, lender_id, unique_id):
     lender = get_object_or_404(User, id=lender_id)
     
-    loan = LoanRequest.objects.filter(lender=lender, unique_id=unique_id).first()
+    loan = LoanRequest.objects.get(lender=lender, unique_id=unique_id)
+
     if loan is None:
         return JsonResponse({'error': 'Loan form not found'}, status=404)
 
     if loan and loan.submitted:
         if loan.status == "pending":
+            if request.method == 'POST':
+                if request.POST.get('edit') == 'edit':
+                    loan.submitted = False
+                    loan.save()
+                    lender_id = loan.lender.id
+                    unique_id = loan.unique_id
+
+                    return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
             return render(request, "borrower/loan_already_submitted.html", {"loan": loan})
         elif loan.status == "accepted":
             return render(request, "borrower/loan_confirmation.html", {"loan": loan})
@@ -83,9 +92,11 @@ def loan_request(request, lender_id, unique_id):
         loan.referral = request.POST.get("referral", "")
         loan.reason = request.POST.get("reason", "")
         loan.submitted = True
-        photo = request.FILES.get('photos')
-        if photo:
-            loan.image = photo
+        photos = request.FILES.getlist('photos')
+
+        for photo in photos:
+           LoanImage.objects.create(loan=loan, image=photo)
+
 
         loan.save()
 
@@ -145,8 +156,12 @@ def reject_loan(request,loan_id):
 
 def payment_details(request, loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
+    lender_id = loan.lender.id
+    unique_id = loan.unique_id
 
     if request.method == 'POST':
+        if loan.payment:
+            return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
         payment_type = request.POST.get('payment_type')
         payment = PaymentDetail(
             payment_method=payment_type
@@ -177,8 +192,7 @@ def payment_details(request, loan_id):
         loan.save()
     
 
-    lender_id = loan.lender.id
-    unique_id = loan.unique_id
+    
 
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 def cancel_reject_list(request):
@@ -190,14 +204,15 @@ def paymentdone(request,loan_id):
         utr = request.POST.get('utr', '').strip()
         bank = request.POST.get('bank', '').strip()
         person = request.POST.get('person', '').strip()
-
+ 
         loan = LoanRequest.objects.get(id=loan_id)
         loan.payment.utr = utr
         loan.payment.bank = bank
         loan.payment.person = person
+        
         loan.status="paymentdone"
         loan.remark = "✅ Payment is done — waiting for confirmation."
-
+        loan.payment.save()
         loan.save()
         
 
@@ -223,5 +238,56 @@ def paymentreceived(request,loan_id):
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 def payment_done_list(request):
     loans = LoanRequest.objects.filter(Q(status="paymentdone") | Q(status="paymentnotreceived"))
+    
+    status_dict = {}
 
-    return render(request,'lender/payment_done_list.html',{'loans':loans})
+    for loan in loans:
+      for history in loan.status_history.all():
+          if history.status == 'paymentdone':
+              status_dict[loan.id] = history.updated_at
+
+    context = {
+    'loans': loans,
+    'status': status_dict
+    }
+
+    return render(request, 'lender/payment_done_list.html', context)
+
+
+def loan_status_records(request):
+    loans = LoanRequest.objects.filter(submitted= True)
+    loans_with_status = []
+
+    for loan in loans:
+        # Create a dictionary for each status
+        status_dates = {
+            'accepted': '',
+            'paymentprocess': '',
+            'paymentdone': '',
+            'paymentreceived': '',
+            'paymentnotreceived': '',
+            'rejected': '',
+            'cancelled': ''
+        }
+
+        for history in loan.status_history.all():
+            if history.status in status_dates:
+                status_dates[history.status] = history.updated_at
+
+        loans_with_status.append({
+            'loan': loan,
+            'status_dates': status_dates
+        })
+
+    return render(request, 'loan_status_records.html',{'loans_with_status': loans_with_status})
+
+def delete_loan_item_image(request,image_id):
+    image = get_object_or_404(LoanImage, id=image_id)
+    loan_id = image.loan.id  # To redirect back to the loan detail/edit page
+    
+    image.delete()
+    loan = get_object_or_404(LoanRequest,id=loan_id)
+    lender_id = loan.lender.id
+    unique_id = loan.unique_id
+
+    return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)

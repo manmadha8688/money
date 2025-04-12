@@ -17,7 +17,6 @@
         .container {
             max-width: 1200px;
             margin: 40px auto;
-            background: white;
             padding: 20px;
             border-radius: 10px;
         }
@@ -29,15 +28,24 @@
         }
 
         table {
-            width: 100%;
+            width: max-content;
             border-collapse: collapse;
             font-size: 14px;
         }
-
+        tbody tr:hover {
+            background-color: #d4dada;
+        }
+        
         thead {
             background-color: #ecf0f1;
         }
-
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        
         th, td {
             padding: 12px 15px;
             border: 1px solid #ccc;
@@ -219,20 +227,117 @@
                 transform: translateY(0);
             }
         }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
         
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .filter-sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #fdfcfc;
+            padding: 10px  400px;
+            border-bottom: 1px solid #ddd;
+            width: max-content;
+            margin-top: -100px;
+        }
+        
+        
+        .filter-bar {
+            min-width: 1200px; /* Match or exceed your table width */
+            background: #fcfdfd;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            margin-left: -400px;
+          }
+          
         
     </style>
 </head>
 <body>
+
+    
+      
 <div class="container">
+
+    <div class="filter-sticky-wrapper">
+        <div class="filter-bar">
+        <form method="GET" action="" class="filter-form">
+            <div class="filter-group">
+                <label for="borrower">Borrower Name:</label>
+                <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="token">Token ID:</label>
+                <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="status">Status:</label>
+                <select name="status" id="status">
+                    <option value="">All</option>
+                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
+                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
+                </select>
+            </div>
+    
+            <div class="filter-group">
+                <label for="from_date">From:</label>
+                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="to_date">To:</label>
+                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
+            </div>
+    
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-done">Filter</button>
+                <a href="." class="btn btn-close">Reset</a>
+            </div>
+        </form>
+    </div>
+    </div>
+    
     <h2>Accepted Loans</h2>
 
     {% if loans %}
     <table>
         <thead>
             <tr>
-                <th>Borrower</th>
+                <th>#</th>
+                <th>Accept on</th>
                 <th>Token ID</th>
+                <th>Borrower</th>
                 <th>Contact</th>
                 <th>Loan Item</th>
                 <th>Amount</th>
@@ -249,8 +354,10 @@
         <tbody>
         {% for loan in loans %}
             <tr>
-                <td>{{ loan.borrower.name }}</td>
+                <td>{{ forloop.counter }}</td>
+                <td>{{loan.updated_at}}</td>
                 <td style="color:blue;">{{ loan.id }}</td>
+                <td>{{ loan.borrower.name }}</td>
                 <td>{{ loan.borrower.phone }}<br>{{ loan.borrower.email }}</td>
                 <td>{{ loan.loan_item }}</td>
                 <td style="color: green;">₹ {{ loan.amount }}</td>
@@ -260,9 +367,9 @@
                 <td style="color:rgb(104, 34, 224);">{{loan.referral|default:'-'}}</td>
                 <td class="status-col">
                     {% if loan.status == 'accepted' %}
-                        <span class="badge" style="background-color:#f39c12;">Under Process</span>
+                        <span class="badge" style="background-color:#f39c12;">Loan Under Confirmation</span>
                     {% elif loan.status == 'paymentprocess' %}
-                        <span class="badge" style="background-color:#3498db;">Payment In Progress</span>
+                        <span class="badge" style="background-color:#3498db;">Loan Confirmed</span>
                     {% else %}
                         <span class="badge">{{ loan.status }}</span>
                     {% endif %}
@@ -296,7 +403,8 @@
 
             {% if loan.payment %}
             <script id="payment-data-{{ loan.id }}" type="application/json">
-                {
+                {   
+                    "amount":"{{loan.amount}}",
                     "method": "{{ loan.payment.payment_method }}",
                     "cash_from": "{{ loan.payment.cash_from|default:'' }}",
                     "online_method": "{{ loan.payment.online_method|default:'' }}",
@@ -337,6 +445,7 @@
 <div class="modal" id="paymentModal">
     <h3>Payment Details</h3>
     <div id="modalContent"></div>
+    
     <div id="paymentError" style="color: red; margin-top: 10px; text-align: center;"></div>
 
     <div class="modal-buttons">
@@ -382,7 +491,9 @@
                 <input type="text" name="bank" name="bank_ref" required placeholder="Enter Bank Transaction Reference">
             </label>`;
         }
-
+        content +=`<br><label><strong>Enter Amount:</strong>
+                <input type="text" name="amount"  required placeholder="Enter Amount">
+            </label>`;
         document.getElementById('modalContent').innerHTML = content;
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('paymentModal').style.display = 'block';
@@ -402,10 +513,13 @@
         const utrInput = modal.querySelector('input[name="utr"]');
         const bankInput = modal.querySelector('input[name="bank"]');
         const personInput = modal.querySelector('input[name="person"]');
+        
+        const amountInput = modal.querySelector('input[name="amount"]');
     
         let utr = utrInput ? utrInput.value.trim() : "";
         let bank = bankInput ? bankInput.value.trim() : "";
         let person = personInput ? personInput.value.trim() : "";
+        let amount = amountInput.value.trim();
          // UTR validation (usually 12+ digits or alphanumeric like 'AXIS1234567890')
     const utrRegex = /^[A-Za-z0-9]{12,22}$/;
 
@@ -442,6 +556,24 @@
         }
     }
 
+    
+    const dataTag = document.getElementById(`payment-data-${currentLoanId}`);
+if (!dataTag) return;
+
+const payment = JSON.parse(dataTag.textContent);
+
+if (amountInput && amount) {
+    const inputAmount = parseFloat(amount);
+    const expectedAmount = parseFloat(payment.amount);
+
+    if (inputAmount !== expectedAmount) {
+        amountInput.classList.add("blink");
+        showError(`Entered amount (₹${inputAmount}) must match the loan amount (₹${expectedAmount}).`, amountInput);
+        isValid = false;
+    }
+}
+
+
     function showError(message,input) {
         const errorBox = document.getElementById("paymentError");
         errorBox.innerText = message;
@@ -477,6 +609,17 @@
             }, 1000);
             return;
         }
+        if (!amount) {
+            
+            if (amountInput) amountInput.classList.add("blink");
+    
+            // Remove blink after 1 second
+            setTimeout(() => {
+                
+                if (amountInput) amountInput.classList.remove("blink");
+            }, 1000);
+            return;
+        }
     
         // Populate the form fields
         const form = document.getElementById(`paymentForm-${currentLoanId}`);
@@ -485,7 +628,6 @@
         form.querySelector('input[name="person"]').value = person;
         
     
-        // Submit the form
         form.submit();
     }
     

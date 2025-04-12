@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Loan Status History Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-top:7%;
+            margin-bottom:5px;
+        }
+    table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+        tbody tr:hover{
+            background-color: #cac9c9;
+        }
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .filter-sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #fffefe;
+            padding: 10px  0;
+            border-bottom: 1px solid #ddd;
+            width: max-content;
+            margin-top: -100px;
+        }
+        
+        
+        .filter-bar {
+            min-width: 1200px; /* Match or exceed your table width */
+            background: #f6f7f7;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+          }
+    </style>
+</head>
+<body>
+    <div class="filter-sticky-wrapper">
+        <div class="filter-bar">
+        <form method="GET" action="" class="filter-form">
+            <div class="filter-group">
+                <label for="borrower">Borrower Name:</label>
+                <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="token">Token ID:</label>
+                <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="status">Status:</label>
+                <select name="status" id="status">
+                    <option value="">All</option>
+                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
+                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
+                </select>
+            </div>
+    
+            <div class="filter-group">
+                <label for="from_date">From:</label>
+                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="to_date">To:</label>
+                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
+            </div>
+    
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-done">Filter</button>
+                <a href="." class="btn btn-close">Reset</a>
+            </div>
+        </form>
+    </div>
+    </div>
+    <h2>Loan Status History Table</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Borrower</th>
+                <th>Loan ID</th>
+                <th>Applied On</th>
+                <th>Accepted On</th>
+                <th>Confirmed On</th>
+                <th>Payment Sent On</th>
+                <th>Payment Confirmed On</th>
+                <th>Rejected On</th>
+                <th>Cancelled On</th>
+                <th>payment not received On</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            {% for entry in loans_with_status %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ entry.loan.borrower.name }}</td>
+                <td>{{ entry.loan.id }}</td>
+                <td>{{ entry.loan.apply_date }}</td>
+                <td>{{ entry.status_dates.accepted|default:"-" }}</td>
+                <td>{{ entry.status_dates.paymentprocess|default:"-" }}</td>
+                <td>{{ entry.status_dates.paymentdone|default:"-" }}</td>
+                <td>{{ entry.status_dates.paymentreceived|default:"-" }}</td>
+                <td>{{ entry.status_dates.rejected|default:"-" }}</td>
+                <td>{{ entry.status_dates.cancelled|default:"-" }}</td>
+                <td>{{ entry.status_dates.paymentnotreceived|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="10">No loan data found.</td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+</body>
+</html>
+{%endblock%}

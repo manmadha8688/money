@@ -1,9 +1,10 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bhageratha | Loan Application</title>
+  <title>Loan Application</title>
   <style>
     :root {
       --primary-color: #1abc9c;
@@ -28,22 +29,41 @@
     .header {
       background: var(--primary-color);
       color: white;
-      text-align: center;
-      padding: 30px 10px 10px;
+      padding: 20px 30px;
       border-bottom-left-radius: 40px;
       border-bottom-right-radius: 40px;
       box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .header h1 {
+    .logo-wrapper {
+      position: absolute;
+      left: 30px;
+    }
+
+    .company-logo {
+      width: 80px;
+      height: auto;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .company-info {
+      text-align: center;
+    }
+
+    .company-info h1 {
       margin: 0;
-      font-size: 36px;
+      font-size: 28px;
       letter-spacing: 1px;
     }
 
-    .header p {
-      margin: 10px 0 0;
-      font-size: 16px;
+    .company-info p {
+      margin: 5px 0 0;
+      font-size: 14px;
       font-style: italic;
     }
 
@@ -79,9 +99,7 @@
       margin-bottom: 6px;
     }
 
-    input,
-    textarea,
-    select {
+    input, textarea, select {
       width: 100%;
       padding: 12px 14px;
       border: 1px solid #ccc;
@@ -91,9 +109,7 @@
       transition: border-color 0.3s ease;
     }
 
-    input:focus,
-    textarea:focus,
-    select:focus {
+    input:focus, textarea:focus, select:focus {
       border-color: var(--primary-color);
       outline: none;
     }
@@ -139,35 +155,43 @@
 <body>
 
   <div class="header">
-    <h1>{{ loan.lender.profile.company_name }}</h1>
-    <p>({{ loan.lender.profile.tagline }})</p>
+    <div class="logo-wrapper">
+      {% if loan.lender.profile.company_logo %}
+        <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+      {% else %}
+        <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
+      {% endif %}
+    </div>
+    <div class="company-info">
+      <h1>{{ loan.lender.profile.company_name }}</h1>
+      <p>({{ loan.lender.profile.tagline }})</p>
+    </div>
   </div>
 
   <h3>Apply for a Loan</h3>
 
-  <form method="POST" enctype="multipart/form-data">
+  <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm();">
     {% csrf_token %}
     <input type="hidden" id="apply_date" name="apply_date" />
 
     <div class="form-group">
       <label for="borrower_name">Your Name:</label>
-      <input type="text" id="borrower_name" name="borrower_name" required />
+      <input type="text" id="borrower_name" name="borrower_name" value="{{ loan.borrower.name|default:'' }}" required />
     </div>
 
     <div class="form-group">
       <label for="phone">Phone Number:</label>
-      <input type="text" id="phone" name="phone" minlength="10" maxlength="10" pattern="\d{10}" required />
-
+      <input type="text" id="phone" name="phone" minlength="10" maxlength="10" pattern="\d{10}" value="{{ loan.borrower.phone|default:'' }}" required />
     </div>
 
     <div class="form-group">
       <label for="email">Email Address (Optional):</label>
-      <input type="email" id="email" name="email" />
+      <input type="email" id="email" name="email" value="{{ loan.borrower.email|default:'' }}" />
     </div>
 
     <div class="form-group">
       <label for="loan_item">Loan Security Item:</label>
-      <input type="text" id="loan_item" name="loan_item" list="loan_items" placeholder="Select or type an item" required />
+      <input type="text" id="loan_item" name="loan_item" list="loan_items" placeholder="Select or type an item" value="{{ loan.loan_item|default:'' }}" required />
       <datalist id="loan_items">
         <option value="Mobile">
         <option value="Laptop">
@@ -177,33 +201,44 @@
 
     <div class="form-group">
       <label for="amount">Loan Amount:</label>
-      <input type="number" id="amount" name="amount" step="0.01" required />
+      <input type="number" id="amount" name="amount" value="{{ loan.amount|default:'' }}" step="0.01" required />
     </div>
 
     <div class="form-group">
       <label for="taken_date">Loan Start Date:</label>
-      <input type="date" id="taken_date" name="taken_date" required />
+      <input type="date" id="taken_date" name="taken_date" value="{{ loan.taken_date|date:'Y-m-d'|default:'' }}" required />
     </div>
 
     <div class="form-group">
       <label for="return_date">Loan Return Date:</label>
-      <input type="date" id="return_date" name="return_date" required />
+      <input type="date" id="return_date" name="return_date" value="{{ loan.return_date|date:'Y-m-d'|default:'' }}" required />
     </div>
 
     <div class="form-group">
       <label for="referral">Referral (Optional):</label>
-      <input type="text" id="referral" name="referral" placeholder="Enter referral name" />
+      <input type="text" id="referral" name="referral" value="{{ loan.referral|default:'' }}" placeholder="Enter referral name" />
     </div>
 
     <div class="form-group">
       <label id="photo-label" for="photos">Upload Photos (Optional):</label>
       <input type="file" id="photos" name="photos" accept="image/*" multiple />
+      <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
+
+      {% for image in loan.loan_item_images.all %}
+        <div class="image-wrapper" style="position: relative;">
+          <img src="{{ image.image.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 0 4px rgba(0,0,0,0.2);" />
+          <button type="button" onclick="window.location.href='{% url 'delete_loan_item_image' image.id %}'"
+            style="position: absolute; top: -6px;  background: red; color: white; border: none; border-radius: 50%;
+                   width: 20px; height: 20px; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            ×
+          </button>
+        </div>
+      {% endfor %}
     </div>
-    
 
     <div class="form-group">
       <label for="notes">Reason for Loan:</label>
-      <textarea id="notes" name="reason" required></textarea>
+      <textarea id="notes" name="reason">{{ loan.reason|default_if_none:'' }}</textarea>
     </div>
 
     <button type="submit">Submit Request</button>
@@ -211,49 +246,100 @@
 
   <script>
     const todayDate = new Date();
-  
-    // Format date as yyyy-mm-dd (required for input[type="date"])
     const yyyy = todayDate.getFullYear();
     const mm = String(todayDate.getMonth() + 1).padStart(2, '0');
     const dd = String(todayDate.getDate()).padStart(2, '0');
     const today = `${yyyy}-${mm}-${dd}`;
-  
-    // Set value for apply_date input
     document.getElementById("apply_date").value = today;
-  
-    // Set min attribute to prevent selecting past dates
+
     const takenDateInput = document.getElementById("taken_date");
     const returnDateInput = document.getElementById("return_date");
-  
     takenDateInput.setAttribute("min", today);
     returnDateInput.setAttribute("min", today);
-  
-  
 
-  takenDateInput.addEventListener("change", function () {
-    const selectedStartDate = takenDateInput.value;
-    returnDateInput.setAttribute("min", selectedStartDate);
-  });
+    takenDateInput.addEventListener("change", function () {
+      returnDateInput.setAttribute("min", takenDateInput.value);
+    });
 
     const loanItemInput = document.getElementById("loan_item");
-  const photoLabel = document.getElementById("photo-label");
+    const photoLabel = document.getElementById("photo-label");
 
-  loanItemInput.addEventListener("input", function () {
-    const item = loanItemInput.value.trim();
-    if (item) {
-      photoLabel.innerText = `Upload ${item} Photos (Optional):`;
-    } else {
-      photoLabel.innerText = "Upload Photos (Optional):";
+    loanItemInput.addEventListener("input", function () {
+      const item = loanItemInput.value.trim();
+      photoLabel.innerText = item ? `Upload ${item} Photos (Optional):` : "Upload Photos (Optional):";
+    });
+
+    function validateForm() {
+      const reason = document.getElementById("notes").value.trim();
+      if (!reason) {
+        alert("Please enter a reason for the loan.");
+        return false;
+      }
+      return true;
     }
-  });
 
-  const form = document.querySelector('form');
-  const phoneInput = document.getElementById('phone');
-  const phoneError = document.getElementById('phone-error');
+    const input = document.getElementById("photos");
+    const previewContainer = document.getElementById("preview-container");
+    let selectedFiles = [];
 
-  
+    input.addEventListener("change", (e) => {
+      selectedFiles = selectedFiles.concat(Array.from(e.target.files));
+      updatePreview();
+      updateInputFiles();
+    });
+
+    function updatePreview() {
+      previewContainer.innerHTML = "";
+      selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const wrapper = document.createElement("div");
+          wrapper.style.position = "relative";
+
+          const img = document.createElement("img");
+          img.src = e.target.result;
+          img.style.width = "100px";
+          img.style.height = "100px";
+          img.style.objectFit = "cover";
+          img.style.borderRadius = "8px";
+          img.style.boxShadow = "0 0 4px rgba(0,0,0,0.2)";
+
+          const closeBtn = document.createElement("span");
+          closeBtn.innerHTML = "&times;";
+          closeBtn.style.position = "absolute";
+          closeBtn.style.top = "-6px";
+          closeBtn.style.right = "-6px";
+          closeBtn.style.background = "red";
+          closeBtn.style.color = "white";
+          closeBtn.style.borderRadius = "50%";
+          closeBtn.style.cursor = "pointer";
+          closeBtn.style.fontSize = "16px";
+          closeBtn.style.width = "20px";
+          closeBtn.style.height = "20px";
+          closeBtn.style.display = "flex";
+          closeBtn.style.alignItems = "center";
+          closeBtn.style.justifyContent = "center";
+
+          closeBtn.onclick = () => {
+            selectedFiles.splice(index, 1);
+            updatePreview();
+            updateInputFiles();
+          };
+
+          wrapper.appendChild(img);
+          wrapper.appendChild(closeBtn);
+          previewContainer.appendChild(wrapper);
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function updateInputFiles() {
+      const dataTransfer = new DataTransfer();
+      selectedFiles.forEach((file) => dataTransfer.items.add(file));
+      input.files = dataTransfer.files;
+    }
   </script>
-  
 
 </body>
 </html>

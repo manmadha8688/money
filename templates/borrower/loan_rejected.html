@@ -1,52 +1,72 @@
+{% load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Loan Request Rejected</title>
     <style>
-        html, body {
-            margin: 0;
-            padding: 0;
+        :root {
+            --primary: #1abc9c;
+            --primary-dark: #16a085;
+            --success: #2ecc71;
+            --danger: #e74c3c;
+            --danger-dark: #c0392b;
+            --bg: #f4f4f4;
+            --text: #333;
+            --card-bg: #fff;
+            --border-radius: 12px;
+            --shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+          }
+      
+          body {
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(to right, #f5f7fa, #c3cfe2);
-            overflow-x: hidden;
-            width: 100%;
-        }
-
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 100px 20px 40px;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: linear-gradient(to right, #16a085, #1abc9c);
-            color: white;
-            padding: 30px 20px 20px;
-            border-bottom: 4px solid #148f77;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            text-align: center;
-            z-index: 10;
-        }
-
-        .header h1 {
+            background: var(--bg);
+            color: var(--text);
             margin: 0;
-            font-size: 34px;
+          }
+      
+          .header {
+            background-color: #1abc9c;
+            color: white;
+            padding: 20px 30px;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+          }
+          
+          
+          .logo-wrapper {
+            position: absolute;
+            left: 30px;
+          }
+          
+          .company-logo {
+            width: 80px;
+            height: auto;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          }
+          
+          .company-info {
+            text-align: center;
+          }
+          
+          .company-info h1 {
+            margin: 0;
+            font-size: 28px;
             letter-spacing: 1px;
-        }
-
-        .header p {
-            margin: 6px 0 0;
-            font-size: 16px;
+          }
+          
+          .company-info p {
+            margin: 5px 0 0;
+            font-size: 14px;
             font-style: italic;
-        }
+          }
+          
 
         .message-box {
             background-color: #ffffff;
@@ -56,8 +76,11 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
             max-width: 600px;
             width: 100%;
+            justify-content: center;
             animation: fadeInUp 0.8s ease-out;
             box-sizing: border-box;
+            margin-left:30%;
+            margin-top: 3%;
         }
 
         .message-box h2 {
@@ -160,9 +183,21 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ loan.lender.profile.company_name }}</h1>
-        <p>({{ loan.lender.profile.tagline }})</p>
+        <div class="logo-wrapper">
+          {% if loan.lender.profile.company_logo %}
+            <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+          {% else %}
+            <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
+          {% endif %}
+        </div>
+      
+        <div class="company-info">
+          <h1>{{ loan.lender.profile.company_name }}</h1>
+          <p>({{ loan.lender.profile.tagline }})</p>
+        </div>
       </div>
+
+      
     <div class="message-box">
         <h2>Loan Request Rejected</h2>
         <p>Thank you for your interest.</p>

@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
+
 class Borrower(models.Model):
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20, blank=True)
@@ -69,13 +71,38 @@ class LoanRequest(models.Model):
     submitted = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     interest = models.DecimalField(max_digits=5, decimal_places=1, default=5.0 )
-    image= models.ImageField(upload_to='loan_items_photos/',blank=True)
+    
     remark = models.CharField(max_length=500,blank=True)
 
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def save(self, *args, **kwargs):
+        creating = self.pk is None
+        if not creating:
+            old_instance = LoanRequest.objects.get(pk=self.pk)
+            if old_instance.status != self.status:
+                # Save status change history
+                LoanStatusHistory.objects.create(
+                    loan=self,
+                    status=self.status
+                )
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return f"Loan - {self.borrower.name} ({self.amount})"
+
+class LoanStatusHistory(models.Model):
+    loan = models.ForeignKey(LoanRequest, on_delete=models.CASCADE, related_name='status_history')
+    status = models.CharField(max_length=30, choices=LoanRequest.STATUS_CHOICES)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.loan.id} - {self.get_status_display()} @ {self.updated_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class LoanImage(models.Model):
+    loan = models.ForeignKey(LoanRequest, on_delete=models.CASCADE, related_name='loan_item_images')
+    image = models.ImageField(upload_to='loan_items_images/')    
 

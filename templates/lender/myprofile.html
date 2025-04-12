@@ -109,7 +109,7 @@
         <label for="name">Name</label>
         <input type="text" name="name" id="name" value="{% if profile.name %}{{ profile.name }}{% else %}{{ request.user.first_name }}{% endif %}" placeholder="Enter your full name" required>
     
-        
+         
         <label for="phone_number">Phone Number</label>
         <input type="text" name="phone_number" id="phone_number" value="{{ profile.phone }}" placeholder="e.g. +1234567890">
     

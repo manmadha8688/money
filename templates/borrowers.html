@@ -3,52 +3,151 @@
 {% block content %}
     <style>
         .borrowers-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            margin: 20px auto;
-            max-width: 1000px;
+            background: var(--white);
+            padding: var(--space-xl);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            margin: var(--space-xl) auto;
+            max-width: 1200px;
             overflow-x: auto;
         }
+
         .borrowers-container h2 {
             text-align: center;
-            margin-bottom: 20px;
-            color: #333;
+            margin-bottom: var(--space-xl);
+            color: var(--dark);
+            font-size: 1.75rem;
+            font-weight: 600;
+            position: relative;
+            padding-bottom: var(--space-md);
         }
+
+        .borrowers-container h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: var(--primary);
+            border-radius: var(--radius-sm);
+        }
+
         .borrowers-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: var(--space-lg);
         }
-        .borrowers-table th, .borrowers-table td {
-            padding: 12px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
+
         .borrowers-table th {
-            background: #1abc9c;
-            color: white;
+            background: var(--primary);
+            color: var(--white);
+            padding: var(--space-md);
+            font-weight: 500;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
-        .borrowers-table tr:nth-child(even) {
-            background: #f9f9f9;
+
+        .borrowers-table td {
+            padding: var(--space-md);
+            border-bottom: 1px solid var(--gray-200);
+            color: var(--gray-700);
         }
+
+        .borrowers-table tr:hover {
+            background: var(--gray-50);
+        }
+
+        .borrowers-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
         .action-btn {
-            padding: 5px 10px;
+            padding: var(--space-xs) var(--space-sm);
             border: none;
-            border-radius: 5px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
         }
+
+        .action-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
         .paid-total {
-            background: #2ecc71;
-            color: white;
+            background: var(--success);
+            color: var(--white);
         }
+
         .paid-interest {
-            background: #f39c12;
-            color: white;
+            background: var(--warning);
+            color: var(--white);
         }
+
+        .status-badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
         .status-pending {
-            color: #e67e22;
-            font-weight: bold;
+            background: var(--warning-light);
+            color: var(--warning-dark);
+        }
+
+        .status-completed {
+            background: var(--success-light);
+            color: var(--success-dark);
+        }
+
+        .status-overdue {
+            background: var(--danger-light);
+            color: var(--danger-dark);
+        }
+
+        .amount-cell {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+        }
+
+        .date-cell {
+            color: var(--gray-600);
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .borrowers-container {
+                padding: var(--space-md);
+                margin: var(--space-md);
+            }
+
+            .borrowers-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
         }
     </style>
     
@@ -73,34 +172,50 @@
             <tbody>
                 <tr>
                     <td>John Doe</td>
-                    <td>$5,000</td>
+                    <td class="amount-cell">$5,000</td>
                     <td>5%</td>
-                    <td>$250</td>
-                    <td>2025-03-01</td>
-                    <td>2025-09-01</td>
-                    <td>$5,250</td>
-                    <td>$2,500</td>
-                    <td>$2,750</td>
-                    <td class="status-pending">Pending</td>
+                    <td class="amount-cell">$250</td>
+                    <td class="date-cell">2025-03-01</td>
+                    <td class="date-cell">2025-09-01</td>
+                    <td class="amount-cell">$5,250</td>
+                    <td class="amount-cell">$2,500</td>
+                    <td class="amount-cell">$2,750</td>
+                    <td><span class="status-badge status-pending">Pending</span></td>
                     <td>
-                        <button class="action-btn paid-total">Paid Total</button>
-                        <button class="action-btn paid-interest">Paid Interest</button>
+                        <div class="action-buttons">
+                            <button class="action-btn paid-total">
+                                <span class="icon icon-check"></span>
+                                Paid Total
+                            </button>
+                            <button class="action-btn paid-interest">
+                                <span class="icon icon-money"></span>
+                                Paid Interest
+                            </button>
+                        </div>
                     </td>
                 </tr>
                 <tr>
                     <td>Jane Smith</td>
-                    <td>$3,000</td>
+                    <td class="amount-cell">$3,000</td>
                     <td>6%</td>
-                    <td>$180</td>
-                    <td>2025-02-15</td>
-                    <td>2025-08-15</td>
-                    <td>$3,180</td>
-                    <td>$1,500</td>
-                    <td>$1,680</td>
-                    <td class="status-pending">Pending</td>
+                    <td class="amount-cell">$180</td>
+                    <td class="date-cell">2025-02-15</td>
+                    <td class="date-cell">2025-08-15</td>
+                    <td class="amount-cell">$3,180</td>
+                    <td class="amount-cell">$1,500</td>
+                    <td class="amount-cell">$1,680</td>
+                    <td><span class="status-badge status-pending">Pending</span></td>
                     <td>
-                        <button class="action-btn paid-total">Paid Total</button>
-                        <button class="action-btn paid-interest">Paid Interest</button>
+                        <div class="action-buttons">
+                            <button class="action-btn paid-total">
+                                <span class="icon icon-check"></span>
+                                Paid Total
+                            </button>
+                            <button class="action-btn paid-interest">
+                                <span class="icon icon-money"></span>
+                                Paid Interest
+                            </button>
+                        </div>
                     </td>
                 </tr>
             </tbody>

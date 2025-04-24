@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    
+    <title>Loan Agreement</title>
+    <style>
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+            padding: 10px;
+            line-height: 1.6;
+            font-size: 14px;
+            color: #000;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            font-size: 22px;
+        }
+        h2 {
+            margin-top: 40px;
+            font-size: 16px;
+            text-decoration: underline;
+        }
+        p {
+            text-align: justify;
+            margin: 10px 0;
+        }
+        strong {
+            font-weight: bold;
+        }
+        
+        
+    </style>
+</head>
+<body>
+
+    <h1>Loan Agreement</h1>
+
+    <p>
+        This Loan Agreement is entered into on <strong>{{ agreement_date }}</strong>, between
+        <strong>{{ lender_name }}</strong> (“Lender”) and <strong>{{ borrower_name }}</strong> (“Borrower”).
+        The Lender agrees to provide a loan of <strong>{{ loan_amount }}</strong>/- Rupees only to the Borrower at an
+        interest amount of <strong>{{ interest_amount }}</strong> , starting from
+        <strong>{{ loan_start_date }}</strong> and ending on <strong>{{ loan_end_date }}</strong>.
+        The Borrower agrees to repay the loan in accordance with the agreed repayment schedule.
+        Both parties acknowledge and accept the terms and conditions
+        outlined below, and agree that this agreement is legally binding under the applicable laws of India.
+    </p>
+
+    <h2>Terms and Conditions</h2>
+
+    <ul>
+        <li>You must have 18 years of age or older.</li>
+        <li>You have understood these Terms with the company and you have clearly understood the terms and conditions of the Services.</li>
+        <li>You shall provide us any proof of identity we may request, and as may be specified by the Reserve Bank of India (“RBI”) in relation to any Customer Due Diligence or Know-Your-Customer processes, as may be applicable and shall not refuse to cooperate in an investigation or provide confirmation of your identity or any other information you provide to the company.</li>
+        <li>With all necessary documentation, only the loan will be provided.</li>
+        <li>You have to obeyed the legally binding contracts under the Indian Contract Act, 1872.</li>
+        <li>
+            <strong>Condition Regarding Enforcement of Security Interest under Section 13(4) of the SARFAESI Act, 2002:</strong><br>
+            The Borrower expressly acknowledges and agrees that, in the event of default in repayment of the secured debt or failure to comply with the terms of the loan agreement, the Secured Creditor shall be entitled to invoke its rights under Section 13(4) of the Securitisation and Reconstruction of Financial Assets and Enforcement of Security Interest Act, 2002 (SARFAESI Act). This includes, but is not limited to, the right to take possession of, manage, or sell the secured assets without the intervention of a court, in order to recover the outstanding dues.
+        </li>
+        <li>If interest remains unpaid for over two months, Section 13(4) of the SARFAESI Act, 2002 applies.</li>
+        <li>We are not responsible for your assets' damages or if it was in non-working conditions at the time of return.</li>
+        <li>These Terms, along with Company’s Privacy Policy, as amended and updated from time to time, constitute the entire agreement between the User(s) and company, superseding any prior written or oral contracts in relation to the same subject matter herein.</li>
+    </ul>
+
+</body>
+</html>

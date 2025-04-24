@@ -1,54 +1,59 @@
 {% extends 'base.html' %}
-
+{% load static%}
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Accepted List</title>
+    <title>Accepted Loans</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
         }
+
         .container {
-            max-width: 1100px;
-            margin: auto;
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            border-radius: 10px;
         }
+
         h2 {
             text-align: center;
-            margin-bottom: 30px;
             color: #2c3e50;
+            margin-bottom: 25px;
         }
+
         table {
-            width: 100%;
+            width: max-content;
             border-collapse: collapse;
             font-size: 14px;
         }
+        tbody tr:hover {
+            background-color: #d4dada;
+        }
+        
         thead {
             background-color: #ecf0f1;
         }
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        
         th, td {
             padding: 12px 15px;
             border: 1px solid #ccc;
             text-align: center;
         }
+
         tr:nth-child(even) {
             background-color: #f9f9f9;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            color: white;
-            background-color: #27ae60;
-            transition: background-color 0.3s ease;
-        }
-
-        .btn:hover {
-            background-color: #219150;
         }
 
         .badge {
@@ -63,113 +68,339 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }.btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            cursor: pointer;
+        }            
+
+        .btn {
+            padding: 6px 12px;
             font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
         }
 
-        
-        .btn-reject {
-            background-color: #e74c3c;
-            color: white;
+        .btn-payment { background: #27ae60; }
+        .btn-payment:hover { background: #219150; }
+
+        .btn-reject { background: #e74c3c; }
+        .btn-reject:hover { background: #c0392b; }
+
+        .btn-disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
         }
-        .btn-reject:hover{
-            background-color: #c0392b;
-        }
-        .btn-payment{
-            background-color: green;
-        }
-        .btn-payment:hover{
-            background-color: rgb(60, 244, 60);
-        }
-        .modal, .overlay {
+
+        /* Modal styling */
+        .overlay, .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
         }
+
         .overlay {
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 999;
         }
+
         .modal {
             z-index: 1000;
             background: white;
             width: 500px;
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px black;
+            top: 50%;
+            margin-top: 2%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            position: fixed;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
         }
+
+        .modal h3 {
+            margin-top: 0;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            margin: 10px 0;
+        }
+
+        .modal input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal img {
+            margin-top: 10px;
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        .btn-close {
+            background: #95a5a6;
+        }
+
+        .btn-close:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-done {
+            background-color: #2980b9;
+        }
+
+        .btn-done:hover {
+            background-color: #1c638f;
+        }
+        .close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: rgb(126, 13, 13);
+            cursor: pointer;
+        }
+        #modalContent{
+            margin-top: 10%;
+        }
+        #modalContent p{
+            margin-left: 10%;
+        }
+        .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .empty-box .icon {
+            font-size: 48px;
+            margin-bottom: 60px;
+            
+        }
+        
+        .empty-box h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .empty-box p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 4px 0;
+        }
+        .blink {
+            animation: blinkBorder 0.2s linear 3;
+            border-color: red !important;
+          }
+          
+          @keyframes blinkBorder {
+            0% { border-color: red; }
+            50% { border-color: #ccc; }
+            100% { border-color: red; }
+          }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 160px;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+        
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        .filter-sticky-wrapper {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #fdfcfc;
+            padding: 10px  390px;
+            border-bottom: 1px solid #ddd;
+            width: max-content;
+            margin-top: -100px;
+        }
+        
+        
+        .filter-bar {
+            min-width: 1200px; /* Match or exceed your table width */
+            background: #fcfdfd;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            margin-left: -390px;
+          }
+          
+        
     </style>
 </head>
 <body>
+
+    
+      
 <div class="container">
-    <h2>Accepted List</h2>
+
+    <div class="filter-sticky-wrapper">
+        <div class="filter-bar">
+        <form method="GET" action="{% url 'accepted-list'%}" class="filter-form">
+            <div class="filter-group">
+                <label for="borrower">Borrower Name:</label>
+                <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="token">Token ID:</label>
+                <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
+            </div>
+    
+            <div class="filter-group">
+                <label for="status">Status:</label>
+                <select name="status" id="status">
+                    <option value="">All</option>
+                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
+                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
+                </select>
+            </div>
+    
+            
+    
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-done">Filter</button>
+                <a href="." class="btn btn-close">Reset</a>
+            </div>
+        </form>
+    </div>
+    </div>
+    
+    <h2>Accepted Loans</h2>
 
     {% if loans %}
     <table>
         <thead>
             <tr>
-                <th>Borrower Name</th>
-                <th>Token Id</th>
-                <th>Contact</th>
+                <th>#</th>
+                <th>Accept on</th>
+                <th>Token ID</th>
+                <th>Borrower Details</th>
                 <th>Loan Item</th>
                 <th>Amount</th>
                 <th>Interest</th>
+                <th>Payment Plan</th>
                 <th>Start Date</th>
                 <th>Return Date</th>
                 <th>Referral</th>
                 <th>Status</th>
-                <th>Payment Action</th>
+                <th>Payment</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            {% for loan in loans %}
+        {% for loan in loans %}
             <tr>
-                <td>{{ loan.borrower.name }}</td>
-                <th style="color:blue;">{{loan.id}}</th>
-                <td>{{ loan.borrower.phone }}<br><br>
-                {{ loan.borrower.email|default:"" }}</td>
+                <td>{{ forloop.counter }}</td>
+                <td>{{loan.updated_at}}</td>
+                <td style="color:blue;">{{ loan.id }}</td>
+                <td>{{ loan.borrower.name }}<br>
+                    {{ loan.borrower.phone }}</td>
                 <td>{{ loan.loan_item }}</td>
                 <td style="color: green;">₹ {{ loan.amount }}</td>
-                <td style="color: rgb(239, 44, 44);">{{ loan.interest }}</td>
+                <td style="color: red;">{{ loan.interest_amount }}</td>
+                <td>{{loan.payment_plan}} <br>
+                     {{loan.instalment}}</td>
                 <td>{{ loan.taken_date }}</td>
                 <td>{{ loan.return_date }}</td>
-                <td>{{ loan.referral|default:"-" }}</td>
-        
+                <td style="color:rgb(104, 34, 224);">{{loan.referral|default:'-'}}</td>
                 <td class="status-col">
                     {% if loan.status == 'accepted' %}
-                        <span class="badge" style="background-color:#f39c12;">Under Process</span>
+                        <span class="badge" style="background-color:#f39c12;">Loan Under Confirmation</span>
                     {% elif loan.status == 'paymentprocess' %}
-                        <span class="badge" style="background-color:#3498db;">Payment In Progress</span>
+                        <span class="badge" style="background-color:#3498db;">Loan Confirmed</span>
                     {% else %}
                         <span class="badge">{{ loan.status }}</span>
                     {% endif %}
                 </td>
-        
                 <td>
                     {% if loan.status == 'paymentprocess' %}
-                    <button class="btn btn-payment" onclick="showPaymentModal({{ loan.id }})">Make Payment</button>
+                        <button class="btn btn-payment" onclick="showPaymentModal({{ loan.id }})">Make Payment</button>
+                        <form id="paymentForm-{{loan.id}}" method="POST" action="{% url 'paymentdone' loan.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="bank">
+                            <input type="hidden" name="utr">
+                            <input type="hidden" name="person">
+                        </form>    
                     {% else %}
-                        <button class="btn" style="background-color:#bdc3c7; cursor: not-allowed;" disabled>Make Payment</button>
+                        <button class="btn btn-disabled" disabled>Make Payment</button>
                     {% endif %}
                 </td>
-        
-                <td> 
-                    <span onclick="window.location.href='{% url 'reject-loan' loan.id %}'" class="btn btn-reject">Reject</span>
+                <td>
+                    <form id="rejectForm-{{loan.id}}" method="POST" action="{% url 'reject-loan' loan.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="remark">
+
+                    
+                    <button type="button" class="btn btn-reject" onclick="openRejectModal({{ loan.id }})">Reject</button>
+                </form>
                 </td>
+                
             </tr>
+
             {% if loan.payment %}
             <script id="payment-data-{{ loan.id }}" type="application/json">
-                {
+                {   
+                    "amount":"{{loan.amount}}",
                     "method": "{{ loan.payment.payment_method }}",
                     "cash_from": "{{ loan.payment.cash_from|default:'' }}",
                     "online_method": "{{ loan.payment.online_method|default:'' }}",
+                    "account_holder": "{{ loan.payment.account_holder|default:'' }}",
                     "upi_number": "{{ loan.payment.upi_number|default:'' }}",
                     "bank_name": "{{ loan.payment.bank_name|default:'' }}",
                     "account_number": "{{ loan.payment.account_number|default:'' }}",
@@ -177,46 +408,89 @@
                     "screenshot": "{% if loan.payment.upi_screenshot %}/media/{{ loan.payment.upi_screenshot }}{% endif %}"
                 }
             </script>
-            
-            {% endif%}
-            {% endfor %}
+            {% endif %}
+        {% endfor %}
         </tbody>
-        
     </table>
     {% else %}
-        <p class="text-center" style="color: gray;">No accepted loan requests.</p>
+    <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3>No Loan are Accepted </h3>
+
+    </div>
     {% endif %}
 </div>
+<!-- Reject Reason Modal -->
+<div class="overlay" id="rejectOverlay" onclick="closeRejectModal()"></div>
+<div class="modal" id="rejectModal">
+    <h3>Reject Loan</h3>
+    <p>Please provide a reason for rejecting this loan:</p>
+    <textarea id="rejectReason" rows="4" placeholder="Enter reason here..." style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></textarea>
+    <div class="modal-buttons">
+        <button class="btn btn-reject" onclick="submitReject()">Submit</button>
+        <button class="btn btn-close" onclick="closeRejectModal()">Cancel</button>
+    </div>
+</div>
 
-<!-- Payment Modal -->
+
+<!-- Modal -->
 <div class="overlay" id="overlay" onclick="closeModal()"></div>
 <div class="modal" id="paymentModal">
     <h3>Payment Details</h3>
     <div id="modalContent"></div>
-    <button onclick="closeModal()" class="btn btn-close">Close</button>
+    
+    <div id="paymentError" style="color: red; margin-top: 10px; text-align: center;"></div>
+
+    <div class="modal-buttons">
+        <button onclick="submitPayment()" class="btn btn-done">Payment Done</button>
+        <button onclick="closeModal()" class="btn btn-close">Close</button>
+    </div>
 </div>
 
 <script>
+  
     function showPaymentModal(loanId) {
-        const scriptTag = document.getElementById(`payment-data-${loanId}`);
-        if (!scriptTag) return;
+        
+        currentLoanId = loanId;
+        const dataTag = document.getElementById(`payment-data-${loanId}`);
+        if (!dataTag) return;
 
-        const payment = JSON.parse(scriptTag.textContent);
+        const payment = JSON.parse(dataTag.textContent);
         let content = `<p><strong>Method:</strong> ${payment.method}</p>`;
 
         if (payment.method === "cash") {
-            content += `<p><strong>Cash From:</strong> ${payment.cash_from}</p>`;
-        } else {
-            content += `<p><strong>Online Method:</strong> ${payment.online_method}</p>
-                        <p><strong>UPI Number:</strong> ${payment.upi_number}</p>
-                        <p><strong>Bank:</strong> ${payment.bank_name}</p>
-                        <p><strong>Account:</strong> ${payment.account_number}</p>
-                        <p><strong>IFSC:</strong> ${payment.ifsc}</p>`;
+            content += `<p><strong>Cash Want From:</strong> ${payment.cash_from}</p>
+            <p><label><strong>Cash Given By:</strong>
+                    <input type="text" name="person" placeholder="Enter name (if paid)" required>
+                </label></p>`;
+        } 
+        else if (payment.method === "online") {
+            content += `
+                <p><strong>Online Method :</strong> ${payment.online_method}</p>
+                <p><strong>Account Holder Name :</strong> ${payment.account_holder}</p>
+                <p><strong>UPI Number or ID:</strong> ${payment.upi_number}</p>
+                <p><label><strong>UTR Number :</strong>
+                    <input type="text" name="utr" placeholder="Enter UTR Number (if paid)" required>
+                </label></p>`;
             if (payment.screenshot) {
-                content += `<img src="${payment.screenshot}" style="max-width:100%;margin-top:10px;">`;
+                content += `<p><strong>Payment QR code:</strong><br>
+                    <img src="${payment.screenshot}" width="100px" height="100px" alt="UPI Screenshot">
+                </p>`;
             }
+        }else{
+            content += `
+            <p><strong>Bank Name :</strong> ${payment.bank_name}</p>
+            <p><strong>Account Holder Name :</strong> ${payment.account_holder}</p>
+                
+            <p><strong>Account Number :</strong> ${payment.account_number}</p>
+            <p><strong>IFSC :</strong> ${payment.ifsc}</p>
+            <label><strong>Transaction Ref Number :</strong>
+                <input type="text" name="bank" name="bank_ref" required placeholder="Enter Bank Transaction Reference">
+            </label>`;
         }
-
+        content +=`<p><label><strong>Enter Amount :</strong>
+                <input type="text" name="amount"  required placeholder="Enter Amount">
+            </label></p>`;
         document.getElementById('modalContent').innerHTML = content;
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('paymentModal').style.display = 'block';
@@ -226,7 +500,178 @@
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('paymentModal').style.display = 'none';
     }
-</script>
+
+    function submitPayment() {
+        const modal = document.getElementById("modalContent");
+
+        const errorBox = document.getElementById("paymentError");
+        errorBox.innerText = ""; 
+
+        const utrInput = modal.querySelector('input[name="utr"]');
+        const bankInput = modal.querySelector('input[name="bank"]');
+        const personInput = modal.querySelector('input[name="person"]');
+        
+        const amountInput = modal.querySelector('input[name="amount"]');
+    
+        let utr = utrInput ? utrInput.value.trim() : "";
+        let bank = bankInput ? bankInput.value.trim() : "";
+        let person = personInput ? personInput.value.trim() : "";
+        let amount = amountInput.value.trim();
+         // UTR validation (usually 12+ digits or alphanumeric like 'AXIS1234567890')
+    const utrRegex = /^[A-Za-z0-9]{12,22}$/;
+
+    // Bank Reference validation (often numeric or alphanumeric, similar to UTR)
+    const bankRegex = /^[A-Za-z0-9]{8,20}$/;
+
+    // Track validation state
+    let isValid = true;
+
+    // Reset all blink classes
+    [utrInput, bankInput, personInput].forEach(input => {
+        if (input) input.classList.remove("blink");
+    });
+
+
+    if (utrInput && utr) {
+        if (!utrRegex.test(utr)) {
+            utrInput.classList.add("blink");
+            showError("Please enter a valid UTR Number (min 12 alphanumeric characters).",utrInput);
+            isValid = false;
+        }
+    } else if (bankInput && bank) {
+        if (!bankRegex.test(bank)) {
+            bankInput.classList.add("blink");
+            showError("Please enter a valid Bank Reference Number (min 12 alphanumeric characters).",bankInput);
+            isValid = false;
+        }
+    } else if (personInput && person) {
+        if (!/^[A-Za-z ]{2,50}$/.test(person)) {
+            personInput.classList.add("blink");
+            showError("Please enter a valid name (only letters and spaces, 2-50 characters).",personInput);
+            
+            isValid = false;
+        }
+    }
+
+    
+    const dataTag = document.getElementById(`payment-data-${currentLoanId}`);
+if (!dataTag) return;
+
+const payment = JSON.parse(dataTag.textContent);
+
+if (amountInput && amount) {
+    const inputAmount = parseFloat(amount);
+    const expectedAmount = parseFloat(payment.amount);
+
+    if (inputAmount !== expectedAmount) {
+        amountInput.classList.add("blink");
+        showError(`Entered amount (₹${inputAmount}) must match the loan amount (₹${expectedAmount}).`, amountInput);
+        isValid = false;
+    }
+}
+
+
+    function showError(message,input) {
+        const errorBox = document.getElementById("paymentError");
+        errorBox.innerText = message;
+        setTimeout(() => {
+            errorBox.innerText = "";
+            input.focus();
+        }, 2000);
+    }
+    
+    
+    if (!isValid) {
+        setTimeout(() => {
+            [utrInput, bankInput, personInput].forEach(input => {
+                if (input) input.classList.remove("blink");
+            });
+        }, 1200);
+        return;
+    }
+    
+
+    
+        if (!utr && !bank && !person) {
+            // Blink all empty inputs
+            if (utrInput) utrInput.classList.add("blink");
+            if (bankInput) bankInput.classList.add("blink");
+            if (personInput) personInput.classList.add("blink");
+    
+            // Remove blink after 1 second
+            setTimeout(() => {
+                if (utrInput) utrInput.classList.remove("blink");
+                if (bankInput) bankInput.classList.remove("blink");
+                if (personInput) personInput.classList.remove("blink");
+            }, 1000);
+            return;
+        }
+        if (!amount) {
+            
+            if (amountInput) amountInput.classList.add("blink");
+    
+            // Remove blink after 1 second
+            setTimeout(() => {
+                
+                if (amountInput) amountInput.classList.remove("blink");
+            }, 1000);
+            return;
+        }
+    
+        // Populate the form fields
+        const form = document.getElementById(`paymentForm-${currentLoanId}`);
+        form.querySelector('input[name="utr"]').value = utr;
+        form.querySelector('input[name="bank"]').value = bank;
+        form.querySelector('input[name="person"]').value = person;
+        
+    
+        form.submit();
+    }
+    
+    
+        let currentLoanId = null;
+    
+        function openRejectModal(loanId) {
+            currentLoanId = loanId;
+            document.getElementById('rejectOverlay').style.display = 'block';
+            document.getElementById('rejectModal').style.display = 'block';
+        }
+    
+        function closeRejectModal() {
+            document.getElementById('rejectOverlay').style.display = 'none';
+            document.getElementById('rejectModal').style.display = 'none';
+            document.getElementById('rejectReason').value = '';
+            const input = document.getElementById("rejectReason");
+      input.classList.remove("blink");
+      input.value = "";
+        }
+    
+        
+    
+            
+            function submitReject() {
+                const input = document.getElementById("rejectReason");
+                const reason = input.value.trim();
+            
+                if (!reason) {
+                    input.classList.add("blink");
+                    setTimeout(() => input.classList.remove("blink"), 1000);
+                    return;
+                }
+            
+                // Set the reason in the correct form
+                const remarkInput = document.querySelector(`#rejectForm-${currentLoanId} input[name="remark"]`)
+                
+                remarkInput.value = reason;
+                
+                // Submit the correct form
+                document.getElementById(`rejectForm-${currentLoanId}`).submit();
+            }
+            
+        
+    </script>
+    
+<script src="{% static 'js/filter.js ' %}"></script>
 </body>
 </html>
 {% endblock %}

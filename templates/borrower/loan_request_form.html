@@ -150,21 +150,52 @@
         font-size: 28px;
       }
     }
+    span{
+      color: red;
+    }
+    .info-icon {
+      cursor: pointer;
+      display: inline-block;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    
+    .info-box {
+      position: absolute;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ddd;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      padding: 8px 12px;
+      border-radius: 8px;
+      z-index: 999;
+      font-size: 14px;
+      display: none;
+      max-width: 220px;
+    }
+    
+    label {
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="logo-wrapper">
-      {% if loan.lender.profile.company_logo %}
-        <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+      {% if loan.lender.active_user.company_logo %}
+        <img src="{{ loan.lender.active_user.company_logo.url }}" alt="Company Logo" class="company-logo">
       {% else %}
         <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
       {% endif %}
     </div>
     <div class="company-info">
-      <h1>{{ loan.lender.profile.company_name }}</h1>
-      <p>({{ loan.lender.profile.tagline }})</p>
+      <h1>{{ loan.lender.active_user.company_name }}</h1>
+      <p>({{ loan.lender.active_user.tagline }})</p>
     </div>
   </div>
 
@@ -175,22 +206,44 @@
     <input type="hidden" id="apply_date" name="apply_date" />
 
     <div class="form-group">
-      <label for="borrower_name">Your Name:</label>
+      <label for="borrower_name"><span>* </span>Your Name <span class="info-icon" id="borrower_name-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
       <input type="text" id="borrower_name" name="borrower_name" value="{{ loan.borrower.name|default:'' }}" required />
     </div>
 
     <div class="form-group">
-      <label for="phone">Phone Number:</label>
+      <label for="phone"> <span>* </span>Phone Number <span class="info-icon" id="phone-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
       <input type="text" id="phone" name="phone" minlength="10" maxlength="10" pattern="\d{10}" value="{{ loan.borrower.phone|default:'' }}" required />
     </div>
 
     <div class="form-group">
-      <label for="email">Email Address (Optional):</label>
+      <label for="email">Email Address <span class="info-icon" id="email-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span></label>
       <input type="email" id="email" name="email" value="{{ loan.borrower.email|default:'' }}" />
     </div>
 
     <div class="form-group">
-      <label for="loan_item">Loan Security Item:</label>
+      <label for="loan_item"><span>* </span>Loan Security Item <span class="info-icon" id="loan_item-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span></label>
       <input type="text" id="loan_item" name="loan_item" list="loan_items" placeholder="Select or type an item" value="{{ loan.loan_item|default:'' }}" required />
       <datalist id="loan_items">
         <option value="Mobile">
@@ -200,27 +253,73 @@
     </div>
 
     <div class="form-group">
-      <label for="amount">Loan Amount:</label>
+      <label for="amount"><span>* </span> Loan Amount <span class="info-icon" id="amount-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span></label>
       <input type="number" id="amount" name="amount" value="{{ loan.amount|default:'' }}" step="0.01" required />
     </div>
-
+    
     <div class="form-group">
-      <label for="taken_date">Loan Start Date:</label>
+      <label for="payment_plan"><span>* </span>Payment Plan <span class="info-icon" id="payment_plan-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
+      <select id="payment_plan" name="payment_plan" required>
+        <option value="" disabled selected>-- Select a plan --</option>
+        <option value="daily">100 Days Plan</option>
+        <option value="weekly">Weekly Plan</option>
+        <option value="monthly">Monthly Plan</option>
+
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="taken_date"><span>* </span>Loan Start Date <span class="info-icon" id="taken_date-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
       <input type="date" id="taken_date" name="taken_date" value="{{ loan.taken_date|date:'Y-m-d'|default:'' }}" required />
     </div>
 
     <div class="form-group">
-      <label for="return_date">Loan Return Date:</label>
-      <input type="date" id="return_date" name="return_date" value="{{ loan.return_date|date:'Y-m-d'|default:'' }}" required />
+      <label for="return_date"><span>* </span>Loan End Date <span class="info-icon" id="return_date-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
+      <input type="date" id="return_date" name="return_date" value="{{ loan.return_date|date:'Y-m-d'|default:'' }}" readonly />
     </div>
 
     <div class="form-group">
-      <label for="referral">Referral (Optional):</label>
+      <label for="referral">Referral <span class="info-icon" id="referral-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
       <input type="text" id="referral" name="referral" value="{{ loan.referral|default:'' }}" placeholder="Enter referral name" />
     </div>
 
     <div class="form-group">
-      <label id="photo-label" for="photos">Upload Photos (Optional):</label>
+      <label id="photo-label" for="photos">Upload Photos <span class="info-icon" id="photos-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
       <input type="file" id="photos" name="photos" accept="image/*" multiple />
       <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;"></div>
 
@@ -237,7 +336,13 @@
     </div>
 
     <div class="form-group">
-      <label for="notes">Reason for Loan:</label>
+      <label for="notes"><span>* </span>Reason for Loan <span class="info-icon" id="notes-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
+          <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
+          <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 .876-.252 1.036-.598l.088-.416c-.147.176-.357.252-.548.252-.267 0-.312-.176-.228-.58l.738-3.468c.194-.897-.105-1.319-.808-1.319-.545 0-.876.252-1.036.598l-.088.416.738-.287zM8 5.5a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1z"/>
+        </svg>
+      </span>
+    </label>
       <textarea id="notes" name="reason">{{ loan.reason|default_if_none:'' }}</textarea>
     </div>
 
@@ -339,7 +444,99 @@
       selectedFiles.forEach((file) => dataTransfer.items.add(file));
       input.files = dataTransfer.files;
     }
-  </script>
+      const paymentPlanSelect = document.getElementById("payment_plan");
+      const returnDateLabel = document.querySelector("label[for='return_date']");
+    
+      paymentPlanSelect.addEventListener("change", function () {
+        const plan = this.value;
+        takenDateInput.value = "";
+        
+    
+        returnDateInput.value = ""; // Clear previous value
+      });
+    
+      takenDateInput.addEventListener("change", function () {
+        const plan = paymentPlanSelect.value;
+        if (plan === "monthly") {
+          setDueDateMonthly();
+        } else if (plan === "weekly") {
+          setDueDateByDays(100);
+        } else {
+          setDueDateByDays(100); // Daily one-time with 100 days gap
+        }
+      });
+      
+      function setDueDateByDays(days) {
+        const start = new Date(takenDateInput.value);
+        if (isNaN(start)) return;
+      
+        const due = new Date(start);
+        due.setDate(due.getDate() + days); // Automatically excludes the taken date
+        returnDateInput.value = formatDate(due);
+      }
+      
+      function setDueDateMonthly() {
+        const start = new Date(takenDateInput.value);
+        if (isNaN(start)) return;
+      
+        const due = new Date(start);
+        due.setMonth(due.getMonth() + 1); // Moves to same date next month
+        returnDateInput.value = formatDate(due);
+      }
+      
+      function formatDate(date) {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      }
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        const fieldInfo = {
+          borrower_name: "Enter your full name.",
+          phone: "Provide a valid 10-digit mobile number of yours.",
+          email: "Enter your Email for updates.",
+          loan_item: "What valuable item are you giving as security for the loan?",
+  amount: "Enter the total amount of money you need.",
+  taken_date: "The date when you received or will receive the loan.",
+  payment_plan: `Choose how you plan to repay the loan:<br><br>
 
+• <strong>100 Days Plan:</strong> Repay the full amount day by day for 100 days.<br><br>
+
+• <strong>Weekly:</strong> Make one payment per week over 100 days (about 14 weeks).<br><br>
+
+• <strong>Monthly:</strong> Pay once a month. Interest is calculated only for one month, whether you repay Interets or Total amount.
+ `,
+  
+  return_date: "The date by which you plan to repay the full loan or Interest.",
+  referral: "Optional – Mention the person who referred you, if any.",
+  photos: "Upload related documents or images (e.g., ID proof, item photos).",
+  notes: "Reason for borrowing the money or any additional information."
+        };
+      
+        Object.entries(fieldInfo).forEach(([id, text]) => {
+          const input = document.getElementById(id);
+          if (input) {
+            const icon = document.getElementById(`${id}-icon`);
+            const infoBox = document.createElement("div");
+            infoBox.className = "info-box";
+            infoBox.innerHTML = text;
+      
+            icon.addEventListener("mouseenter", () => {
+              infoBox.style.display = "block";
+            });
+      
+            icon.addEventListener("mouseleave", () => {
+              infoBox.style.display = "none";
+            });
+      
+            icon.appendChild(infoBox);
+          }
+        });
+      });
+      
+    </script>
+    
+    
 </body>
 </html>

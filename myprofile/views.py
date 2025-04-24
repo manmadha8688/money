@@ -21,6 +21,7 @@ def myprofile(request):
             profile.email = request.POST.get('company_email', profile.email)
             profile.tagline = request.POST.get('tagline', profile.tagline)
             profile.bio = request.POST.get('bio', profile.bio)
+            profile.company_interest = request.POST.get('company_interest', profile.company_interest)
             profile.save()
             return redirect('myprofile')
 

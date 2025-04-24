@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static%}
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
@@ -192,7 +192,8 @@
         
         .empty-box .icon {
             font-size: 48px;
-            margin-bottom: 15px;
+            margin-bottom: 60px;
+            
         }
         
         .empty-box h3 {
@@ -263,7 +264,7 @@
             top: 0;
             z-index: 100;
             background: #fdfcfc;
-            padding: 10px  400px;
+            padding: 10px  390px;
             border-bottom: 1px solid #ddd;
             width: max-content;
             margin-top: -100px;
@@ -276,7 +277,7 @@
             padding: 10px;
             display: flex;
             gap: 10px;
-            margin-left: -400px;
+            margin-left: -390px;
           }
           
         
@@ -290,7 +291,7 @@
 
     <div class="filter-sticky-wrapper">
         <div class="filter-bar">
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="{% url 'accepted-list'%}" class="filter-form">
             <div class="filter-group">
                 <label for="borrower">Borrower Name:</label>
                 <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
@@ -310,15 +311,7 @@
                 </select>
             </div>
     
-            <div class="filter-group">
-                <label for="from_date">From:</label>
-                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
-            </div>
-    
-            <div class="filter-group">
-                <label for="to_date">To:</label>
-                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
-            </div>
+            
     
             <div class="filter-actions">
                 <button type="submit" class="btn btn-done">Filter</button>
@@ -337,18 +330,16 @@
                 <th>#</th>
                 <th>Accept on</th>
                 <th>Token ID</th>
-                <th>Borrower</th>
-                <th>Contact</th>
+                <th>Borrower Details</th>
                 <th>Loan Item</th>
                 <th>Amount</th>
                 <th>Interest</th>
+                <th>Payment Plan</th>
                 <th>Start Date</th>
-                <th>Return Date</th>
                 <th>Referral</th>
                 <th>Status</th>
                 <th>Payment</th>
                 <th>Action</th>
-                <th>Remark</th>
             </tr>
         </thead>
         <tbody>
@@ -357,13 +348,14 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{loan.updated_at}}</td>
                 <td style="color:blue;">{{ loan.id }}</td>
-                <td>{{ loan.borrower.name }}</td>
-                <td>{{ loan.borrower.phone }}<br>{{ loan.borrower.email }}</td>
+                <td>{{ loan.borrower.name }}<br>
+                    {{ loan.borrower.phone }}</td>
                 <td>{{ loan.loan_item }}</td>
                 <td style="color: green;">₹ {{ loan.amount }}</td>
-                <td style="color: red;">{{ loan.interest }}</td>
+                <td style="color: red;">{{ loan.interest_amount }}</td>
+                <td>{{loan.payment_plan}} <br>
+                     {{loan.instalment}}</td>
                 <td>{{ loan.taken_date }}</td>
-                <td>{{ loan.return_date }}</td>
                 <td style="color:rgb(104, 34, 224);">{{loan.referral|default:'-'}}</td>
                 <td class="status-col">
                     {% if loan.status == 'accepted' %}
@@ -396,9 +388,7 @@
                     <button type="button" class="btn btn-reject" onclick="openRejectModal({{ loan.id }})">Reject</button>
                 </form>
                 </td>
-                <td>
-                    {{loan.remark|default:'-'}}
-                </td>
+                
             </tr>
 
             {% if loan.payment %}
@@ -408,6 +398,7 @@
                     "method": "{{ loan.payment.payment_method }}",
                     "cash_from": "{{ loan.payment.cash_from|default:'' }}",
                     "online_method": "{{ loan.payment.online_method|default:'' }}",
+                    "account_holder": "{{ loan.payment.account_holder|default:'' }}",
                     "upi_number": "{{ loan.payment.upi_number|default:'' }}",
                     "bank_name": "{{ loan.payment.bank_name|default:'' }}",
                     "account_number": "{{ loan.payment.account_number|default:'' }}",
@@ -455,6 +446,7 @@
 </div>
 
 <script>
+  
     function showPaymentModal(loanId) {
         
         currentLoanId = loanId;
@@ -466,34 +458,37 @@
 
         if (payment.method === "cash") {
             content += `<p><strong>Cash Want From:</strong> ${payment.cash_from}</p>
-            <label><strong>Cash Given By:</strong>
+            <p><label><strong>Cash Given By:</strong>
                     <input type="text" name="person" placeholder="Enter name (if paid)" required>
-                </label>`;
+                </label></p>`;
         } 
         else if (payment.method === "online") {
             content += `
-                <p><strong>Online Method:</strong> ${payment.online_method}</p>
-                <p><strong>UPI Number:</strong> ${payment.upi_number}</p>
-                <p><label><strong>UTR Number:</strong>
+                <p><strong>Online Method :</strong> ${payment.online_method}</p>
+                <p><strong>Account Holder Name :</strong> ${payment.account_holder}</p>
+                <p><strong>UPI Number or ID:</strong> ${payment.upi_number}</p>
+                <p><label><strong>UTR Number :</strong>
                     <input type="text" name="utr" placeholder="Enter UTR Number (if paid)" required>
                 </label></p>`;
             if (payment.screenshot) {
-                content += `<p><strong>Screenshot:</strong><br>
-                    <img src="${payment.screenshot}" width="200px" height="200px" alt="UPI Screenshot">
+                content += `<p><strong>Payment QR code:</strong><br>
+                    <img src="${payment.screenshot}" width="100px" height="100px" alt="UPI Screenshot">
                 </p>`;
             }
         }else{
             content += `
-            <p><strong>Bank Name:</strong> ${payment.bank_name}</p>
-            <p><strong>Account Number:</strong> ${payment.account_number}</p>
-            <p><strong>IFSC:</strong> ${payment.ifsc}</p>
-            <label><strong>Transaction Ref Number:</strong>
+            <p><strong>Bank Name :</strong> ${payment.bank_name}</p>
+            <p><strong>Account Holder Name :</strong> ${payment.account_holder}</p>
+                
+            <p><strong>Account Number :</strong> ${payment.account_number}</p>
+            <p><strong>IFSC :</strong> ${payment.ifsc}</p>
+            <label><strong>Transaction Ref Number :</strong>
                 <input type="text" name="bank" name="bank_ref" required placeholder="Enter Bank Transaction Reference">
             </label>`;
         }
-        content +=`<br><label><strong>Enter Amount:</strong>
+        content +=`<p><label><strong>Enter Amount :</strong>
                 <input type="text" name="amount"  required placeholder="Enter Amount">
-            </label>`;
+            </label></p>`;
         document.getElementById('modalContent').innerHTML = content;
         document.getElementById('overlay').style.display = 'block';
         document.getElementById('paymentModal').style.display = 'block';
@@ -674,6 +669,7 @@ if (amountInput && amount) {
         
     </script>
     
+<script src="{% static 'js/filter.js ' %}"></script>
 </body>
 </html>
 {% endblock %}

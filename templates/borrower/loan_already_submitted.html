@@ -287,15 +287,15 @@
 <body>
   <div class="header">
     <div class="logo-wrapper">
-      {% if loan.lender.profile.company_logo %}
-        <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+      {% if loan.lender.active_user.company_logo %}
+        <img src="{{ loan.lender.active_user.company_logo.url }}" alt="Company Logo" class="company-logo">
       {% else %}
         <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
       {% endif %}
     </div>
     <div class="company-info">
-      <h1>{{ loan.lender.profile.company_name }}</h1>
-      <p>({{ loan.lender.profile.tagline }})</p>
+      <h1>{{ loan.lender.active_user.company_name }}</h1>
+      <p>({{ loan.lender.active_user.tagline }})</p>
     </div>
   </div>
 
@@ -329,13 +329,16 @@
           <td>Image Provided</td>
           <td>
             
-
+          {% if loan.loan_item_images.all%}
             {% for image in loan.loan_item_images.all %}
             <div class="image-wrapper" style="position: relative;display:inline-block;margin-right:10px;">
               <img src="{{ image.image.url }}"
                    style="width: 100px; height: 100px; object-fit: cover; border-radius: 8px; box-shadow: 0 0 4px rgba(0,0,0,0.2);" />
             </div>
-            {% endfor%}          
+            {% endfor%} 
+          {% else %}     
+            -
+          {% endif %}    
           </td>
         </tr>
       </table>

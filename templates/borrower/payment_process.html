@@ -183,25 +183,125 @@
           padding: 30px 20px;
       }
   }
+  #payment-edit-form {
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    max-width: 700px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', sans-serif;
+  }
   
+  #payment-edit-form .row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+  }
+  
+  #payment-edit-form .label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  #payment-edit-form input[type="text"],
+  #payment-edit-form select,
+  #payment-edit-form input[type="file"] {
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+    font-size: 15px;
+    background-color: #fff;
+  }
+  
+  #payment-edit-form input[type="text"]:focus,
+  #payment-edit-form select:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+  }
+  
+  #payment-edit-form input[type="file"] {
+    border: none;
+    background-color: transparent;
+    font-size: 14px;
+  }
+  
+  #payment-edit-form button[type="submit"],
+  #payment-edit-form button[type="button"] {
+    background-color: #4a90e2;
+    color: white;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    margin-right: 10px;
+    transition: background-color 0.3s ease;
+  }
+  
+  #payment-edit-form button[type="submit"]:hover,
+  #payment-edit-form button[type="button"]:hover {
+    background-color: #3a7bd5;
+  }
+  
+  #payment-edit-form button[type="button"] {
+    background-color: #ccc;
+    color: #333;
+  }
+  
+  #payment-edit-form button[type="button"]:hover {
+    background-color: #bbb;
+  }
+  #payment-edit-form {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  
+  #payment-edit-form.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .alert-error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+    font-weight: 500;
+    text-align: center;
+}
+
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="logo-wrapper">
-      {% if loan.lender.profile.company_logo %}
-        <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+      {% if loan.lender.active_user.company_logo %}
+        <img src="{{ loan.lender.active_user.company_logo.url }}" alt="Company Logo" class="company-logo">
       {% else %}
         <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
       {% endif %}
     </div>
-  
     <div class="company-info">
-      <h1>{{ loan.lender.profile.company_name }}</h1>
-      <p>({{ loan.lender.profile.tagline }})</p>
+      <h1>{{ loan.lender.active_user.company_name }}</h1>
+      <p>({{ loan.lender.active_user.tagline }})</p>
     </div>
   </div>
+  {% if messages %}
+  {% for message in messages %}
+  {% if message.tags == 'error' %}
+    <div class="alert-error">
+      {{ message }}
+    </div>
+    {% endif%}
+  {% endfor %}
+{% endif %}
 
   <div class="container">
     <h2>🟢 Payment Under Process</h2>
@@ -220,9 +320,16 @@
         <div class="row"><div class="label">Email</div><div class="value">{{ loan.borrower.email|default:"-" }}</div></div>
         <div class="row"><div class="label">Loan Item</div><div class="value">{{ loan.loan_item }}</div></div>
         <div class="row"><div class="label">Amount</div><div class="value" style="color: #13e948f3;">₹ {{ loan.amount }}</div></div>
-        <div class="row"><div class="label">Interest</div><div class="value" style="color: rgb(238, 9, 9);">{{ loan.interest }}</div></div>
+        <div class="row"><div class="label">Interest</div><div class="value" style="color: rgb(238, 9, 9);">{{ loan.interest_amount }}</div></div>
+        <div class="row"><div class="label">Payment Plan</div><div class="value">{{ loan.payment_plan|capfirst }}</div></div>
+      {%if loan.payment_paln == "daily"%}
+      <div class="row"><div class="label">Payment per Day</div><div class="value">{{ loan.instalment }}</div></div>
+      {%elif loan.payment_plan == "weekly"%}
+      <div class="row"><div class="label">Payment per Week</div><div class="value">{{ loan.instalment }}</div></div>
+      {%endif%}
+
         <div class="row"><div class="label">Start Date</div><div class="value">{{ loan.taken_date }}</div></div>
-        <div class="row"><div class="label">Return Date</div><div class="value">{{ loan.return_date }}</div></div>
+        <div class="row"><div class="label">End Date</div><div class="value">{{ loan.return_date }}</div></div>
         <div class="row"><div class="label">Reason</div><div class="value">{{ loan.reason|default:"-" }}</div></div>
         <div class="row"><div class="label">Referral</div><div class="value">{{ loan.referral|default:"-" }}</div></div>
         <div class="row"><div class="label">Token Id</div><div class="value">{{ loan.id }}</div></div>
@@ -233,32 +340,139 @@
     </div>
 
     
-    <div class="details-section" id="paymentDetails">
-        <div class="row"><div class="label">Payment Method</div><div class="value">{{ payment.payment_method|capfirst }}</div></div>
-        <div class="row"><div class="label">Given On</div><div class="value">{{ payment.created_at|date:"d M Y, H:i" }}</div></div>
-        
-        {% if payment.payment_method == 'cash' %}
-          <div class="row"><div class="label">Cash From</div><div class="value">{{ payment.cash_from }}</div></div>
-        
-        {% elif payment.payment_method == 'online' %}
-          <div class="row"><div class="label">Online Platform</div><div class="value">{{ payment.online_method|capfirst }}</div></div>
-        
-          {% if payment.online_method == 'bank' %}
-            <div class="row"><div class="label">Bank Name</div><div class="value">{{ payment.bank_name }}</div></div>
-            <div class="row"><div class="label">Account Number</div><div class="value">{{ payment.account_number }}</div></div>
-            <div class="row"><div class="label">IFSC Code</div><div class="value">{{ payment.ifsc }}</div></div>
-        
-          {% else %}
-            <div class="row"><div class="label">UPI/Phone</div><div class="value">{{ payment.upi_number }}</div></div>
-            {% if payment.upi_screenshot %}
-              <div class="row"><div class="label">Screenshot</div>
-                <div class="value"><a href="{{ payment.upi_screenshot.url }}" target="_blank">View Screenshot</a></div>
-              </div>
-            {% endif %}
-          {% endif %}
-        {% endif %}
-        
+    <!-- Payment Details Display -->
+<div class="details-section" id="paymentDetails">
+  <div class="row"><div class="label">Payment Method</div><div class="value">{{ payment.payment_method|capfirst }}</div></div>
+  <div class="row"><div class="label">Given On</div><div class="value">{{ payment.created_at|date:"d M Y, H:i" }}</div></div>
+
+  {% if payment.payment_method == 'cash' %}
+    <div class="row"><div class="label">Cash From</div><div class="value">{{ payment.cash_from }}</div></div>
+
+  {% elif payment.payment_method == 'online' %}
+    <div class="row"><div class="label">Online Platform</div><div class="value">{{ payment.online_method|capfirst }}</div></div>
+
+    {% if payment.online_method == 'bank' %}
+      <div class="row"><div class="label">Account Holder Name</div><div class="value">{{ payment.account_holder }}</div></div>
+      <div class="row"><div class="label">Bank Name</div><div class="value">{{ payment.bank_name }}</div></div>
+      <div class="row"><div class="label">Account Number</div><div class="value">{{ payment.account_number }}</div></div>
+      <div class="row"><div class="label">IFSC Code</div><div class="value">{{ payment.ifsc }}</div></div>
+    {% else %}
+      <div class="row"><div class="label">Account Holder Name</div><div class="value">{{ payment.account_holder }}</div></div>
+      <div class="row"><div class="label">UPI/Phone</div><div class="value">{{ payment.upi_number }}</div></div>
+      {% if payment.upi_screenshot %}
+        <div class="row"><div class="label">Screenshot</div><div class="value"><a href="{{ payment.upi_screenshot.url }}" target="_blank">View Payment QR code</a></div></div>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+  <button class="toggle-btn" onclick="enablePaymentEdit()">Edit Payment</button>
+
+</div>
+
+<!-- Payment Edit Form (Initially Hidden) -->
+<form id="payment-edit-form" onsubmit="return validatePaymentForm()" style="display: none; margin-top: 20px;" method="POST" action="" enctype="multipart/form-data">
+  {% csrf_token %}
+  
+  <div class="row">
+    <label class="label">Payment Method</label>
+    <select name="payment_method" id="payment-method" onchange="handlePaymentMethod()" required>
+      <option value="" disabled selected >-- Select --</option>
+      <option value="cash" {% if payment.payment_method == 'cash' %}selected{% endif %}>Cash</option>
+      <option value="online" {% if payment.payment_method == 'online' %}selected{% endif %}>Online</option>
+    </select>
+  </div>
+
+  <div id="cash-details" style="display: none;">
+    <div class="row">
+      <label class="label">Cash From</label>
+      <input type="text" name="cash_from" value="{{ payment.cash_from|default:'' }}">
     </div>
+  </div>
+
+  <div id="online-method" style="display: none;">
+    <div class="row">
+      <label class="label">Online Platform</label>
+      <select name="online_method" id="online-method-select" onchange="handleOnlineMethod()">
+        <option value="" disabled  selected>-- Choose --</option>
+            <option value="phonepay">Phone Pay</option>
+            <option value="googlepay">Google Pay</option>
+            <option value="paytm">Paytm</option>
+            <option value="bank">Bank Account</option>
+          </select>
+    </div>
+
+    <div class="row">
+      <label class="label">Account Holder Name</label>
+      <input type="text" name="account_holder" value="{{ payment.account_holder|default:'' }}">
+    </div>
+
+    <div id="upi-section" style="display: none;">
+      <div class="row">
+        <label class="label">UPI/Phone</label>
+        <input type="text" name="upi_number" value="{{ payment.upi_number|default:'' }}">
+      </div>
+      <div class="row">
+        <label class="label">Screenshot</label>
+        <input type="file" name="upi_screenshot">
+      </div>
+    </div>
+
+    <div id="bank-section" style="display: none;">
+      <div class="row">
+        <label class="label">Bank Name</label>
+        <input type="text" name="bank_name" value="{{ payment.bank_name|default:'' }}">
+      </div>
+      <div class="row">
+        <label class="label">Account Number</label>
+        <input type="text" name="account_number" value="{{ payment.account_number|default:'' }}">
+      </div>
+      <div class="row">
+        <label class="label">IFSC</label>
+        <input type="text" name="ifsc" value="{{ payment.ifsc|default:'' }}">
+      </div>
+    </div>
+  </div>
+
+  <button class="toggle-btn" type="submit">Save</button>
+  <button class="toggle-btn" type="button" onclick="cancelEdit()">Cancel</button>
+</form>
+
+<script>
+  function enablePaymentEdit() {
+    const form = document.getElementById('payment-edit-form');
+    document.getElementById('paymentDetails').style.display = 'none';
+    form.style.display = 'block';
+    setTimeout(() => form.classList.add('show'), 10);  // Add animation class
+    handlePaymentMethod();
+  }
+  
+  function cancelEdit() {
+    const form = document.getElementById('payment-edit-form');
+    document.getElementById('paymentDetails').style.display = 'block';
+    form.classList.remove('show');
+    setTimeout(() => {
+      form.style.display = 'none';
+    }, 300);  // Wait for animation to complete
+  }
+  
+  
+  function handlePaymentMethod() {
+    const method = document.getElementById('payment-method').value;
+    document.getElementById('cash-details').style.display = method === 'cash' ? 'block' : 'none';
+    document.getElementById('online-method').style.display = method === 'online' ? 'block' : 'none';
+    if (method === 'online') {
+          
+    handleOnlineMethod();
+    }
+  }
+  
+  function handleOnlineMethod() {
+    const method = document.getElementById('online-method-select').value;
+    document.getElementById('upi-section').style.display = ["phonepay", "googlepay", "paytm"].includes(method) ? 'block' : 'none';
+    document.getElementById('bank-section').style.display = method === 'bank' ? 'block' : 'none';
+  }
+  
+</script>
+
        
     <div class="loan-details" id="contact-details">
       <p><span>Lender Name</span> {{ loan.lender.profile.name }}</p>
@@ -306,7 +520,96 @@
         button.innerText = 'Lender Contact Details';
       }
     }
-  </script>
+
+      function validatePaymentForm() {
+        const paymentMethod = document.getElementById("payment-method").value;
+    
+        if (!paymentMethod) {
+          alert("Please select a payment method.");
+          return false;
+        }
+    
+        // Name regex: letters, spaces, 2 to 50 characters
+        const nameRegex = /^[A-Za-z\s]{2,50}$/;
+    
+        if (paymentMethod === "cash") {
+          const cashFrom = document.querySelector("input[name='cash_from']").value.trim();
+          if (!cashFrom || !nameRegex.test(cashFrom)) {
+            alert("Please enter a valid name for who gave the cash.");
+            return false;
+          }
+        }
+    
+        else if (paymentMethod === "online") {
+          const onlineMethod = document.getElementById("online-method-select").value;
+          const accountHolder = document.querySelector("input[name='account_holder']").value.trim();
+    
+          if (!onlineMethod) {
+            alert("Please choose an online payment method.");
+            return false;
+          }
+    
+          if (!accountHolder || !nameRegex.test(accountHolder)) {
+            alert("Please enter a valid account holder name (only letters & spaces).");
+            return false;
+          }
+    
+          if (onlineMethod === "bank") {
+            const bankName = document.querySelector("input[name='bank_name']").value.trim();
+            const accountNumber = document.querySelector("input[name='account_number']").value.trim();
+            const ifsc = document.querySelector("input[name='ifsc']").value.trim();
+    
+            const bankNameRegex = /^[A-Za-z\s]{2,100}$/;
+            const accountNumberRegex = /^\d{9,18}$/;
+            const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    
+            if (!bankName || !bankNameRegex.test(bankName)) {
+              alert("Please enter a valid bank name.");
+              return false;
+            }
+    
+            if (!accountNumber || !accountNumberRegex.test(accountNumber)) {
+              alert("Please enter a valid account number (9-18 digits).");
+              return false;
+            }
+    
+            if (!ifsc || !ifscRegex.test(ifsc)) {
+              alert("Please enter a valid IFSC code (e.g., HDFC0001234).");
+              return false;
+            }
+          } else {
+            const upi = document.querySelector("input[name='upi_number']").value.trim();
+
+// Phone number regex (10 digits)
+const phoneRegex = /^\d{10}$/;
+
+// UPI ID regex (e.g., name@bank)
+const upiRegex = /^([\w.-]+)@(\w+)$/;
+
+if (!upi) {
+  alert("Please enter a UPI ID or phone number.");
+  return false;
+}
+
+if (upi.length <= 10) {
+  if (!phoneRegex.test(upi)) {
+    alert("Please enter a valid 10-digit phone number.");
+    return false;
+  }
+} else {
+  if (!upiRegex.test(upi)) {
+    alert("Please enter a valid UPI ID (e.g., yourname@bank).");
+    return false;
+  }
+}
+
+          }
+        }
+    
+        return true;
+      }
+    </script>
+    
 
 </body>
 </html>

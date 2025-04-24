@@ -1,11 +1,36 @@
 {% extends 'base.html' %}
 
+{% load static%}
 {% block content %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Loan Status History Table</title>
     <style>
+        .btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .btn-close {
+            background: #95a5a6;
+        }
+
+        .btn-close:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-done {
+            background-color: #2980b9;
+        }
+
+        .btn-done:hover {
+            background-color: #1c638f;
+        }
         body {
             font-family: Arial, sans-serif;
         }
@@ -96,7 +121,7 @@
 <body>
     <div class="filter-sticky-wrapper">
         <div class="filter-bar">
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="{% url 'loan-status-records'%}" class="filter-form">
             <div class="filter-group">
                 <label for="borrower">Borrower Name:</label>
                 <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
@@ -111,24 +136,17 @@
                 <label for="status">Status:</label>
                 <select name="status" id="status">
                     <option value="">All</option>
-                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
-                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
+                    <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    <option value="rejected" {% if request.GET.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="paymentreceived" {% if request.GET.status == 'paymentreceived' %}selected{% endif %}>Active Loans</option>
                 </select>
             </div>
     
-            <div class="filter-group">
-                <label for="from_date">From:</label>
-                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
-            </div>
-    
-            <div class="filter-group">
-                <label for="to_date">To:</label>
-                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
-            </div>
+            
     
             <div class="filter-actions">
                 <button type="submit" class="btn btn-done">Filter</button>
-                <a href="." class="btn btn-close">Reset</a>
+                <a href="{% url 'loan-status-records'%}" class="btn btn-close">Reset</a>
             </div>
         </form>
     </div>
@@ -174,6 +192,8 @@
 
         </tbody>
     </table>
+    
+<script src="{% static 'js/filter.js ' %}"></script>
 </body>
 </html>
 {%endblock%}

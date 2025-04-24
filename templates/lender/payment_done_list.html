@@ -2,6 +2,7 @@
 
 {% load custom_tag %}
 
+{% load static%}
 {% block content %}
 
 
@@ -12,6 +13,30 @@
     <meta charset="UTF-8">
     <title>Payment Verification</title> 
     <style>
+        .btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .btn-close {
+            background: #95a5a6;
+        }
+
+        .btn-close:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-done {
+            background-color: #2980b9;
+        }
+
+        .btn-done:hover {
+            background-color: #1c638f;
+        }
         body {
             font-family: 'Segoe UI', sans-serif;
             margin: 0;
@@ -113,7 +138,7 @@
 
         .empty-box .icon {
             font-size: 48px;
-            margin-bottom: 15px;
+            margin-bottom: 15%;
         }
 
         .empty-box h3 {
@@ -156,7 +181,7 @@
             top: 0;
             z-index: 100;
             background: #fffefe;
-            padding: 10px  0;
+            padding: 10px  180px;
             border-bottom: 1px solid #ddd;
             width: max-content;
             margin-top: -100px;
@@ -169,6 +194,7 @@
             padding: 10px;
             display: flex;
             gap: 10px;
+            margin-left: -180px;
           }
           
     </style>
@@ -177,7 +203,7 @@
 <div class="container">
     <div class="filter-sticky-wrapper">
         <div class="filter-bar">
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="{% url 'payment-done-list'%}" class="filter-form">
             <div class="filter-group">
                 <label for="borrower">Borrower Name:</label>
                 <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
@@ -192,20 +218,12 @@
                 <label for="status">Status:</label>
                 <select name="status" id="status">
                     <option value="">All</option>
-                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
-                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
+                    <option value="paymentdone" {% if request.GET.status == 'paymentdone' %}selected{% endif %}>Payment Under Confirmation</option>
+                    <option value="paymentnotreceived" {% if request.GET.status == 'paymentnotreceived' %}selected{% endif %}>Payment not received</option>
                 </select>
             </div>
     
-            <div class="filter-group">
-                <label for="from_date">From:</label>
-                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
-            </div>
-    
-            <div class="filter-group">
-                <label for="to_date">To:</label>
-                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
-            </div>
+            
     
             <div class="filter-actions">
                 <button type="submit" class="btn btn-done">Filter</button>
@@ -227,8 +245,6 @@
                 <th>Amount</th>
                 <th>Interest</th>
                 <th>Start Date</th>
-                <th>Return Date</th>
-                
                 <th>Referral</th>
                 <th>Status</th>
                 <th>Payment Details provided</th>
@@ -244,12 +260,11 @@
 
                 <td class="highlight-id">{{ loan.id }}</td>
                 <td>{{ loan.borrower.name }}<br>
-                {{ loan.borrower.phone }}<br>{{ loan.borrower.email|default:"" }}</td>
+                {{ loan.borrower.phone }}</td>
                 <td>{{ loan.loan_item }}</td>
                 <td class="highlight-amount">₹{{ loan.amount }}</td>
-                <td class="highlight-interest">{{ loan.interest }}%</td>
+                <td class="highlight-interest">₹{{ loan.interest_amount }}</td>
                 <td>{{ loan.taken_date }}</td>
-                <td>{{ loan.return_date }}</td>
                 <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
                 <td>
                     {% if loan.status == "paymentdone"%}
@@ -322,5 +337,7 @@
     {% endif %}
 </div>
 </body>
+
+<script src="{% static 'js/filter.js ' %}"></script>
 </html>
 {% endblock %}

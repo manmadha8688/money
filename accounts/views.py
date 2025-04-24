@@ -34,11 +34,15 @@ def login_view(request):
     if request.method == "POST":
         username = request.POST['username']
         password = request.POST['password']
+        remember_me = request.POST.get('remember', False)
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
+            if not remember_me:
+                # Set session to expire when browser is closed
+                request.session.set_expiry(0)
             messages.success(request, "Login successful!")
             return redirect("dashboard")  # Redirect to dashboard after login
         else:

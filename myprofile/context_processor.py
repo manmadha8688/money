@@ -3,7 +3,7 @@ from .models import Profile
 def user_profile(request):
     if request.user.is_authenticated:
         try:
-            profile = Profile.objects.get(user=request.user)
+            profile = request.user.active_user
         except Profile.DoesNotExist:
             profile = None
     else:

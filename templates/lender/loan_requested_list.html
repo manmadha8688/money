@@ -1,12 +1,37 @@
 {% extends 'base.html' %}
-
+{% load static%}
 {% block content %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Loan Requests</title>
     <style>
+        .btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .btn-close {
+            background: #95a5a6;
+        }
+
+        .btn-close:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-done {
+            background-color: #2980b9;
+        }
+
+        .btn-done:hover {
+            background-color: #1c638f;
+        }
         body {
             font-family: Arial, sans-serif;
         }
@@ -18,7 +43,7 @@
         h2 {
             text-align: center;
             margin-bottom:20px;
-            margin-top: 50px;
+            margin-top: 70px;
         }
         table {
             width: 100%;
@@ -74,7 +99,7 @@
             box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4);
         }
         .editable-input {
-            width: 60px;
+            width: 70px;
             padding: 4px;
             border: none;
             border-radius: 4px;
@@ -104,23 +129,32 @@
             max-width: 500px;
             margin: 60px auto;
             animation: fadeIn 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
         }
         
         .empty-box .icon {
             font-size: 48px;
-            margin-bottom: 15px;
+            margin: 0;
+            line-height: 1;
+            display: block;
+            margin-bottom: 50px;
         }
         
         .empty-box h3 {
             font-size: 22px;
-            margin-bottom: 10px;
+            margin: 0;
             color: #2c3e50;
+            line-height: 1.2;
         }
         
         .empty-box p {
             font-size: 14px;
             color: #7f8c8d;
-            margin: 4px 0;
+            margin: 0;
+            line-height: 1.4;
         }
         
         @keyframes fadeIn {
@@ -192,7 +226,7 @@
                 top: 0;
                 z-index: 100;
                 background: #fffeff;
-                padding: 10px  400px;
+                padding: 10px  60px;
                 border-bottom: 1px solid #ddd;
                 width: max-content;
                 margin-top: -100px;
@@ -205,7 +239,7 @@
                 padding: 10px;
                 display: flex;
                 gap: 10px;
-                margin-left: -400px;
+                margin-left: -60px;
               }
               
           
@@ -214,11 +248,10 @@
 </head>
 <body>
     
-    {% if loan_requests %}
-<div class="container">
+    
     <div class="filter-sticky-wrapper">
         <div class="filter-bar">
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="{% url 'loan-request-list'%}" class="filter-form">
             <div class="filter-group">
                 <label for="borrower">Borrower Name:</label>
                 <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
@@ -229,24 +262,9 @@
                 <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
             </div>
     
-            <div class="filter-group">
-                <label for="status">Status:</label>
-                <select name="status" id="status">
-                    <option value="">All</option>
-                    <option value="accepted" {% if request.GET.status == 'accepted' %}selected{% endif %}>Under Confirmation</option>
-                    <option value="paymentprocess" {% if request.GET.status == 'paymentprocess' %}selected{% endif %}>Confirmed</option>
-                </select>
-            </div>
+            
     
-            <div class="filter-group">
-                <label for="from_date">From:</label>
-                <input type="date" name="from_date" id="from_date" value="{{ request.GET.from_date|default:'' }}">
-            </div>
-    
-            <div class="filter-group">
-                <label for="to_date">To:</label>
-                <input type="date" name="to_date" id="to_date" value="{{ request.GET.to_date|default:'' }}">
-            </div>
+            
     
             <div class="filter-actions">
                 <button type="submit" class="btn btn-done">Filter</button>
@@ -257,6 +275,8 @@
     </div>
     <h2>Loan Requests Received</h2>
     
+    {% if loan_requests %}
+<div class="container">
 
 
         <table>
@@ -265,14 +285,13 @@
                     <th>#</th>
                     <th>Apply Date</th>
                     <th>Token ID</th>
-                    <th>Borrower Name</th>
-                    <th>Contact</th>
+                    <th>Borrower Details</th>
                     <th>Loan Item</th>
                     <th>Images</th>
                     <th>Amount</th>
                     <th>Interest</th>
+                    <th>Payment plan</th>
                     <th>Loan Start Date</th>
-                    <th>Loan Return Date</th>
                     <th>Reason</th>
                     <th>Referral</th>
                     
@@ -287,9 +306,8 @@
                 <tr><td>{{ forloop.counter }}</td>
                     <td>{{ loan.apply_date }}</td>
                     <td class="highlight-id">{{ loan.id }}</td>
-                    <td>{{ loan.borrower.name }}</td>
-                    <td>{{ loan.borrower.phone }}<br><br>
-                    {{ loan.borrower.email|default:"" }}</td>
+                    <td>{{ loan.borrower.name }} <br>
+                    {{ loan.borrower.phone }}</td>
                     <td>{{ loan.loan_item }}</td>
                     <td>
                         {% if loan.loan_item_images.all %}
@@ -299,11 +317,25 @@
                         {% endif %}
                       </td>
                     
-                    <td><input type="number" name="amount" value="{{ loan.amount }}" class="editable-input highlight-amount"></td>
-                    <td><input type="number" name="interest" value="{{ loan.interest }}" class="editable-input highlight-interest"></td>
+                      <td>
+                        <input type="number" name="amount" value="{{ loan.amount }}" class="editable-input highlight-amount" id="amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
+                    </td>
+                    <td>
+                        <input type="number" name="interest" value="{{ loan.interest }}" class="editable-input highlight-interest" id="interest_{{ loan.id }}" data-loan-id="{{ loan.id }}">
+                        <br><br>
+                        <input type="number" name="interest_amount" value="{{ loan.interest_amount }}" class="editable-input highlight-interest" id="interest_amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
+                    </td>
+
+                    <td>{{loan.payment_plan}}<br><br>
+
+                        <div id="instalment_{{loan.id}}"></div>
+                        <input type="hidden" name="installment" id="installment-{{ loan.id }}">
+
+                        
+                    <input type="hidden" id="payment_plan_{{ loan.id }}" value="{{ loan.payment_plan }}">
+                    </td>
                     <td><input type="date" name="taken_date" value="{{ loan.taken_date|date:'Y-m-d' }}" class="editable-input"></td>
-                    <td><input type="date" name="return_date" value="{{ loan.return_date|date:'Y-m-d' }}" class="editable-input"></td>
-        
+                    
                     <td>{{ loan.reason|default:"-" }}</td>
                     <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
                     <td contenteditable="true"
@@ -363,8 +395,74 @@ style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; he
 </div>
 
 </div>
-
+<script src="{% static 'js/filter.js ' %}"></script>
 <script>
+
+    // Get unique loan IDs from inputs with data-loan-id
+const uniqueLoanIds = new Set();
+
+document.querySelectorAll('.editable-input').forEach(function(input) {
+    const loanId = input.dataset.loanId;
+    if (loanId) {
+        uniqueLoanIds.add(loanId);
+    }
+});
+
+// Now calculate interest for each unique loanId once
+uniqueLoanIds.forEach(function(loanId) {
+    calculateInterest(loanId);
+});
+
+function calculateInterest(loanId, changedField = null) {
+    const amountEl = document.getElementById('amount_' + loanId);
+    const interestRateEl = document.getElementById('interest_' + loanId);
+    const interestAmountEl = document.getElementById('interest_amount_' + loanId);
+    const paymentPlan = document.getElementById('payment_plan_' + loanId).value;
+    const instalmentEl = document.getElementById('instalment_' + loanId);
+
+    const amount = parseFloat(amountEl.value);
+    const interestRate = parseFloat(interestRateEl.value);
+    const interestAmount = parseFloat(interestAmountEl.value);
+
+    let months = (paymentPlan === 'monthly') ? 1 : 3.5;
+
+    let finalInterestAmount = interestAmount;
+    if (changedField !== 'interest_amount') {
+        if (!isNaN(amount) && !isNaN(interestRate)) {
+            finalInterestAmount = (amount * interestRate / 100) * months;
+            interestAmountEl.value = finalInterestAmount.toFixed(2);
+        } else {
+            return;
+        }
+    }
+
+    // Calculate instalment only if all necessary values are available
+    if (!isNaN(amount) && !isNaN(finalInterestAmount)) {
+        let instalment = 0;
+        if (paymentPlan === 'weekly') {
+            instalment = Math.round((amount + finalInterestAmount) / 14);
+        } else if (paymentPlan === 'daily') {
+            instalment = Math.round((amount + finalInterestAmount) / 100);
+        }
+
+        if (instalment) {
+            instalmentEl.innerText = instalment;
+        }
+    }
+}
+
+    
+    
+    document.querySelectorAll('.editable-input').forEach(function(input) {
+        input.addEventListener('input', function() {
+            const loanId = input.dataset.loanId;
+            const fieldName = input.getAttribute('name');
+            calculateInterest(loanId, fieldName);
+        });
+    });
+    
+
+    
     function submitLoanAction(loanId, action) {
         const form = document.getElementById(`loan-form-${loanId}`);
         const remarkCell = document.getElementById(`remark-${loanId}`);
@@ -380,8 +478,15 @@ style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; he
         // Clear previous hidd
         const remarkInput = document.getElementById(`hidden-remark-${loanId}`);
         const actionInput = document.getElementById(`hidden-action-${loanId}`);
+        const installmentInput = document.getElementById(`installment-${loanId}`);
+        const installmentDisplay = document.getElementById(`instalment_${loanId}`);
+
+
         remarkInput.value = remarkText;
         actionInput.value = action;
+        if (installmentInput && installmentDisplay) {
+            installmentInput.value = installmentDisplay.innerText.trim();
+        }
         // Submit the form
         form.submit();
       }

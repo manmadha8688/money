@@ -16,5 +16,5 @@ urlpatterns = [
     path('paymentreceived/<int:loan_id>/',views.paymentreceived,name="paymentreceived"),
     path('loan-status-records',views.loan_status_records,name="loan-status-records"),
     path('delete_loan_item_image/<int:image_id>/',views.delete_loan_item_image,name="delete_loan_item_image"),
-
-]
+    path('generate-loan-agreement/<int:loan_id>', views.generate_pdf, name='generate-loan-agreement'),
+] 

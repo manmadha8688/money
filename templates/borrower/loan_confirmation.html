@@ -146,15 +146,18 @@
       transition: background 0.3s ease;
     }
 
+    .proceed-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  
     .proceed-btn {
-      background-color: #3498db;
+      background-color: #007bff;
       color: white;
-      margin-bottom: 50px;
+      cursor: not-allowed; /* Start with "not-allowed" cursor */
     }
-
-    .proceed-btn:hover {
-      background-color: #2c80b4;
-    }
+  
+    
 
     .cancel-btn {
       background-color: #e74c3c;
@@ -372,24 +375,71 @@
           width: 100px;
       }
   }
+  .note1{
+    margin: 30px 0 10px 10%;
+  }
+  .form-check{
+    margin: 30px 0 10px 20%;
+    font-size: 18px;
+  }
+  .form-check-input {
+    width: 20px;
+    height: 20px;
+  }
+
+   .form-check-label {
+    font-size: 18px;
+  }
+  .edit-btn-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 500%;
+  }
+
+  .edit-message {
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 110%;
+    transform: translateY(-50%);
+    background-color: #f0f0f0;
+    color: #232323;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    font-size: 18px;
+    width: fit-content;         /* let it adjust based on content */
+    max-width: 90vw; 
+    white-space: normal; /* allow wrapping */
+    word-wrap: break-word; /* breaks long words */
+    overflow-wrap: break-word; /* ensures wrapping */
+    
+  }
+
+  .edit-btn-wrapper:hover .edit-message {
+    display: block;
+    width: 500%;
+  }
   </style>
 </head>
 <body>
 
   <div class="header">
     <div class="logo-wrapper">
-      {% if loan.lender.profile.company_logo %}
-        <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
+      {% if loan.lender.active_user.company_logo %}
+        <img src="{{ loan.lender.active_user.company_logo.url }}" alt="Company Logo" class="company-logo">
       {% else %}
         <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
       {% endif %}
     </div>
-  
     <div class="company-info">
-      <h1>{{ loan.lender.profile.company_name }}</h1>
-      <p>({{ loan.lender.profile.tagline }})</p>
+      <h1>{{ loan.lender.active_user.company_name }}</h1>
+      <p>({{ loan.lender.active_user.tagline }})</p>
     </div>
   </div>
+  
+    
 
   <div class="container">
     <div class="main">
@@ -397,8 +447,8 @@
       <div class="message">
         
         <div class="note">
-            Please review the loan request details below.<br>
-            <strong>Note:</strong> Proceed to confirm with payment type.<br><br>
+            Please review the loan details below.<br>
+            <strong>Note:</strong> Confirm the loan by proceed and provide payment details.<br><br>
             <strong>💬 Lender Remark:</strong> {{ loan.remark }}
         </div>
       </div>
@@ -409,7 +459,67 @@
         <div class="row"><div class="label">Email</div><div class="value">{{ loan.borrower.email|default:"-" }}</div></div>
         <div class="row"><div class="label">Loan Item</div><div class="value">{{ loan.loan_item }}</div></div>
         <div class="row"><div class="label">Amount</div><div class="value" style="color: #13e948f3;">₹ {{ loan.amount }}</div></div>
-        <div class="row"><div class="label">Interest</div><div class="value" style="color: rgb(238, 9, 9);">{{ loan.interest }}</div></div>
+        <div class="row"><div class="label">Interest</div><div class="value" style="color: rgb(238, 9, 9);">{{ loan.interest_amount }} </div></div> 
+        <div class="row"><div class="label">Total Amount</div><div class="value" style="color: rgb(21, 135, 21);">{{total}}</div></div>
+        <div class="row"><div class="label">Payment Plan</div><div class="value" >{{loan.payment_plan|capfirst}}</div></div>
+        
+        <div class="row">
+          {% if loan.payment_plan == "weekly" %}
+          <div class="label">Payment per Week</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="sub-loan" class="value" style="color: rgb(67, 148, 37); display:inline-block;">
+              {{ loan.instalment }}
+            </div>
+          
+            <div class="edit-btn-wrapper">
+              <button class="btn btn-done" style="padding: 3px 3px; margin-left: 30px;" onclick="handleEdit()">
+                ✏️ Edit
+              </button>
+          
+              <div class="edit-message">
+                💬 You can edit the daily or weekly payment as you can afford. However, after the end of the<br>
+                loan term, the remaining unpaid balance will be considered as a new loan with its own interest applied.<br>
+                💬 <strong>For example:</strong> You receive a loan of 10,000 with an interest of 2,000.<br>
+                The total repayment is 12,000. This breaks down to about 860 per week or 120 per day.<br>
+                If you choose to pay 500 per week, by the end of the loan term, you will have paid 7,000.<br>
+                The remaining unpaid amount of 5,000 will be considered as a new loan, subject to interest. <br>
+                <em>📌 Staying on top of your payments helps you avoid additional debt.</em>
+              </div>
+            </div>
+          </div>
+        {% elif loan.payment_plan == "daily" %}
+          <div class="label">Payment per Day</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div id="sub-loan" class="value" style="color: rgb(67, 148, 37); display:inline-block;">
+              {{ loan.instalment }}
+            </div>
+          
+            <div class="edit-btn-wrapper">
+              <button class="btn btn-done" style="padding: 3px 3px; margin-left: 30px;" onclick="handleEdit()">
+                ✏️ Edit
+              </button>
+          
+              <div class="edit-message">
+                💬 You can edit the daily or weekly payment as you can afford. However, after the end of the<br>
+                loan term, the remaining unpaid balance will be considered as a new loan with its own interest applied.<br>
+                💬 <strong>For example:</strong> You receive a loan of 10,000 with an interest of 2,000.<br>
+                The total repayment is 12,000. This breaks down to about 860 per week or 120 per day.<br>
+                If you choose to pay 500 per week, by the end of the loan term, you will have paid 7,000.<br>
+                The remaining unpaid amount of 5,000 will be considered as a new loan, subject to interest. <br>
+                <em>📌 Staying on top of your payments helps you avoid additional debt.</em>
+              </div>
+            </div>
+          </div>
+          
+        {% else %}
+          <div class="label">Next Month Pay</div>
+          <div class="value" style="color: rgb(67, 148, 37);">
+            {{ sub_loan }} <span style="color: black;">or</span> {{ loan.interest_amount }}
+          </div>
+        {% endif %}
+        </div>        
+          
+        
         <div class="row"><div class="label">Start Date</div><div class="value">{{ loan.taken_date }}</div></div>
         <div class="row"><div class="label">Return Date</div><div class="value">{{ loan.return_date }}</div></div>
         <div class="row"><div class="label">Reason</div><div class="value">{{ loan.reason|default:"-" }}</div></div>
@@ -417,8 +527,14 @@
         <div class="row"><div class="label">Token Id</div><div class="value">{{ loan.id }}</div></div>
        
       </div>
+      <div class="form-check" >
+        <input type="checkbox" class="form-check-input" id="terms-checkbox">
+        <label class="form-check-label" for="terms-checkbox">I agree to the <a href="{% url 'generate-loan-agreement'  loan.id%}" target="_blank">Terms and Conditions</a></label>
+      </div>
+      <div class="note1">⚠️ Please carefully review all the details above and read the Terms & Conditions before proceeding. Ensure you’ve made any necessary edits. </div>
+    
       <div class="btn-group">
-        <button class="btn proceed-btn" onclick="showPayment()">Proceed</button>
+        <button class="btn proceed-btn" onclick="showPayment()" id="proceed-btn" disabled> Proceed</button>
         <button class="btn cancel-btn" onclick="openCancelModal()">Cancel</button>
         <button onclick="toggleContact()" class="btn btn-view" id="contact-btn">Lender Contact Details</button>
       </div>
@@ -452,11 +568,13 @@
       </div>
         
       <form class="payment-section" action="{% url 'payment-details' loan.id %}" id="paymentSection" method="POST" enctype="multipart/form-data">
+        
         <h3 class="payment-heading">💰 Payment Confirmation</h3>
         {% csrf_token %}
+        <input type="hidden" name="instalment" value="" id="instalment" >
         <label for="payment_type">Payment Method:</label>
         <select name="payment_type"  id="payment_type" onchange="togglePaymentDetails()" required>
-          <option value="" disabled selected hidden>-- Select --</option>
+          <option value="" disabled selected >-- Select --</option>
           <option value="cash">Cash</option>
           <option value="online">Online</option>
         </select>
@@ -471,7 +589,7 @@
         <div id="onlinePlatformFields" class="hidden">
           <label for="online_method" >Select Payment Platform:</label>
           <select name="online_method" id="online_method" onchange="toggleOnlineMethodFields()">
-            <option value="" disabled hidden selected>-- Choose --</option>
+            <option value="" disabled  selected>-- Choose --</option>
             <option value="phonepay">Phone Pay</option>
             <option value="googlepay">Google Pay</option>
             <option value="paytm">Paytm</option>
@@ -480,18 +598,25 @@
 
           <div id="upiFields" class="hidden">
             <label for="upi_number">UPI Id or Phone Number:</label>
-            <input type="text" name="upi_number" placeholder="Enter UPI number">
-            <label for="upi_screenshot">Upload Payment Screenshot (optional):</label>
+            <input type="text" name="upi_number" placeholder="e.g. example@upi or 9876543210" >
+            <label for="account_holder_name">Account Holder Name</label>
+            <input type="text" name="account_holder_name" placeholder="Enter name as per UPI">
+            
+            
+            <label for="upi_screenshot">Upload Payment QR code (optional):</label>
             <input type="file" name="upi_screenshot">
           </div>
 
           <div id="bankFields" class="hidden">
+            <label for="name">Account Holder Name</label>
+            <input type="text" name="bank_account_holder_name" placeholder="Enter name as per UPI">
+          
             <label for="account_number">Account Number:</label>
             <input type="text" name="account_number" placeholder="Enter account number">
 
             <label for="ifsc">IFSC Code:</label>
             <input type="text" name="ifsc" placeholder="Enter IFSC code">
-
+            
             <label for="bank_name">Bank Name:</label>
             <input type="text" name="bank_name" placeholder="Enter bank name">
           </div>
@@ -503,7 +628,49 @@
   </div>
 
   <script>
+    function handleEdit() {
+      const valueDiv = document.getElementById(`sub-loan`);
+      const currentValue = valueDiv.innerText.trim();
+    
+      // Prevent re-adding input if already editing
+      if (valueDiv.querySelector('input')) return;
+    
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.value = currentValue;
+      input.style.width = '100px';
+      input.style.color = 'rgb(67, 148, 37)';
+      input.style.fontSize = '14px';
+    
+      input.onblur = function () {
+        const newValue = input.value.trim();
+        valueDiv.innerText = newValue || currentValue;
 
+        const hiddenInput = document.getElementById('instalment');
+    if (hiddenInput) {
+      hiddenInput.value = newValue || currentValue;
+    }
+      };
+      
+    
+      valueDiv.innerText = '';
+      valueDiv.appendChild(input);
+      input.focus();
+    }
+        
+          
+    document.getElementById('terms-checkbox').addEventListener('change', function() {
+      const proceedButton = document.getElementById('proceed-btn');
+      
+      // If checked, enable Proceed button and change cursor
+      if (this.checked) {
+        proceedButton.disabled = false;
+        proceedButton.style.cursor = 'pointer'; // Change cursor to normal
+      } else {
+        proceedButton.disabled = true;
+        proceedButton.style.cursor = 'not-allowed'; // Change cursor to "not-allowed"
+      }
+    });
     function toggleContact() {
       const contact = document.getElementById('contact-details');
       const button = document.getElementById('contact-btn');
@@ -536,8 +703,6 @@
       }
     
       // Reset inner fields
-      document.getElementById("upiFields").classList.add("hidden");
-      document.getElementById("bankFields").classList.add("hidden");
     }
     
     function toggleOnlineMethodFields() {
@@ -550,7 +715,7 @@
 
       if (method === "bank") {
         bankFields.classList.remove("hidden");
-      } else if (["phonepe", "googlepay", "paytm"].includes(method)) {
+      } else if (["phonepay", "googlepay", "paytm"].includes(method)) {
         upiFields.classList.remove("hidden");
       }
     }
@@ -572,7 +737,7 @@
         }
       }
     
-      if (paymentType === "online") {
+      else if (paymentType === "online") {
         const platform = document.getElementById("online_method").value;
     
         if (!platform) {
@@ -581,28 +746,96 @@
           return false;
         }
     
-        if (["phonepe", "googlepay", "paytm"].includes(platform)) {
+        if (["phonepay", "googlepay", "paytm"].includes(platform)) {
           const upi = document.querySelector("input[name='upi_number']").value.trim();
-          if (!upi) {
-            alert("Please enter UPI ID or phone number.");
+          const name = document.querySelector("input[name='account_holder_name']").value.trim();
+        
+          const upiRegex = /^[\w.-]+@[\w.-]+$/; // Valid UPI ID
+          const phoneRegex = /^[6-9]\d{9}$/;    // Valid 10-digit Indian number
+          const nameRegex = /^[a-zA-Z\s]{3,50}$/; // Only letters and spaces, 3-50 chars
+        
+          if (!upi || !name) {
+            if (!upi) {
+              alert("Please enter both UPI ID or phone number.");
+            
+              document.querySelector("input[name='upi_number']").focus();
+            } else {
+              alert("Please enter account holder name.");
+            
+              document.querySelector("input[name='account_holder_name']").focus();
+            }
+            return false;
+          }
+        
+          if (!upiRegex.test(upi) && !phoneRegex.test(upi)) {
+            alert("Please enter a valid UPI ID (e.g., name@bank) or a valid 10-digit phone number.");
             document.querySelector("input[name='upi_number']").focus();
             return false;
           }
-        }
-    
-        if (platform === "bank") {
-          const acc = document.querySelector("input[name='account_number']").value.trim();
-          const ifsc = document.querySelector("input[name='ifsc']").value.trim();
-          const bank = document.querySelector("input[name='bank_name']").value.trim();
-    
-          if (!acc || !ifsc || !bank) {
-            alert("Please fill all bank details: Account Number, IFSC, and Bank Name.");
-            if (!acc) document.querySelector("input[name='account_number']").focus();
-            else if (!ifsc) document.querySelector("input[name='ifsc']").focus();
-            else document.querySelector("input[name='bank_name']").focus();
+        
+          if (!nameRegex.test(name)) {
+            alert("Please enter a valid account holder name (only letters and spaces, 3-50 characters).");
+            document.querySelector("input[name='account_holder_name']").focus();
             return false;
           }
         }
+        
+        if (platform === "bank") {
+          const acc = document.querySelector("input[name='account_number']").value.trim();
+          const ifsc = document.querySelector("input[name='ifsc']").value.trim().toUpperCase();
+          const bank = document.querySelector("input[name='bank_name']").value.trim();
+          const name = document.querySelector("input[name='account_holder_name']").value.trim();
+        
+          const bankNameRegex = /^[A-Za-z\s]{2,100}$/;
+          const accountNumberRegex = /^\d{9,18}$/;
+          const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+          const nameRegex = /^[A-Za-z\s]{3,100}$/;
+        
+          if (!acc) {
+            alert("Please enter account number.");
+            document.querySelector("input[name='account_number']").focus();
+            return false;
+          } else if (!accountNumberRegex.test(acc)) {
+            alert("Please enter a valid account number (9 to 18 digits).");
+            document.querySelector("input[name='account_number']").focus();
+            return false;
+          }
+        
+          if (!ifsc) {
+            alert("Please enter IFSC code.");
+            document.querySelector("input[name='ifsc']").focus();
+            return false;
+          } else if (!ifscRegex.test(ifsc)) {
+            alert("Please enter a valid IFSC code (e.g., HDFC0123456).");
+            document.querySelector("input[name='ifsc']").focus();
+            return false;
+          }
+        
+          if (!bank) {
+            alert("Please enter bank name.");
+            document.querySelector("input[name='bank_name']").focus();
+            return false;
+          } else if (!bankNameRegex.test(bank)) {
+            alert("Please enter a valid bank name (only letters and spaces).");
+            document.querySelector("input[name='bank_name']").focus();
+            return false;
+          }
+        
+          if (!name) {
+            alert("Please enter account holder name.");
+            document.querySelector("input[name='account_holder_name']").focus();
+            return false;
+          } else if (!nameRegex.test(name)) {
+            alert("Please enter a valid account holder name (only letters and spaces).");
+            document.querySelector("input[name='account_holder_name']").focus();
+            return false;
+          }
+        
+          // all valid, continue submission
+        }
+        
+    
+        
       }
     
       const confirmed = confirm("Are you sure you want to confirm this payment?");

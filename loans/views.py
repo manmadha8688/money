@@ -1,15 +1,33 @@
 from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.models import User
 from .models import LoanRequest, Borrower , PaymentDetail ,LoanStatusHistory ,LoanImage
-from datetime import date
+
 from django.http import JsonResponse
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404, render
-from django.utils.timezone import now
 from datetime import datetime
 from .models import LoanRequest, Borrower, User
 from django.db.models import Q
+from django.contrib import messages
 
+from django.template.loader import get_template
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+
+def apply_filter(loans,request):
+
+    borrower = request.GET.get('borrower', '').strip()
+    token = request.GET.get('token', '').strip()
+    status = request.GET.get('status', '').strip()
+    
+    if token:
+        loans = loans.filter(id=token)
+    if borrower:
+        loans = loans.filter(borrower__name__icontains = borrower)
+    if status :
+        loans = loans.filter(status=status)
+    
+    return loans
 def draft_loan(request, lender_id, unique_id):
     if request.method == 'POST':
         print(lender_id)
@@ -38,10 +56,8 @@ def draft_loan(request, lender_id, unique_id):
 def loan_request(request, lender_id, unique_id):
     lender = get_object_or_404(User, id=lender_id)
     
-    loan = LoanRequest.objects.get(lender=lender, unique_id=unique_id)
-
-    if loan is None:
-        return JsonResponse({'error': 'Loan form not found'}, status=404)
+    loan = get_object_or_404(LoanRequest, lender=lender, unique_id=unique_id)
+    
 
     if loan and loan.submitted:
         if loan.status == "pending":
@@ -55,7 +71,9 @@ def loan_request(request, lender_id, unique_id):
                     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
             return render(request, "borrower/loan_already_submitted.html", {"loan": loan})
         elif loan.status == "accepted":
-            return render(request, "borrower/loan_confirmation.html", {"loan": loan})
+            total = loan.amount + loan.interest_amount
+            
+            return render(request, "borrower/loan_confirmation.html", {"loan": loan,"total":total})
         elif loan.status== "rejected":
             return render(request, "borrower/loan_rejected.html", {"loan": loan})
         elif loan.status== "cancelled":
@@ -83,6 +101,7 @@ def loan_request(request, lender_id, unique_id):
         return_date = datetime.strptime(request.POST["return_date"], "%Y-%m-%d").date()
 
         # Save loan details
+        loan.payment_plan = request.POST.get("payment_plan", "")
         loan.borrower = borrower
         loan.loan_item = request.POST.get("loan_item", "")
         loan.amount = request.POST["amount"]
@@ -104,41 +123,52 @@ def loan_request(request, lender_id, unique_id):
     
 
     return render(request, "borrower/loan_request_form.html", {"loan": loan})
-
+ 
 def loan_request_list(request):
     loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status="pending")
+    if request.method == "GET":
+        loan_requests = apply_filter(loan_requests,request)
     return render(request,'lender/loan_requested_list.html',{"loan_requests":loan_requests})
 
 def accept_reject_status(request, loan_id):
+    
+    loan = get_object_or_404(LoanRequest, id=loan_id)
     if request.method == "POST":
-        loan = get_object_or_404(LoanRequest, id=loan_id)
-        loan.interest = request.POST.get("interest")
-        loan.amount = request.POST.get("amount")
-        loan.taken_date = request.POST.get("taken_date")
-        loan.return_date = request.POST.get("return_date")
-
         action = request.POST.get("action")
         if action == "accept":
             loan.status = "accepted"
+            loan.interest = request.POST.get("interest")
+            loan.amount = request.POST.get("amount")
+            loan.taken_date = request.POST.get("taken_date")
+            loan.interest_amount = request.POST.get('interest_amount')
+            loan.instalment = request.POST.get('installment')
         elif action == "reject":
             loan.status = "rejected"
+        
         loan.remark = request.POST.get('remark')
         loan.save()
 
         return redirect("loan-request-list")  # your loan list page
 
 def accepted_list(request):
-    loans = LoanRequest.objects.filter(lender=request.user, submitted=True).filter(Q(status="accepted") | Q(status="paymentprocess"))
-    
+    loans = LoanRequest.objects.filter(
+    lender=request.user,
+    submitted=True
+    ).filter(
+    Q(status="accepted") | Q(status="paymentprocess")
+    ).select_related('payment').order_by('-updated_at')
+    if request.method == "GET":
+        loans = apply_filter(loans,request)
     return render(request,'lender/accepted_list.html',{"loans":loans}) 
 
 def cancle_loan(request,loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
-    loan.status = "cancelled"
-    if request.method == 'POST':
-
+    if loan.status not in ['pending','accepted']:
+        messages.error(request,"The loan is confirmed and can no longer be canceled. Let us know if you need help or have any questions!")
+    elif request.method == 'POST':
+        loan.status = "cancelled"
         loan.remark = request.POST.get('remark')
-    loan.save()
+        loan.save()
     lender_id = loan.lender.id
     unique_id = loan.unique_id
 
@@ -158,11 +188,16 @@ def payment_details(request, loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
     lender_id = loan.lender.id
     unique_id = loan.unique_id
-
+    
     if request.method == 'POST':
         if loan.payment:
+            
             return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+        if request.POST.get('instalment'):
+            loan.instalment = request.POST.get('instalment')
+            
         payment_type = request.POST.get('payment_type')
+
         payment = PaymentDetail(
             payment_method=payment_type
         )
@@ -176,8 +211,9 @@ def payment_details(request, loan_id):
             online_method = request.POST.get('online_method')
             payment.online_method = online_method
 
-            if online_method in ['phonepe', 'googlepay', 'paytm']:
+            if online_method in ['phonepay', 'googlepay', 'paytm']:
                 payment.upi_number = request.POST.get('upi_number')
+                payment.account_holder = request.POST.get('account_holder_name').strip()
                 if 'upi_screenshot' in request.FILES:
                     payment.upi_screenshot = request.FILES['upi_screenshot']
 
@@ -185,18 +221,19 @@ def payment_details(request, loan_id):
                 payment.account_number = request.POST.get('account_number')
                 payment.ifsc = request.POST.get('ifsc')
                 payment.bank_name = request.POST.get('bank_name')
+                payment.account_holder = request.POST.get('bank_account_holder_name','').strip()
+                
         payment.loan = loan
         payment.save()
         loan.payment = payment
         loan.status = 'paymentprocess'
         loan.save()
     
-
-    
-
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 def cancel_reject_list(request):
-    loans = LoanRequest.objects.filter(Q(status="rejected") | Q(status="cancelled")).order_by('-id')
+    loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="rejected") | Q(status="cancelled")).order_by('-updated_at')
+    if request.method == 'GET':
+        loans = apply_filter(loans,request)
     return render(request, 'lender/cancel_reject_list.html', {'loans': loans})
 
 def paymentdone(request,loan_id):
@@ -204,7 +241,6 @@ def paymentdone(request,loan_id):
         utr = request.POST.get('utr', '').strip()
         bank = request.POST.get('bank', '').strip()
         person = request.POST.get('person', '').strip()
- 
         loan = LoanRequest.objects.get(id=loan_id)
         loan.payment.utr = utr
         loan.payment.bank = bank
@@ -237,8 +273,10 @@ def paymentreceived(request,loan_id):
 
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 def payment_done_list(request):
-    loans = LoanRequest.objects.filter(Q(status="paymentdone") | Q(status="paymentnotreceived"))
+    loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="paymentdone") | Q(status="paymentnotreceived")).order_by('-updated_at')
     
+    if request.method == "GET":
+        loans = apply_filter(loans,request)
     status_dict = {}
 
     for loan in loans:
@@ -250,12 +288,13 @@ def payment_done_list(request):
     'loans': loans,
     'status': status_dict
     }
-
     return render(request, 'lender/payment_done_list.html', context)
 
 
 def loan_status_records(request):
-    loans = LoanRequest.objects.filter(submitted= True)
+    loans = LoanRequest.objects.filter(lender=request.user , submitted= True).order_by('id')
+    if request.method == "GET":
+        loans = apply_filter(loans,request)
     loans_with_status = []
 
     for loan in loans:
@@ -278,7 +317,7 @@ def loan_status_records(request):
             'loan': loan,
             'status_dates': status_dates
         })
-
+        
     return render(request, 'loan_status_records.html',{'loans_with_status': loans_with_status})
 
 def delete_loan_item_image(request,image_id):
@@ -291,3 +330,30 @@ def delete_loan_item_image(request,image_id):
     unique_id = loan.unique_id
 
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+
+
+
+def generate_pdf(request,loan_id):
+    agreement_date = now().strftime('%d-%m-%Y')   # ✅ Correct usage
+    loan = get_object_or_404(LoanRequest,id=loan_id)
+    context = {
+        'agreement_date': agreement_date,
+        'lender_name': loan.lender.active_user.company_name,
+        'borrower_name': loan.borrower.name,
+        'loan_amount': loan.amount,
+        'interest_amount': loan.interest_amount,
+        'loan_start_date': loan.taken_date,
+        'loan_end_date': loan.return_date,
+    }
+
+    template = get_template("lender/terms_conditions.html")
+    html = template.render(context)
+
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = "inline; filename=loan_agreement.pdf"
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse("Error generating PDF", status=500)
+
+    return response

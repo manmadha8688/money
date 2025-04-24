@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="112pt" height="792pt" viewBox="0.00 0.00 112.38 792.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 788)">
+<title>CNN</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-788 108.38,-788 108.38,4 -4,4"/>
+<!-- Input -->
+<g id="node1" class="node">
+<title>Input</title>
+<polygon fill="white" stroke="black" points="95.75,-784 8.62,-784 8.62,-742.4 95.75,-742.4 95.75,-784"/>
+<text text-anchor="middle" x="52.19" y="-767.4" font-family="Times,serif" font-size="14.00">Input Layer</text>
+<text text-anchor="middle" x="52.19" y="-750.6" font-family="Times,serif" font-size="14.00">(10 features)</text>
+</g>
+<!-- Conv1 -->
+<g id="node2" class="node">
+<title>Conv1</title>
+<polygon fill="white" stroke="black" points="104.38,-706.4 0,-706.4 0,-664.8 104.38,-664.8 104.38,-706.4"/>
+<text text-anchor="middle" x="52.19" y="-689.8" font-family="Times,serif" font-size="14.00">Conv1D Layer</text>
+<text text-anchor="middle" x="52.19" y="-673" font-family="Times,serif" font-size="14.00">(16 filters, k=3)</text>
+</g>
+<!-- Input&#45;&gt;Conv1 -->
+<g id="edge1" class="edge">
+<title>Input-&gt;Conv1</title>
+<path fill="none" stroke="black" d="M52.19,-741.94C52.19,-734.59 52.19,-726.11 52.19,-718.03"/>
+<polygon fill="black" stroke="black" points="55.69,-718.17 52.19,-708.17 48.69,-718.17 55.69,-718.17"/>
+</g>
+<!-- ReLU1 -->
+<g id="node3" class="node">
+<title>ReLU1</title>
+<polygon fill="white" stroke="black" points="79.19,-628.8 25.19,-628.8 25.19,-592.8 79.19,-592.8 79.19,-628.8"/>
+<text text-anchor="middle" x="52.19" y="-606.6" font-family="Times,serif" font-size="14.00">ReLU</text>
+</g>
+<!-- Conv1&#45;&gt;ReLU1 -->
+<g id="edge2" class="edge">
+<title>Conv1-&gt;ReLU1</title>
+<path fill="none" stroke="black" d="M52.19,-664.32C52.19,-656.95 52.19,-648.46 52.19,-640.5"/>
+<polygon fill="black" stroke="black" points="55.69,-640.53 52.19,-630.53 48.69,-640.53 55.69,-640.53"/>
+</g>
+<!-- Pool1 -->
+<g id="node4" class="node">
+<title>Pool1</title>
+<polygon fill="white" stroke="black" points="104.32,-556.8 0.05,-556.8 0.05,-520.8 104.32,-520.8 104.32,-556.8"/>
+<text text-anchor="middle" x="52.19" y="-534.6" font-family="Times,serif" font-size="14.00">MaxPool1D (2)</text>
+</g>
+<!-- ReLU1&#45;&gt;Pool1 -->
+<g id="edge3" class="edge">
+<title>ReLU1-&gt;Pool1</title>
+<path fill="none" stroke="black" d="M52.19,-592.5C52.19,-585.21 52.19,-576.53 52.19,-568.34"/>
+<polygon fill="black" stroke="black" points="55.69,-568.42 52.19,-558.42 48.69,-568.42 55.69,-568.42"/>
+</g>
+<!-- Conv2 -->
+<g id="node5" class="node">
+<title>Conv2</title>
+<polygon fill="white" stroke="black" points="104.38,-484.8 0,-484.8 0,-443.2 104.38,-443.2 104.38,-484.8"/>
+<text text-anchor="middle" x="52.19" y="-468.2" font-family="Times,serif" font-size="14.00">Conv1D Layer</text>
+<text text-anchor="middle" x="52.19" y="-451.4" font-family="Times,serif" font-size="14.00">(32 filters, k=3)</text>
+</g>
+<!-- Pool1&#45;&gt;Conv2 -->
+<g id="edge4" class="edge">
+<title>Pool1-&gt;Conv2</title>
+<path fill="none" stroke="black" d="M52.19,-520.55C52.19,-513.35 52.19,-504.75 52.19,-496.49"/>
+<polygon fill="black" stroke="black" points="55.69,-496.74 52.19,-486.74 48.69,-496.74 55.69,-496.74"/>
+</g>
+<!-- ReLU2 -->
+<g id="node6" class="node">
+<title>ReLU2</title>
+<polygon fill="white" stroke="black" points="79.19,-407.2 25.19,-407.2 25.19,-371.2 79.19,-371.2 79.19,-407.2"/>
+<text text-anchor="middle" x="52.19" y="-385" font-family="Times,serif" font-size="14.00">ReLU</text>
+</g>
+<!-- Conv2&#45;&gt;ReLU2 -->
+<g id="edge5" class="edge">
+<title>Conv2-&gt;ReLU2</title>
+<path fill="none" stroke="black" d="M52.19,-442.72C52.19,-435.35 52.19,-426.86 52.19,-418.9"/>
+<polygon fill="black" stroke="black" points="55.69,-418.93 52.19,-408.93 48.69,-418.93 55.69,-418.93"/>
+</g>
+<!-- Pool2 -->
+<g id="node7" class="node">
+<title>Pool2</title>
+<polygon fill="white" stroke="black" points="104.32,-335.2 0.05,-335.2 0.05,-299.2 104.32,-299.2 104.32,-335.2"/>
+<text text-anchor="middle" x="52.19" y="-313" font-family="Times,serif" font-size="14.00">MaxPool1D (2)</text>
+</g>
+<!-- ReLU2&#45;&gt;Pool2 -->
+<g id="edge6" class="edge">
+<title>ReLU2-&gt;Pool2</title>
+<path fill="none" stroke="black" d="M52.19,-370.9C52.19,-363.61 52.19,-354.93 52.19,-346.74"/>
+<polygon fill="black" stroke="black" points="55.69,-346.82 52.19,-336.82 48.69,-346.82 55.69,-346.82"/>
+</g>
+<!-- Flatten -->
+<g id="node8" class="node">
+<title>Flatten</title>
+<polygon fill="white" stroke="black" points="79.63,-263.2 24.75,-263.2 24.75,-227.2 79.63,-227.2 79.63,-263.2"/>
+<text text-anchor="middle" x="52.19" y="-241" font-family="Times,serif" font-size="14.00">Flatten</text>
+</g>
+<!-- Pool2&#45;&gt;Flatten -->
+<g id="edge7" class="edge">
+<title>Pool2-&gt;Flatten</title>
+<path fill="none" stroke="black" d="M52.19,-298.9C52.19,-291.61 52.19,-282.93 52.19,-274.74"/>
+<polygon fill="black" stroke="black" points="55.69,-274.82 52.19,-264.82 48.69,-274.82 55.69,-274.82"/>
+</g>
+<!-- Dense -->
+<g id="node9" class="node">
+<title>Dense</title>
+<polygon fill="white" stroke="black" points="99.26,-191.2 5.11,-191.2 5.11,-149.6 99.26,-149.6 99.26,-191.2"/>
+<text text-anchor="middle" x="52.19" y="-174.6" font-family="Times,serif" font-size="14.00">Dense Layer</text>
+<text text-anchor="middle" x="52.19" y="-157.8" font-family="Times,serif" font-size="14.00">(128 neurons)</text>
+</g>
+<!-- Flatten&#45;&gt;Dense -->
+<g id="edge8" class="edge">
+<title>Flatten-&gt;Dense</title>
+<path fill="none" stroke="black" d="M52.19,-226.95C52.19,-219.75 52.19,-211.15 52.19,-202.89"/>
+<polygon fill="black" stroke="black" points="55.69,-203.14 52.19,-193.14 48.69,-203.14 55.69,-203.14"/>
+</g>
+<!-- ReLU3 -->
+<g id="node10" class="node">
+<title>ReLU3</title>
+<polygon fill="white" stroke="black" points="79.19,-113.6 25.19,-113.6 25.19,-77.6 79.19,-77.6 79.19,-113.6"/>
+<text text-anchor="middle" x="52.19" y="-91.4" font-family="Times,serif" font-size="14.00">ReLU</text>
+</g>
+<!-- Dense&#45;&gt;ReLU3 -->
+<g id="edge9" class="edge">
+<title>Dense-&gt;ReLU3</title>
+<path fill="none" stroke="black" d="M52.19,-149.12C52.19,-141.75 52.19,-133.26 52.19,-125.3"/>
+<polygon fill="black" stroke="black" points="55.69,-125.33 52.19,-115.33 48.69,-125.33 55.69,-125.33"/>
+</g>
+<!-- Output -->
+<g id="node11" class="node">
+<title>Output</title>
+<polygon fill="white" stroke="black" points="97.7,-41.6 6.67,-41.6 6.67,0 97.7,0 97.7,-41.6"/>
+<text text-anchor="middle" x="52.19" y="-25" font-family="Times,serif" font-size="14.00">Output Layer</text>
+<text text-anchor="middle" x="52.19" y="-8.2" font-family="Times,serif" font-size="14.00">(2 neurons)</text>
+</g>
+<!-- ReLU3&#45;&gt;Output -->
+<g id="edge10" class="edge">
+<title>ReLU3-&gt;Output</title>
+<path fill="none" stroke="black" d="M52.19,-77.35C52.19,-70.15 52.19,-61.55 52.19,-53.29"/>
+<polygon fill="black" stroke="black" points="55.69,-53.54 52.19,-43.54 48.69,-53.54 55.69,-53.54"/>
+</g>
+</g>
+</svg>

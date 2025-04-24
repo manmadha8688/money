@@ -115,6 +115,8 @@
     
         <label for="company_name">Company Name</label>
         <input type="text" name="company_name" id="company_name" value="{{ profile.company_name }}" placeholder="Your company name">
+        <label for="company_interest"> Company Interest</label>
+        <input type="text" name="company_interest" id="company_interest" value="{{ profile.company_interest}}" placeholder="Your company interest">
     
         <label for="company_email">Company Email</label>
         <input type="email" name="company_email" id="company_email"value="{% if profile.email %}{{ profile.email }}{% else %}{{ request.user.email }}{% endif %}" placeholder="Company official email">

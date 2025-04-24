@@ -152,20 +152,19 @@
 </head>
 <body>
 
-    <div class="header">
-        <div class="logo-wrapper">
-          {% if loan.lender.profile.company_logo %}
-            <img src="{{ loan.lender.profile.company_logo.url }}" alt="Company Logo" class="company-logo">
-          {% else %}
-            <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
-          {% endif %}
-        </div>
-      
-        <div class="company-info">
-          <h1>{{ loan.lender.profile.company_name }}</h1>
-          <p>({{ loan.lender.profile.tagline }})</p>
-        </div>
-      </div>
+  <div class="header">
+    <div class="logo-wrapper">
+      {% if loan.lender.active_user.company_logo %}
+        <img src="{{ loan.lender.active_user.company_logo.url }}" alt="Company Logo" class="company-logo">
+      {% else %}
+        <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
+      {% endif %}
+    </div>
+    <div class="company-info">
+      <h1>{{ loan.lender.active_user.company_name }}</h1>
+      <p>({{ loan.lender.active_user.tagline }})</p>
+    </div>
+  </div>
       
     <div class="cancel-box">
         <h2>Loan Request Cancelled</h2>

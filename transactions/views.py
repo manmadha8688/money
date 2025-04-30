@@ -7,9 +7,7 @@ from django.utils.dateparse import parse_date
 def all_transactions(request):
     lender = request.user  # current lender
 
-    loans = (
-        LoanRequest.objects
-        .filter(lender=lender ,status="paymentreceived").order_by('-updated_at'))
+    loans = LoanRequest.objects.filter(lender=lender ,status="paymentreceived").order_by('-updated_at')
     if request.method == "GET":
         from_date = request.GET.get('from_date', '').strip()
         to_date = request.GET.get('to_date', '').strip()

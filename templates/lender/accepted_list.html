@@ -174,7 +174,7 @@
             cursor: pointer;
         }
         #modalContent{
-            margin-top: 10%;
+            margin-top: 5%;
         }
         #modalContent p{
             margin-left: 10%;
@@ -352,9 +352,9 @@
                     {{ loan.borrower.phone }}</td>
                 <td>{{ loan.loan_item }}</td>
                 <td style="color: green;">₹ {{ loan.amount }}</td>
-                <td style="color: red;">{{ loan.interest_amount }}</td>
-                <td>{{loan.payment_plan}} <br>
-                     {{loan.instalment}}</td>
+                <td style="color: red;">₹ {{ loan.interest_amount }}</td>
+                <td><b>{{loan.payment_plan}}</b> <span id="instalment_{{ loan.id }}"></span><br>
+                     Pays -₹ {{loan.instalment}}</td>
                 <td>{{ loan.taken_date }}</td>
                 <td style="color:rgb(104, 34, 224);">{{loan.referral|default:'-'}}</td>
                 <td class="status-col">
@@ -446,9 +446,44 @@
 </div>
 
 <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to calculate installments
+        function calculateInstallments(amount2, interestAmount, paymentPlan) {
+            var totalAmount = amount2 + interestAmount; // Total loan amount
+            var instalment = 0;
+    
+            // Convert paymentPlan to string for comparison
+            paymentPlan = String(paymentPlan).toLowerCase(); // Ensure it's a string
+        
+            if (paymentPlan === 'weekly') {
+                instalment = Math.round(totalAmount / 14); // For weekly
+            } else if (paymentPlan === 'daily') {
+                instalment = Math.round(totalAmount / 100); // For daily
+            }
+    
+            return instalment; // Return the installment amount
+        }
+    
+        // Loop through each loan and calculate the installment
+        {% for loan in loans %}
+            var amount1 = {{ loan.amount }};
+            var interestAmount = {{ loan.interest_amount }};
+            var paymentPlan = "{{ loan.payment_plan }}"; // Ensure it's treated as a string
+    
+            // Calculate installment for each loan
+            var installmentValue = calculateInstallments(amount1, interestAmount, paymentPlan);
+            
+            // Fill the installment value dynamically
+            var installmentElement = document.getElementById("instalment_{{ loan.id }}");
+            if (installmentElement) {
+                installmentElement.textContent = '( ₹ ' + installmentValue+')';
+            }
+        {% endfor %}
+    });
+    
   
     function showPaymentModal(loanId) {
-        
+        document.body.style.overflow = 'hidden';
         currentLoanId = loanId;
         const dataTag = document.getElementById(`payment-data-${loanId}`);
         if (!dataTag) return;
@@ -495,6 +530,7 @@
     }
 
     function closeModal() {
+        document.body.style.overflow = 'auto';
         document.getElementById('overlay').style.display = 'none';
         document.getElementById('paymentModal').style.display = 'none';
     }
@@ -630,12 +666,14 @@ if (amountInput && amount) {
         let currentLoanId = null;
     
         function openRejectModal(loanId) {
+            document.body.style.overflow = 'hidden';
             currentLoanId = loanId;
             document.getElementById('rejectOverlay').style.display = 'block';
             document.getElementById('rejectModal').style.display = 'block';
         }
     
         function closeRejectModal() {
+            document.body.style.overflow = 'auto';
             document.getElementById('rejectOverlay').style.display = 'none';
             document.getElementById('rejectModal').style.display = 'none';
             document.getElementById('rejectReason').value = '';

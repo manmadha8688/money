@@ -242,29 +242,36 @@ def paymentdone(request,loan_id):
         bank = request.POST.get('bank', '').strip()
         person = request.POST.get('person', '').strip()
         loan = LoanRequest.objects.get(id=loan_id)
-        loan.payment.utr = utr
-        loan.payment.bank = bank
-        loan.payment.person = person
+        if utr or bank or person :
+            loan.payment.utr = utr
+            loan.payment.bank = bank
+            loan.payment.person = person
+        else:
+            return JsonResponse({
+            'message': 'Not a Valid payment',
+            'loan_id': loan.id
+            }) 
         
         loan.status="paymentdone"
-        loan.remark = "✅ Payment is done — waiting for confirmation."
         loan.payment.save()
         loan.save()
         
 
     return redirect("accepted-list")
-
+def payment_done_check(request,loan_id):
+    loan = get_object_or_404(LoanRequest,id=loan_id)
+    loan.status = "paymentdone"
+    loan.save()
+    return redirect("payment-done-list")
 def paymentreceived(request,loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
     if request.method == "POST":
         confirmation = request.POST.get('confirmation')
         if confirmation == "yes":
             loan.status = "paymentreceived"
-            loan.remark = "Payment is received and Confirmed by client "
             loan.save()
         else:
             loan.status = "paymentnotreceived"
-            loan.remark = "Payment is not received by client. Please contact client"
             loan.save()
             
     

@@ -30,11 +30,11 @@
             background: #7f8c8d;
         }
 
-        .btn-done {
+        .btn-filter {
             background-color: #2980b9;
         }
 
-        .btn-done:hover {
+        .btn-filter:hover {
             background-color: #1c638f;
         }
         body {
@@ -113,7 +113,7 @@
             display: inline-block;
             font-size: 13px;
             color: #fff;
-            background-color: #27ae60;
+            background-color: orange;
         }
         .status1 {
             padding: 6px 10px;
@@ -196,7 +196,26 @@
             gap: 10px;
             margin-left: -180px;
           }
-          
+          .btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .btn-fail { 
+            background: #ea5848;
+            margin-top: 3%; 
+        }
+        .btn-fail:hover{
+            background-color: red;
+        }
+        .btn-done { background: #5ee48d; }
+        .btn-done:hover{
+            background-color: green;
+        }
     </style>
 </head>
 <body>
@@ -218,16 +237,16 @@
                 <label for="status">Status:</label>
                 <select name="status" id="status">
                     <option value="">All</option>
-                    <option value="paymentdone" {% if request.GET.status == 'paymentdone' %}selected{% endif %}>Payment Under Confirmation</option>
-                    <option value="paymentnotreceived" {% if request.GET.status == 'paymentnotreceived' %}selected{% endif %}>Payment not received</option>
+                    <option value="paymentdone" {% if request.GET.status == 'paymentdone' %}selected{% endif %}>Processing</option>
+                    <option value="paymentnotreceived" {% if request.GET.status == 'paymentnotreceived' %}selected{% endif %}>Payment Not Received</option>
                 </select>
             </div>
     
             
     
             <div class="filter-actions">
-                <button type="submit" class="btn btn-done">Filter</button>
-                <a href="." class="btn btn-close">Reset</a>
+                <button type="submit" class="btn btn-filter">Filter</button>
+                <a href="." class="btn btn-filter">Reset</a>
             </div>
         </form>
     </div>
@@ -249,7 +268,7 @@
                 <th>Status</th>
                 <th>Payment Details provided</th>
                 <th>payment Proof</th>
-                <th>Remark</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -268,12 +287,13 @@
                 <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
                 <td>
                     {% if loan.status == "paymentdone"%}
-                    <span class="status">Paymeny under verification</span>
+                    <span class="status">Processing</span>
                     {%else %}
                     
-                    <span class="status1">Payment not received</span>
+                    <span class="status1">Not_Received</span>
                     {% endif%}
                 </td>
+
                 <td style="text-align: left; min-width:100px;">
                     <div style="display: flex; gap: 10px;">
                         <strong>Type :</strong>
@@ -322,11 +342,18 @@
                         -
                     {% endif %}
                 </td>
+                <td> 
+                    {%if loan.status == "paymentnotreceived"%} 
+                    
+                    <button type="button" class="btn btn-done" onclick="window.location.replace('{% url 'payment-done-check' loan.id %}')">Sent</button>
+
+                    {%endif%}  
+                    
+                    <button type="button" class="btn btn-fail">Failed</button>
+                </td>
                 
-                
-                <td  {% if loan.status == "paymentdone"%} {%else%} style="color: red; min-width:120px;" {%endif %} >{{ loan.remark|default:"-" }}</td>
             </tr>
-            {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
     {% else %}

@@ -270,7 +270,7 @@
         </svg>
       </span>
     </label>
-      <select id="payment_plan" name="payment_plan" required>
+      <select id="payment_plan" name="payment_plan" default="{{loan.payment_plan}}" required>
         <option value="" disabled selected>-- Select a plan --</option>
         <option value="daily">100 Days Plan</option>
         <option value="weekly">Weekly Plan</option>
@@ -460,7 +460,7 @@
         if (plan === "monthly") {
           setDueDateMonthly();
         } else if (plan === "weekly") {
-          setDueDateByDays(100);
+          setDueDateByDays(98);
         } else {
           setDueDateByDays(100); // Daily one-time with 100 days gap
         }

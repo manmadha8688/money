@@ -12,6 +12,7 @@ urlpatterns = [
     path('payment-details/<int:loan_id>/',views.payment_details,name="payment-details"),
     path('cancel-reject-list',views.cancel_reject_list,name="cancel-reject-list"),
     path('paymentdone/<int:loan_id>/',views.paymentdone,name="paymentdone"),
+    path('payment-done-check/<int:loan_id>/',views.payment_done_check,name="payment-done-check"),
     path('payment-done-list/',views.payment_done_list,name="payment-done-list"),
     path('paymentreceived/<int:loan_id>/',views.paymentreceived,name="paymentreceived"),
     path('loan-status-records',views.loan_status_records,name="loan-status-records"),

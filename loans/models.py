@@ -56,6 +56,8 @@ class LoanRequest(models.Model):
         ('paymentprocess','Paymentprocess'),
         ('paymentdone','Paymentdone'),
         ('paymentreceived','Paymentreceived'),
+        ('paymentnotreceived','Paymentnotreceived'),
+        
     )
     PAYMENT_PLANS = [
         ('daily', 'Daily'),
@@ -97,30 +99,39 @@ class LoanRequest(models.Model):
         interest = (amount * rate / Decimal('100')) * months
         return interest
 
+    from django.utils import timezone
+
     def save(self, *args, **kwargs):
         if not self.interest_amount:
             self.interest_amount = self.calculate_interest()
+    
         creating = self.pk is None
+    
         if not creating:
             old_instance = LoanRequest.objects.get(pk=self.pk)
+        
             if old_instance.status != self.status:
-              # Check if status already exists
+            # Check if the status already exists in the history
                 existing_history = LoanStatusHistory.objects.filter(
                 loan=self,
-                  status=self.status
+                status=self.status
                 ).first()
-                if existing_history:
-                # Update the timestamp
-                    existing_history.updated_at = timezone.now()
-                    existing_history.save()
-                else:
-                # Create new status history
+
+            # If status doesn't exist in history, create a new status history entry
+                if not existing_history:
                     LoanStatusHistory.objects.create(
                     loan=self,
                     status=self.status
-                )
-        super().save(*args, **kwargs)
+                    )
+            # If the status already exists in history, don't update it, just leave it
+                else:
+                    if self.status == "paymentnotreceived":
+                        existing_history.save()
+
+                   
     
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Loan - {self.borrower.name} ({self.amount})"
 

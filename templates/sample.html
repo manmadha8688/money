@@ -91,94 +91,6 @@
             cursor: not-allowed;
         }
 
-        /* Modal styling */
-        .overlay, .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .overlay {
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-        }
-
-        .modal {
-            z-index: 1000;
-            background: white;
-            width: 500px;
-            top: 50%;
-            margin-top: 2%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            position: fixed;
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-        }
-
-        .modal h3 {
-            margin-top: 0;
-            color: #34495e;
-            margin-bottom: 15px;
-        }
-
-        .modal p {
-            margin: 10px 0;
-        }
-
-        .modal input[type="text"] {
-            width: 100%;
-            padding: 8px;
-            margin-top: 6px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .modal img {
-            margin-top: 10px;
-            max-width: 100%;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 40px;
-        }
-
-        .btn-close {
-            background: #95a5a6;
-        }
-
-        .btn-close:hover {
-            background: #7f8c8d;
-        }
-
-        .btn-done {
-            background-color: #2980b9;
-        }
-
-        .btn-done:hover {
-            background-color: #1c638f;
-        }
-        .close-btn {
-            background: transparent;
-            border: none;
-            font-size: 24px;
-            color: rgb(126, 13, 13);
-            cursor: pointer;
-        }
-        #modalContent{
-            margin-top: 10%;
-        }
-        #modalContent p{
-            margin-left: 10%;
-        }
         .empty-box {
             background: #ffffff;
             border-radius: 12px;
@@ -336,7 +248,6 @@
                 <th>Interest</th>
                 <th>Payment Plan</th>
                 <th>Start Date</th>
-                <th>Return Date</th>
                 <th>Referral</th>
                 <th>Status</th>
                 <th>Payment</th>
@@ -357,7 +268,6 @@
                 <td>{{loan.payment_plan}} <br>
                      {{loan.instalment}}</td>
                 <td>{{ loan.taken_date }}</td>
-                <td>{{ loan.return_date }}</td>
                 <td style="color:rgb(104, 34, 224);">{{loan.referral|default:'-'}}</td>
                 <td class="status-col">
                     {% if loan.status == 'accepted' %}

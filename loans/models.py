@@ -67,6 +67,7 @@ class LoanRequest(models.Model):
     lender = models.ForeignKey(User, on_delete=models.CASCADE)
     borrower = models.ForeignKey(Borrower,null=True, on_delete=models.CASCADE) 
     payment = models.OneToOneField(PaymentDetail,on_delete=models.CASCADE,null=True,related_name="payment_details") # Links to Borrower model
+    
     unique_id = models.CharField(max_length=100, unique=True)
     loan_item = models.CharField(max_length=100,null=True) 
     interest_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
@@ -82,7 +83,6 @@ class LoanRequest(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     interest = models.DecimalField(max_digits=5, decimal_places=1, default=5.0 )
     remark = models.CharField(max_length=500,blank=True)
-
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

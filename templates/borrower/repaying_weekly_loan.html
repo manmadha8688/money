@@ -1,0 +1,434 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Loan Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --primary: #1abc9c;
+      --dark-primary: #16a085;
+      --white: #fff;
+      --gray: #f5f6fa;
+      --text: #2d3436;
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --radius: 10px;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--gray);
+      margin: 0;
+      color: var(--text);
+    }
+
+    .header {
+      background-color: var(--primary);
+      color: var(--white);
+      padding: 25px 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom-left-radius: 40px;
+      border-bottom-right-radius: 40px;
+      position: relative;
+      box-shadow: var(--shadow);
+    }
+
+    .logo-wrapper {
+      position: absolute;
+      left: 30px;
+    }
+
+    .company-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: var(--shadow);
+    }
+
+    .company-info {
+      text-align: center;
+    }
+
+    .company-info h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .company-info p {
+      font-size: 14px;
+      margin: 5px 0 0;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 30px;
+    }
+
+    table {
+      width: 95%;
+      margin: 30px auto;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    thead {
+      background: #a17fba;
+      color: white;
+    }
+
+    th, td {
+      padding: 14px;
+      text-align: center;
+      font-size: 17px;
+    }
+
+    tbody tr:hover {
+      background: #f1f1f1;
+    }
+
+    tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-weight: bold;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon {
+      transition: transform 0.3s ease;
+    }
+
+    .icon.rotate {
+      transform: rotate(180deg);
+    }
+
+    .schedule-row {
+      display: none;
+      background-color: #f9f9f9;
+    }
+
+    .schedule-inner {
+      padding: 20px;
+    }
+
+    .status-paid {
+      color: var(--success);
+    }
+
+    .status-unpaid {
+      color: var(--danger);
+    }
+
+    .lender-contact {
+      max-width: 90%;
+      margin: 20px auto;
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      display: none;
+    }
+
+    .lender-contact p {
+      margin: 10px 0;
+      font-size: 15px;
+    }
+
+    .lender-contact span {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+
+    #contact-btn {
+      margin: 0 auto 30px;
+      display: block;
+      padding: 10px 18px;
+      background: var(--primary);
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: background 0.3s ease;
+    }
+
+    #contact-btn:hover {
+      background: var(--dark-primary);
+    }
+    .pay-btn {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .pay-btn:hover {
+      background: linear-gradient(135deg, #0072ff, #00c6ff);
+      transform: translateY(-2px);
+    }
+
+    .pay-btn:active {
+      transform: scale(0.98);
+    }
+
+    @media (max-width: 600px) {
+      .pay-btn {
+        width: 100%;
+      }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content p {
+      margin: 10px 0;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .modal-buttons button {
+      padding: 10px 20px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .confirm {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .cancel {
+      background-color: #f44336;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header with Company Logo -->
+  <div class="header">
+    <div class="logo-wrapper">
+      {% if loan.lender.active_user.company_logo %}
+        <img src="{{ loan.lender.active_user.company_logo.url }}" class="company-logo" alt="Logo">
+      {% else %}
+        <img src="{% static 'images/default_logo.jpeg' %}" class="company-logo" alt="Default Logo">
+      {% endif %}
+    </div>
+    <div class="company-info">
+      <h1>{{ loan.lender.active_user.company_name }}</h1>
+      <p>({{ loan.lender.active_user.tagline }})</p>
+    </div>
+  </div>
+
+  <!-- Borrower Loan Summary -->
+  <h2><i class="fas fa-money-check-alt"></i> Weekly Loan Overview</h2>
+
+  <!-- Toggle Button -->
+  <button id="contact-btn" onclick="toggleContact()">
+    <i class="fas fa-user-circle"></i> Lender Contact Details
+  </button>
+
+  <!-- Contact Details -->
+  <div class="lender-contact" id="contact-details">
+    <p><span><i class="fas fa-user"></i> Name:</span> {{ loan.lender.active_user.name }}</p>
+    <p><span><i class="fas fa-phone"></i> Phone:</span> {{ loan.lender.active_user.phone }}</p>
+    <p><span><i class="fas fa-envelope"></i> Email:</span> {{ loan.lender.active_user.email }}</p>
+    <p><span><i class="fas fa-info-circle"></i> Bio:</span> {{ loan.lender.active_user.bio }}</p>
+  </div>
+
+  <!-- Loan Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Borrower</th>
+        <th>Token ID</th>
+        <th>Start Date</th>
+        <th>Amount</th>
+        <th>Interest</th>
+        <th>Total</th>
+        <th>Installment</th>
+        <th>Paid</th>
+        <th>Remaining</th>
+        <th>Last Paid</th>
+        <th>Next Due</th>
+        <th>Status</th>
+        <th>schedule</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+      <td>{{ loan.borrower.name }} </td>
+      <td>{{loan.id}}</td>
+      <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; ">{{ loan.taken_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; ">₹{{ loan.amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; ">₹{{ loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; ">₹{{ loan.amount|add:loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; ">₹{{ loan.instalment }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; ">₹{{ loan.activeloan.total_paid }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; ">₹{{ loan.activeloan.remaining_balance }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; ">{{ loan.activeloan.last_payment_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd;  ">{{ loan.activeloan.next_due_date }}</td>
+
+  <td style="color: {% if loan.activeloan.status == 'active' %}var(--success){% else %}var(--danger){% endif %};">
+          {{ loan.activeloan.status|title }}
+        </td>
+        <td>
+          <button class="action-btn" onclick="toggleSchedule('schedule-{{ loan.id }}', this)">
+            <span>Schedule</span>
+            <span class="icon">▼</span>
+          </button>
+        </td>
+        <td>
+          
+          <button class="pay-btn"  onclick="openModal()">Pay </button>
+        </td>
+      </tr>
+
+      <!-- Expandable Schedule -->
+      <tr id="schedule-{{ loan.id }}" class="schedule-row">
+        <td colspan="13">
+          <div class="schedule-inner">
+            <h3><i class="fas fa-calendar-alt"></i> Installment Schedule</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Week</th>
+                  <th>Due Date</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Total Paid</th>
+                  <th>Remaining</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in schedule %}
+                <tr>
+                  <td>Week {{ item.week }}</td>
+                  <td>{{ item.due_date }}</td>
+                  <td>₹{{ item.amount }}</td>
+                  <td class="{% if item.status %}status-paid{% else %}status-unpaid{% endif %}">
+                    {% if item.status %}✅ Paid{% else %}❌ Not Paid{% endif %}
+                  </td>
+                  <td>₹{{ item.total_paid }}</td>
+                  <td>₹{{ item.remaining }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+
+  <div id="paymentModal" class="modal">
+    <div class="modal-content">
+      <h2>Payment Details</h2>
+      <p><strong>UPI ID:</strong> <span id="upi-id">9346016624@ybi</span></p>
+      <p><strong>Amount:</strong> ₹600</p>
+      <div class="modal-buttons">
+        <button class="confirm" onclick="paymentDone()">Payment Done</button>
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal() {
+      document.getElementById("paymentModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("paymentModal").style.display = "none";
+    }
+
+    function paymentDone() {
+      closeModal();
+      alert("Thank you! We’ll verify your payment shortly.");
+    }
+
+    // Optional: Close modal if user clicks outside
+    window.onclick = function(event) {
+      const modal = document.getElementById("paymentModal");
+      if (event.target == modal) {
+        closeModal();
+      }
+    }
+ 
+    function toggleSchedule(id, btn) {
+      const row = document.getElementById(id);
+      const icon = btn.querySelector('.icon');
+      const isVisible = row.style.display === 'table-row';
+      row.style.display = isVisible ? 'none' : 'table-row';
+      icon.classList.toggle('rotate', !isVisible);
+      icon.textContent = isVisible ? '▼' : '▲';
+    }
+
+    function toggleContact() {
+      const contact = document.getElementById('contact-details');
+      const btn = document.getElementById('contact-btn');
+      const visible = contact.style.display === 'block';
+      contact.style.display = visible ? 'none' : 'block';
+      btn.innerHTML = visible 
+        ? '<i class="fas fa-user-circle"></i> Lender Contact Details'
+        : '<i class="fas fa-eye-slash"></i> Hide Contact Details';
+    }
+  </script>
+
+</body>
+</html>

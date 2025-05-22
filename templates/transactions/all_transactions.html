@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load custom_tag %}
 
 {% load static%}
 {% block content %}
@@ -209,14 +208,13 @@
         <th>Payment Method</th>
         <th>Payment Details</th>
         <th>Status</th>
-        <th>Confirmed Date</th>
       </tr>
     </thead>
     <tbody>
       {% for loan in loans %}
       <tr>
         <td>{{ forloop.counter }}</td>
-        <td>{{ payment_done|dict_get:loan.id }}</td>
+        <td>{{ loan.done_at }}</td>
         <td>{{ loan.id }}</td>
         <td>₹{{ loan.amount }}</td>
         <td>{{ loan.borrower.name }}<br>{{ loan.borrower.phone }}</td>
@@ -239,27 +237,16 @@
               {% endif %}
               UTR: {{ loan.payment.utr }}
             {% endif %}
-          {% else %} — {% endif %}
+          {% else %} 
+             —
+           {% endif %}
         </td>
         <td>
-          {% if loan.payment %}
-            {% if loan.status == 'paymentdone' %}
-              <span class="badge pending">Processing</span>
-            {% elif loan.status == 'paymentreceived' %}
-              <span class="badge approved">Payment_Done</span>
+              <span class="badge approved">Payment_Sent</span>
             
-            {% else %}
-              <span class="badge info">Pending</span>
-            {% endif %}
-          {% else %}
-            <span class="badge info">Not Initiated</span>
-          {% endif %}
+            
         </td>
-        <td>
-          {% if loan.status == "paymentreceived" or loan.status == "paymentnotreceived" %}
-            {{ loan.updated_at }}
-          {% else %} - {% endif %}
-        </td>
+        
       </tr>
       {% endfor %}
 

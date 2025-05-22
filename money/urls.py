@@ -26,6 +26,7 @@ urlpatterns = [
     path('loans/',include('loans.urls')),
     path('myprofile/',include('myprofile.urls')),
     path('transactions/',include('transactions.urls')),
+    path('active_loans/',include('active_loans.urls')),
 ]
 
 if settings.DEBUG:

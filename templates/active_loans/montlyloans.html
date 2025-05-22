@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monthly Loan Details</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fa;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    tbody tr:hover {
+            background-color: #d4dada;
+        }
+        
+        thead {
+            background-color: #ecf0f1;
+        }
+        thead th {
+            position: sticky;
+            top: 50px;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+      margin-top: 3%;
+    }
+    .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .empty-box .icon {
+            font-size: 48px;
+            margin-bottom: 60px;
+            
+        }
+        
+        .empty-box h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .empty-box p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 4px 0;
+        }
+    
+  </style>
+</head>
+<body>
+
+  <h2>Monthly Loans</h2>
+  {% if loans %}
+  <table>
+    <thead>
+      <tr>
+        <th>Borrower Name</th>
+        <th>Token ID</th>
+        <th>Taken Date</th>
+        <th>Amount</th>
+        <th>Interest</th>
+        <th>Total</th>
+        <th>Last paid</th>
+        <th>Due Date</th>
+        <th>Status</th>
+        <th>action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for loan in loans%}
+      <tr>
+        <td style="padding: 10px 12px;">{{ loan.borrower.name }}<br/> {{loan.borrower.phone}}</td>
+<td style="padding: 10px 12px; color: #090cc5;">{{ loan.id }}</td>
+<td style="padding: 10px 12px;">{{ loan.taken_date }}</td>
+<td style="padding: 10px 12px; color: #2c3e50; font-weight: 500;">₹{{ loan.amount }}</td>
+<td style="padding: 10px 12px; color: #c0392b; font-weight: 500;">₹{{ loan.interest_amount }}</td>
+<td style="padding: 10px 12px; color: rgb(3, 168, 3); font-weight: 600;">₹{{ loan.activeloan.remaining_balance }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">{{ loan.activeloan.last_payment_date }}</td>
+<td style="padding: 10px 12px; color: rgb(93, 93, 251); font-weight: 600;">{{ loan.activeloan.next_due_date }}</td>
+<td style="padding: 10px 12px; color: {% if loan.activeloan.status == 'active' %}green{% else %}#e74c3c{% endif %}; font-weight: bold;">
+  {{ loan.activeloan.status|title }}
+</td>
+
+        <td>
+          <button> paid </button> <button> Paid interest </button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3>No Montly Loans </h3>
+
+    </div>
+{% endif%}
+</body>
+</html>
+{% endblock %}

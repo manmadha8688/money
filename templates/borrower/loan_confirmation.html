@@ -376,7 +376,7 @@
       }
   }
   .note1{
-    margin: 30px 0 10px 10%;
+    margin: 30px 0 10px 5%;
   }
   .form-check{
     margin: 30px 0 10px 20%;
@@ -420,6 +420,13 @@
   .edit-btn-wrapper:hover .edit-message {
     display: block;
     width: 500%;
+  }
+  #agree-checkbox{
+    transform: scale(1.5); 
+    margin-left: 2%;
+  }
+  li{
+    margin-top: 5px;
   }
   </style>
 </head>
@@ -514,7 +521,7 @@
         {% else %}
           <div class="label">Next Month Pay</div>
           <div class="value" style="color: rgb(67, 148, 37);">
-            {{ sub_loan }} <span style="color: black;">or</span> {{ loan.interest_amount }}
+            {{ total }} <span style="color: black;">or</span> {{ loan.interest_amount }}
           </div>
         {% endif %}
         </div>        
@@ -527,14 +534,54 @@
         <div class="row"><div class="label">Token Id</div><div class="value">{{ loan.id }}</div></div>
        
       </div>
-      <div class="form-check" >
-        <input type="checkbox" class="form-check-input" id="terms-checkbox">
-        <label class="form-check-label" for="terms-checkbox">I agree to the <a href="{% url 'generate-loan-agreement'  loan.id%}" target="_blank">Terms and Conditions</a></label>
-      </div>
-      <div class="note1">⚠️ Please carefully review all the details above and read the Terms & Conditions before proceeding. Ensure you’ve made any necessary edits. </div>
-    
+      <!-- Terms Box -->
+<h3>Loan Agreement Summary</h3>
+
+<div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;">
+    <p>
+        This Loan Agreement is entered into on <strong>{{ agreement_date }}</strong>, between
+        <strong>{{ loan.lender.active_user.name }}</strong> (“Lender”) and <strong>{{ loan.borrower.name }}</strong> (“Borrower”).
+        The Lender agrees to provide a loan of <strong>{{ loan.amount }}</strong>/- Rupees only to the Borrower at an
+        interest amount of <strong>{{ loan.interest_amount }}</strong>, starting from
+        <strong>{{ loan.taken_date }}</strong> and ending on <strong>{{ loan.return_date }}</strong>.
+        The Borrower agrees to repay the loan in accordance with the agreed repayment schedule.
+        Both parties acknowledge and accept the terms and conditions outlined below, and agree that this agreement is
+        legally binding under the applicable laws of India.
+    </p>
+</div>
+
+<h3>Terms and Conditions</h3>
+
+<!-- Scrollable Terms -->
+<div id="terms-box" style="height: 220px; overflow-y: scroll; border: 1px solid #999; padding: 12px; margin-bottom: 10px;">
+    <ul>
+       <li>You must have 18 years of age or older.</li>
+        <li>You have understood these Terms with the company and you have clearly understood the terms and conditions of the Services.</li>
+        <li>You shall provide us any proof of identity we may request, and as may be specified by the Reserve Bank of India (“RBI”) in relation to any Customer Due Diligence or Know-Your-Customer processes, as may be applicable and shall not refuse to cooperate in an investigation or provide confirmation of your identity or any other information you provide to the company.</li>
+        <li>With all necessary documentation, only the loan will be provided.</li>
+        <li>You have to obeyed the legally binding contracts under the Indian Contract Act, 1872.</li>
+        <li>
+            <strong>Condition Regarding Enforcement of Security Interest under Section 13(4) of the SARFAESI Act, 2002:</strong><br>
+            The Borrower expressly acknowledges and agrees that, in the event of default in repayment of the secured debt or failure to comply with the terms of the loan agreement, the Secured Creditor shall be entitled to invoke its rights under Section 13(4) of the Securitisation and Reconstruction of Financial Assets and Enforcement of Security Interest Act, 2002 (SARFAESI Act). This includes, but is not limited to, the right to take possession of, manage, or sell the secured assets without the intervention of a court, in order to recover the outstanding dues.
+        </li>
+        <li>If interest remains unpaid for over two months, Section 13(4) of the SARFAESI Act, 2002 applies.</li>
+        <li>We are not responsible for your assets' damages or if it was in non-working conditions at the time of return.</li>
+        <li>These Terms, along with Company’s Privacy Policy, as amended and updated from time to time, constitute the entire agreement between the User(s) and company, superseding any prior written or oral contracts in relation to the same subject matter herein.</li>
+    </ul>
+</div>
+
+<!-- Checkbox -->
+<label>
+    <input type="checkbox" id="agree-checkbox" disabled>
+    I have read and agree to the Terms and Conditions
+</label>
+
+<!-- Continue Button -->
+
+      <div class="note1">⚠️ Please carefully review all the details above and ensure you’ve made any necessary edits. <br>
+    Make sure you’ve read the Terms and Conditions. Tick the box Above to confirm before proceeding.</div>
       <div class="btn-group">
-        <button class="btn proceed-btn" onclick="showPayment()" id="proceed-btn" disabled> Proceed</button>
+        <button class="btn proceed-btn" onclick="showPayment()" id="continue-btn" disabled> Proceed</button>
         <button class="btn cancel-btn" onclick="openCancelModal()">Cancel</button>
         <button onclick="toggleContact()" class="btn btn-view" id="contact-btn">Lender Contact Details</button>
       </div>
@@ -628,6 +675,28 @@
   </div>
 
   <script>
+    window.addEventListener("DOMContentLoaded", function () {
+        const termsBox = document.getElementById("terms-box");
+        const agreeCheckbox = document.getElementById("agree-checkbox");
+        const continueBtn = document.getElementById("continue-btn");
+
+        // Enable checkbox after scrolling to bottom
+        termsBox.addEventListener("scroll", () => {
+            const buffer = 5;  // allow slight difference
+    const atBottom = termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - buffer;
+
+           if (atBottom) {
+                agreeCheckbox.disabled = false;
+            }
+        });
+
+        // Enable continue button if checkbox is checked
+        agreeCheckbox.addEventListener("change", () => {
+            continueBtn.disabled = !agreeCheckbox.checked;
+        });
+    });
+
+
     function handleEdit() {
       const valueDiv = document.getElementById(`sub-loan`);
       const currentValue = valueDiv.innerText.trim();
@@ -659,18 +728,7 @@
     }
         
           
-    document.getElementById('terms-checkbox').addEventListener('change', function() {
-      const proceedButton = document.getElementById('proceed-btn');
-      
-      // If checked, enable Proceed button and change cursor
-      if (this.checked) {
-        proceedButton.disabled = false;
-        proceedButton.style.cursor = 'pointer'; // Change cursor to normal
-      } else {
-        proceedButton.disabled = true;
-        proceedButton.style.cursor = 'not-allowed'; // Change cursor to "not-allowed"
-      }
-    });
+    
     function toggleContact() {
       const contact = document.getElementById('contact-details');
       const button = document.getElementById('contact-btn');
@@ -784,7 +842,7 @@
           const acc = document.querySelector("input[name='account_number']").value.trim();
           const ifsc = document.querySelector("input[name='ifsc']").value.trim().toUpperCase();
           const bank = document.querySelector("input[name='bank_name']").value.trim();
-          const name = document.querySelector("input[name='account_holder_name']").value.trim();
+          const name = document.querySelector("input[name='bank_account_holder_name']").value.trim();
         
           const bankNameRegex = /^[A-Za-z\s]{2,100}$/;
           const accountNumberRegex = /^\d{9,18}$/;
@@ -823,11 +881,11 @@
         
           if (!name) {
             alert("Please enter account holder name.");
-            document.querySelector("input[name='account_holder_name']").focus();
+            document.querySelector("input[name='bank_account_holder_name']").focus();
             return false;
           } else if (!nameRegex.test(name)) {
             alert("Please enter a valid account holder name (only letters and spaces).");
-            document.querySelector("input[name='account_holder_name']").focus();
+            document.querySelector("input[name='bank_account_holder_name']").focus();
             return false;
           }
         

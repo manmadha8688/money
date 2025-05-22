@@ -11,7 +11,7 @@ def myprofile(request):
             profile.company_logo = request.FILES['profile_picture']
             profile.save()
             return redirect('myprofile')
-
+ 
         # Check if other details are being updated
         else:
             profile.name = request.POST.get('name', profile.name)

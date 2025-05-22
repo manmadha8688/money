@@ -6,13 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Money Lender{% endblock %}</title>
     <style>
-        /* Custom Font */
-        @font-face {
-            font-family: 'CustomFont';
-            src: url('{% static "fonts/custom-font.woff2" %}') format('woff2');
-            font-weight: normal;
-            font-style: normal;
-        }
+        
 
         /* Design System */
         :root {
@@ -398,9 +392,9 @@
                         </svg>
                     </a>
                 <ul class="submenu" id="reports-submenu">
-                        <li class="nav-item"><a href="{% url 'accepted-list'%}" class="nav-link"><span class="icon icon-money"></span> <span>Monthly</span></a></li>
-                        <li class="nav-item"><a href="{% url 'payment-done-list'%}" class="nav-link"><span class="icon icon-money"></span> <span>Weekly</span></a></li>
-                        <li class="nav-item"><a href="{% url 'cancel-reject-list'%}" class="nav-link"><span class="icon icon-money"></span> <span>One-Time</span></a></li>
+                        <li class="nav-item"><a href="{% url 'montly-loans'%}" class="nav-link"><span class="icon icon-money"></span> <span>Monthly</span></a></li>
+                        <li class="nav-item"><a href="{% url 'weekly-loans'%}" class="nav-link"><span class="icon icon-money"></span> <span>Weekly</span></a></li>
+                        <li class="nav-item"><a href="{% url 'onetime-loans'%}" class="nav-link"><span class="icon icon-money"></span> <span>One-Time</span></a></li>
                 </ul>
               </li>
                 <li class="nav-item"><a href="{% url 'dashboard'%}" class="nav-link"><span class="icon icon-money"></span> <span>This Month Payments</span></a></li>

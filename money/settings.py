@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'loans',
     'myprofile',
     'transactions',
+    'active_loans',
 ]
 
 MIDDLEWARE = [

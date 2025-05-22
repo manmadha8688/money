@@ -5,7 +5,9 @@ from .models import LoanRequest, Borrower , PaymentDetail ,LoanStatusHistory ,Lo
 from django.http import JsonResponse
 from django.utils.timezone import now
 from django.shortcuts import get_object_or_404, render
-from datetime import datetime
+from datetime import datetime ,timedelta
+from dateutil.relativedelta import relativedelta
+
 from .models import LoanRequest, Borrower, User
 from django.db.models import Q
 from django.contrib import messages
@@ -13,6 +15,8 @@ from django.contrib import messages
 from django.template.loader import get_template
 from django.http import HttpResponse
 from xhtml2pdf import pisa
+
+from active_loans.models import ActiveLoan
 
 def apply_filter(loans,request):
 
@@ -53,11 +57,66 @@ def draft_loan(request, lender_id, unique_id):
         }) 
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+def get_installment_schedule(loan):
+    total_installments = 14
+    weekly_instalment = loan.instalment
+    start_date = loan.taken_date
+    total_amount = loan.amount +loan.interest_amount
+     
+    default = round(total_amount / 14)
+    if default == weekly_instalment:
+        last_month_amount = weekly_instalment + total_amount - 14*weekly_instalment
+    else:
+        last_month_amount = weekly_instalment
+
+    next_due_date = loan.activeloan.next_due_date
+    
+
+    schedule = []
+    running_paid = 0
+
+    for week in range(total_installments):
+        due_date = start_date + timedelta(weeks=week + 1)
+
+        # Mark as paid if enough total_paid is available
+        paid = (running_paid + weekly_instalment) <= total_amount
+        if (week == 13):
+            weekly_instalment = last_month_amount
+        if paid:
+            running_paid += weekly_instalment
+
+        status = due_date < next_due_date
+        
+        remaining = total_amount - running_paid
+
+        schedule.append({
+            'week': week + 1,
+            'due_date': due_date,
+            'amount': weekly_instalment,
+            'status': status,
+            'total_paid': running_paid,
+            'remaining': remaining,
+        })
+
+    return schedule
+
+
 def loan_request(request, lender_id, unique_id):
     lender = get_object_or_404(User, id=lender_id)
     
-    loan = get_object_or_404(LoanRequest, lender=lender, unique_id=unique_id)
-    
+    loan = get_object_or_404(
+        LoanRequest.objects.select_related(
+        'lender__active_user',
+        'borrower',
+        'payment',
+        'activeloan'  
+    ),
+        lender=lender,
+        unique_id=unique_id
+    )
 
     if loan and loan.submitted:
         if loan.status == "pending":
@@ -81,11 +140,21 @@ def loan_request(request, lender_id, unique_id):
         elif loan.status== "paymentprocess":
             payment = PaymentDetail.objects.get(id =loan.payment.id)
             return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
-        else :
+        elif loan.status == "paymentdone":
             
             payment = PaymentDetail.objects.get(id =loan.payment.id)
             return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment})
-        
+        else :
+            
+            if loan.payment_plan == "monthly":
+                return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan})
+            elif loan.payment_plan == "weekly":
+                schedule = get_installment_schedule(loan)
+                return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule})
+            else :
+                return render(request, "borrower/repaying_onetime_loan.html",{"loan":loan})
+                
+
 
 
     if request.method == "POST":
@@ -125,11 +194,12 @@ def loan_request(request, lender_id, unique_id):
     return render(request, "borrower/loan_request_form.html", {"loan": loan})
  
 def loan_request_list(request):
-    loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status="pending")
+    loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status="pending").select_related('borrower')
     if request.method == "GET":
         loan_requests = apply_filter(loan_requests,request)
     return render(request,'lender/loan_requested_list.html',{"loan_requests":loan_requests})
 
+from decimal import Decimal
 def accept_reject_status(request, loan_id):
     
     loan = get_object_or_404(LoanRequest, id=loan_id)
@@ -140,7 +210,7 @@ def accept_reject_status(request, loan_id):
             loan.interest = request.POST.get("interest")
             loan.amount = request.POST.get("amount")
             loan.taken_date = request.POST.get("taken_date")
-            loan.interest_amount = request.POST.get('interest_amount')
+            loan.interest_amount = Decimal(request.POST.get('interest_amount'))
             loan.instalment = request.POST.get('installment')
         elif action == "reject":
             loan.status = "rejected"
@@ -156,7 +226,7 @@ def accepted_list(request):
     submitted=True
     ).filter(
     Q(status="accepted") | Q(status="paymentprocess")
-    ).select_related('payment').order_by('-updated_at')
+    ).select_related('payment','borrower').order_by('-updated_at')
     if request.method == "GET":
         loans = apply_filter(loans,request)
     return render(request,'lender/accepted_list.html',{"loans":loans}) 
@@ -266,10 +336,26 @@ def payment_done_check(request,loan_id):
 def paymentreceived(request,loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
     if request.method == "POST":
+        
         confirmation = request.POST.get('confirmation')
         if confirmation == "yes":
+            start_date = loan.taken_date
+            if loan.payment_plan == "weekly":
+                due_date = start_date + timedelta(days=7)
+            elif loan.payment_plan == "monthly":
+                due_date = start_date + relativedelta(months=+1)
+            elif loan.payment_plan == "onetime":
+                due_date =  start_date + timedelta(days=1)
+
+
             loan.status = "paymentreceived"
             loan.save()
+            ActiveLoan.objects.create(
+                loan_request = loan,
+                remaining_balance = loan.amount + loan.interest_amount,
+                next_due_date = due_date
+            )
+
         else:
             loan.status = "paymentnotreceived"
             loan.save()
@@ -280,7 +366,7 @@ def paymentreceived(request,loan_id):
 
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 def payment_done_list(request):
-    loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="paymentdone") | Q(status="paymentnotreceived")).order_by('-updated_at')
+    loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="paymentdone") | Q(status="paymentnotreceived")).select_related('payment','borrower').order_by('-updated_at')
     
     if request.method == "GET":
         loans = apply_filter(loans,request)
@@ -299,7 +385,7 @@ def payment_done_list(request):
 
 
 def loan_status_records(request):
-    loans = LoanRequest.objects.filter(lender=request.user , submitted= True).order_by('id')
+    loans = LoanRequest.objects.filter(lender=request.user , submitted= True).prefetch_related('status_history').order_by('id')
     if request.method == "GET":
         loans = apply_filter(loans,request)
     loans_with_status = []

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Monthly Loan Details</title>
+  <style>
+    body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        
+
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: max-content;
+            border-collapse: collapse;
+            font-size: 16px;
+        }
+        tbody tr:hover {
+            background-color: #d4dada;
+        }
+        
+        thead {
+            background-color: #ecf0f1;
+        }
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        
+
+
+  .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .empty-box .icon {
+            font-size: 48px;
+            margin-bottom: 60px;
+            
+        }
+        
+        .empty-box h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .empty-box p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 4px 0;
+        }
+    
+
+  </style>
+</head>
+<body>
+
+  <h2>One Time Loans</h2>
+  {% if loans %}
+  <table>
+    <thead>
+      <tr>
+        <th>Borrower Name</th>
+        <th>Token ID</th>
+        
+        <th>Taken Date</th>
+        <th>Amount</th>
+        <th>Interest</th>
+        <th>Total</th>
+        <th>Instalment</th>
+        <th>Total Paid</th>
+        <th>Remainig</th>
+        <th>Last Paid Date</th>
+        <th>Next Due Date</th>
+        <th>Status</th>
+        <th>action</th>
+      </tr>
+    </thead>
+    <tbody>
+      
+      {% for loan in loans%}
+      <tr>
+        <td>{{loan.borrower.name}} <br/> {{loan.borrower.phone}}</td>
+        <td>{{loan.id}}</td>
+        
+         <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">{{ loan.activeloan.last_payment_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #e67e22; font-size: 15px;">{{ loan.activeloan.next_due_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
+    {{ loan.activeloan.status|title }}
+</td>
+        <td>paid or not</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3>No One Time Loans </h3>
+
+    </div>
+{% endif%}
+</body>
+</html>
+{% endblock %}

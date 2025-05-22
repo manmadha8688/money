@@ -6,6 +6,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Loan Requests</title>
     <style>
         .btn {
@@ -397,6 +399,7 @@ style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; he
 </div>
 <script src="{% static 'js/filter.js ' %}"></script>
 <script>
+    
 
     // Get unique loan IDs from inputs with data-loan-id
 const uniqueLoanIds = new Set();
@@ -444,9 +447,12 @@ function calculateInterest(loanId, changedField = null) {
         } else if (paymentPlan === 'daily') {
             instalment = Math.round((amount + finalInterestAmount) / 100);
         }
-
+       else{
+        instalment =  Math.round(amount + finalInterestAmount);
+       }
         if (instalment) {
             instalmentEl.innerText = instalment;
+            
         }
     }
 }

@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weekly Loan Details</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 25px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    thead {
+      background-color: #dfe6e9;
+      color: #2d3436;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #dfe6e9;
+      z-index: 101;
+    }
+
+    .instalments {
+      position: sticky;
+      top: 12%;
+      background: #dfe6e9;
+      z-index: 101;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    tbody tr:hover {
+      background-color: #dfe6e9;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .toggle-btn {
+      cursor: pointer;
+      color: #0984e3;
+      font-weight: bold;
+    }
+
+    .arrow {
+      font-size: 14px;
+      margin-left: 6px;
+    }
+
+    .empty-box {
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+      padding: 40px 30px;
+      text-align: center;
+      max-width: 500px;
+      margin: 60px auto;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .empty-box .icon {
+      font-size: 48px;
+      margin-bottom: 60px;
+    }
+
+    .schedule-row td {
+      background: #ecf0f1;
+    }
+
+    .sub-table th {
+      background-color: #b2bec3;
+    }
+
+  </style>
+</head>
+<body>
+
+<h2>Weekly Loans</h2>
+
+{% if loans %}
+<table>
+  <thead>
+    <tr>
+      <th>Borrower Name</th>
+      <th>Token ID</th>
+      <th>Taken Date</th>
+      <th>Amount</th>
+      <th>Interest</th>
+      <th>Total</th>
+      <th>Instalment</th>
+      <th>Total Paid</th>
+      <th>Remaining</th>
+      <th>Last Paid Date</th>
+      <th>Next Due Date</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for loan in loans %}
+    <tr>
+      <td>{{ loan.borrower.name }} <br/> {{loan.borrower.phone}} </td>
+      <td class="toggle-btn" onclick="toggleSchedule({{ loan.id }})">
+        {{ loan.id }} <span class="arrow" id="arrow-{{ loan.id }}">▼</span>
+      </td>
+      <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">{{ loan.activeloan.last_payment_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #e67e22; font-size: 15px;">{{ loan.activeloan.next_due_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
+    {{ loan.activeloan.status|title }}
+</td>
+
+      <td>Paid / Not</td>
+    </tr>
+
+    <!-- Expandable row -->
+    <tr id="schedule-{{ loan.id }}" class="hidden schedule-row">
+      <td colspan="13">
+        <table class="sub-table">
+          <thead>
+            <tr class="instalments">
+              <th>Week</th>
+              <th>Due Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Total Paid</th>
+              <th>Remaining</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in loan.schedule %}
+            <tr>
+              <td>{{ item.week }}</td>
+              <td>{{ item.due_date }}</td>
+              <td>{{ item.amount }}</td>
+              <td>
+                {% if item.status %}
+                  ✅ Paid
+                {% else %}
+                  ❌ Unpaid
+                {% endif %}
+              </td>
+              <td>{{ item.total_paid }}</td>
+              <td>{{ item.remaining }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-box">
+  <div class="icon">📭</div>
+  <h3>No weekly loans available</h3>
+</div>
+{% endif %}
+
+<script>
+  function toggleSchedule(id) {
+    const row = document.getElementById('schedule-' + id);
+    const arrow = document.getElementById('arrow-' + id);
+    if (row.classList.contains('hidden')) {
+      row.classList.remove('hidden');
+      arrow.textContent = '▲';
+    } else {
+      row.classList.add('hidden');
+      arrow.textContent = '▼';
+    }
+  }
+</script>
+
+</body>
+</html>
+{% endblock %}

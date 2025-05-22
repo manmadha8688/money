@@ -45,12 +45,14 @@
             margin: 0;
             font-size: 28px;
             letter-spacing: 1px;
+            color: rgb(92, 92, 92);
           }
           
           .company-info p {
             margin: 5px 0 0;
             font-size: 14px;
             font-style: italic;
+            color: rgb(49, 49, 49);
           }
           
 
@@ -197,10 +199,10 @@
         </div>
 
         <div class="loan-details" id="contact-details">
-            <p><span>Lender Name</span> {{ loan.lender.profile.name }}</p>
-            <p><span>Phone</span> {{ loan.lender.profile.phone }}</p>
-            <p><span>Email</span> {{ loan.lender.profile.email }}</p>
-            <p><span>Bio</span> {{ loan.lender.profile.bio }}</p>
+            <p><span>Lender Name</span> {{ loan.lender.active_user.name }}</p>
+            <p><span>Phone</span> {{ loan.lender.active_user.phone }}</p>
+            <p><span>Email</span> {{ loan.lender.active_user.email }}</p>
+            <p><span>Bio</span> {{ loan.lender.active_user.bio }}</p>
           </div>
            
     </div>

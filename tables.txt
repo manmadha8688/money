@@ -1,0 +1,7 @@
+
+Borrower
+PaymentDetail 
+LoanRequest   --->  ActiveLoan ---> payments from borrower
+LoanStatusHistory
+LoanImage
+Profile 

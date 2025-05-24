@@ -1,0 +1,16 @@
+# Ignore environment variables file
+.env
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Static files collected by collectstatic
+staticfiles/
+
+
+
+# VSCode settings (optional)
+.vscode/
+
+

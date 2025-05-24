@@ -66,12 +66,7 @@ def get_installment_schedule(loan):
     start_date = loan.taken_date
     total_amount = loan.amount +loan.interest_amount
      
-    default = round(total_amount / 14)
-    if default == weekly_instalment:
-        last_month_amount = weekly_instalment + total_amount - 14*weekly_instalment
-    else:
-        last_month_amount = weekly_instalment
-
+    last_month_amount = total_amount - 13*weekly_instalment
     next_due_date = loan.activeloan.next_due_date
     
 

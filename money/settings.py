@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 
@@ -24,7 +26,6 @@ import os
 
 # Load .env file
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-key-for-dev')
 

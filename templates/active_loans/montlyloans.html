@@ -73,6 +73,41 @@
             color: #7f8c8d;
             margin: 4px 0;
         }
+        .action-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn {
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn.paid {
+  background-color: #2ecc71;
+  color: white;
+}
+
+.btn.paid:hover {
+  background-color: #27ae60;
+  transform: scale(1.05);
+}
+
+.btn.interest {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn.interest:hover {
+  background-color: #2980b9;
+  transform: scale(1.05);
+}
+
     
   </style>
 </head>
@@ -81,38 +116,55 @@
   <h2>Monthly Loans</h2>
   {% if loans %}
   <table>
-    <thead>
-      <tr>
-        <th>Borrower Name</th>
-        <th>Token ID</th>
-        <th>Taken Date</th>
-        <th>Amount</th>
-        <th>Interest</th>
-        <th>Total</th>
-        <th>Last paid</th>
-        <th>Due Date</th>
-        <th>Status</th>
-        <th>action</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for loan in loans%}
-      <tr>
-        <td style="padding: 10px 12px;">{{ loan.borrower.name }}<br/> {{loan.borrower.phone}}</td>
-<td style="padding: 10px 12px; color: #090cc5;">{{ loan.id }}</td>
-<td style="padding: 10px 12px;">{{ loan.taken_date }}</td>
-<td style="padding: 10px 12px; color: #2c3e50; font-weight: 500;">₹{{ loan.amount }}</td>
-<td style="padding: 10px 12px; color: #c0392b; font-weight: 500;">₹{{ loan.interest_amount }}</td>
-<td style="padding: 10px 12px; color: rgb(3, 168, 3); font-weight: 600;">₹{{ loan.activeloan.remaining_balance }}</td>
+  <thead>
+    <tr>
+      <th>Borrower Name</th>
+      <th>Token ID</th>
+      <th>Taken Date</th>
+      <th>Payment Plan</th>
+      <th>Amount</th>
+      <th>Interest</th>
+      <th>Total</th>
+      <th>Instalment</th>
+      <th>Total Paid</th>
+      <th>Remaining</th>
+      <th>Last Paid Date</th>
+      <th>Next Due Date</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for loan in loans %}
+    <tr>
+      <td>{{ loan.borrower.name }} <br/> {{loan.borrower.phone}} </td>
+      {% if loan.payment_plan == "weekly" %}
+      <td class="toggle-btn" onclick="toggleSchedule({{ loan.id }})">
+        {{ loan.id }} <span class="arrow" id="arrow-{{ loan.id }}">▼</span>
+      </td>
+      {% else %}
+       <td>{{loan.id}}</td>
+      {% endif %}
+      <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
+      <td>{{loan.payment_plan}}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">{{ loan.activeloan.last_payment_date }}</td>
-<td style="padding: 10px 12px; color: rgb(93, 93, 251); font-weight: 600;">{{ loan.activeloan.next_due_date }}</td>
-<td style="padding: 10px 12px; color: {% if loan.activeloan.status == 'active' %}green{% else %}#e74c3c{% endif %}; font-weight: bold;">
-  {{ loan.activeloan.status|title }}
+<td style="padding: 12px; border: 1px solid #ddd; color: #e67e22; font-size: 15px;">{{ loan.activeloan.next_due_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
+    {{ loan.activeloan.status|title }}
 </td>
 
-        <td>
-          <button> paid </button> <button> Paid interest </button>
-        </td>
+
+      <td class="action-buttons">
+  <button class="btn interest">Interest</button>
+  <button class="btn paid">money</button>
+</td>
+
       </tr>
       {% endfor %}
     </tbody>

@@ -10,6 +10,8 @@ class Profile(models.Model):
     name = models.CharField(max_length=100,blank=True)
     company_logo = models.ImageField(upload_to='profiles/',blank=True)
     company_interest = models.DecimalField(max_digits=5, decimal_places=1, default=5.0 )
+    payment_upis = models.CharField(blank=True)
+    account_holder_name = models.CharField(blank=True)
     bio = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True) 
 

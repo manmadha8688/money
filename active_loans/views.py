@@ -20,3 +20,12 @@ def onetime_loans(request):
     loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived" , payment_plan="onetime").select_related('activeloan','borrower')
     
     return render(request,'active_loans/onetimeloans.html',{"loans" : loans})
+
+def all_loans(request):
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived").select_related('activeloan','borrower')
+    for loan in loans:
+        if loan.payment_plan == "weekly":
+
+            loan.schedule = get_installment_schedule(loan)
+
+    return render(request,'active_loans/all_loans.html',{"loans" : loans})

@@ -62,37 +62,31 @@ def draft_loan(request, lender_id, unique_id):
 
 def get_installment_schedule(loan):
     total_installments = 14
-    weekly_instalment = loan.instalment
     start_date = loan.taken_date
     total_amount = loan.amount +loan.interest_amount
      
-    last_month_amount = total_amount - 13*weekly_instalment
     next_due_date = loan.activeloan.next_due_date
     
 
     schedule = []
-    running_paid = 0
-
+    total_paid = 0
+    remaining = total_amount
     for week in range(total_installments):
         due_date = start_date + timedelta(weeks=week + 1)
-
-        # Mark as paid if enough total_paid is available
-        paid = (running_paid + weekly_instalment) <= total_amount
-        if (week == 13):
-            weekly_instalment = last_month_amount
-        if paid:
-            running_paid += weekly_instalment
-
         status = due_date < next_due_date
-        
-        remaining = total_amount - running_paid
+        # Mark as paid if enough total_paid is available
+        if status:
 
+            paid = 300 # statis 300 next time take from repayment table
+        
+            total_paid += paid
+            remaining -= paid
+ 
         schedule.append({
             'week': week + 1,
             'due_date': due_date,
-            'amount': weekly_instalment,
             'status': status,
-            'total_paid': running_paid,
+            'total_paid': total_paid,
             'remaining': remaining,
         })
 
@@ -142,10 +136,17 @@ def loan_request(request, lender_id, unique_id):
         else :
             
             if loan.payment_plan == "monthly":
-                return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan})
+                mini = loan.interest_amount
+                maxi = loan.activeloan.remaining_balance
+                return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan, 'mini':mini,'maxi':maxi})
             elif loan.payment_plan == "weekly":
                 schedule = get_installment_schedule(loan)
-                return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule})
+                
+                mini = loan.instalment
+                maxi = loan.activeloan.remaining_balance
+                if  maxi < mini :
+                    mini = maxi
+                return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi})
             else :
                 return render(request, "borrower/repaying_onetime_loan.html",{"loan":loan})
                 

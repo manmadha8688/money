@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Monthly Loan Details</title>
+  <title>Daily Loan Details</title>
   <style>
     body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -88,7 +88,7 @@
 </head>
 <body>
 
-  <h2>One Time Loans</h2>
+  <h2>Daily Loans</h2>
   {% if loans %}
   <table>
     <thead>
@@ -136,7 +136,7 @@
 {% else %}
   <div class="empty-box">
         <div class="icon">📭</div>
-        <h3>No One Time Loans </h3>
+        <h3>No Daily Loans </h3>
 
     </div>
 {% endif%}

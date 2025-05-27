@@ -6,7 +6,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Weekly Loan Details</title>
+  <title>All active Loan Details</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -104,7 +104,7 @@
 </head>
 <body>
 
-<h2>Weekly Loans</h2>
+<h2>All Active Loans</h2>
 
 {% if loans %}
 <table>
@@ -113,6 +113,7 @@
       <th>Borrower Name</th>
       <th>Token ID</th>
       <th>Taken Date</th>
+      <th>Payment Plan</th>
       <th>Amount</th>
       <th>Interest</th>
       <th>Total</th>
@@ -129,10 +130,15 @@
     {% for loan in loans %}
     <tr>
       <td>{{ loan.borrower.name }} <br/> {{loan.borrower.phone}} </td>
+      {% if loan.payment_plan == "weekly" %}
       <td class="toggle-btn" onclick="toggleSchedule({{ loan.id }})">
         {{ loan.id }} <span class="arrow" id="arrow-{{ loan.id }}">▼</span>
       </td>
+      {% else %}
+       <td>{{loan.id}}</td>
+      {% endif %}
       <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
+      <td>{{loan.payment_plan}}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>
@@ -157,7 +163,7 @@
               <th>Week</th>
               <th>Due Date</th>
               <th>Status</th>
-              <th>Paid Amount</th>
+               <th>Paid Amount</th>
               <th>Payment Details</th>
               <th>Total Paid</th>
               <th>Remaining</th>
@@ -191,7 +197,7 @@
 {% else %}
 <div class="empty-box">
   <div class="icon">📭</div>
-  <h3>No weekly loans available</h3>
+  <h3>No Active Loans available</h3>
 </div>
 {% endif %}
 

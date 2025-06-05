@@ -121,7 +121,6 @@
       <th>Borrower Name</th>
       <th>Token ID</th>
       <th>Taken Date</th>
-      <th>Payment Plan</th>
       <th>Amount</th>
       <th>Interest</th>
       <th>Total</th>
@@ -138,15 +137,10 @@
     {% for loan in loans %}
     <tr>
       <td>{{ loan.borrower.name }} <br/> {{loan.borrower.phone}} </td>
-      {% if loan.payment_plan == "weekly" %}
-      <td class="toggle-btn" onclick="toggleSchedule({{ loan.id }})">
-        {{ loan.id }} <span class="arrow" id="arrow-{{ loan.id }}">▼</span>
-      </td>
-      {% else %}
+      
        <td>{{loan.id}}</td>
-      {% endif %}
       <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
-      <td>{{loan.payment_plan}}</td>
+      
 <td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>

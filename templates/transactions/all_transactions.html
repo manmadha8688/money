@@ -233,7 +233,7 @@
               Given by - {{ loan.payment.person }}
             {% elif loan.payment.payment_method == 'online' %}
               {% if loan.payment.online_method == 'bank' %}
-                Bank Transfer - {{ loan.payment.bank_transfer_details }}<br>
+                Name - {{ loan.payment.bank_name }}<br>
               {% endif %}
               UTR: {{ loan.payment.utr }}
             {% endif %}

@@ -27,3 +27,33 @@ class ActiveLoan(models.Model):
 
     def __str__(self):
         return self.loan_request.id
+
+
+class ReturnPayment(models.Model):
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'Cash'),
+        ('online', 'Online'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('success', 'Success'),
+    ] 
+
+    returnloan = models.ForeignKey(ActiveLoan, on_delete=models.CASCADE, related_name='return_payments')
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    cash_person = models.CharField(max_length=100, blank=True, null=True)
+    payment_app = models.CharField(max_length=50, blank=True, null=True)
+    utr = models.CharField(max_length=50, blank=True, null=True)
+
+    due_date = models.DateField(help_text="Due date of the installment")
+
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Return Payment ₹{self.amount} for Loan #{self.loan.id} ({self.method})"
+
+
+    

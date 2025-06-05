@@ -175,8 +175,25 @@
                   ❌ Unpaid
                 {% endif %}
               </td>
-              <td>₹ 0.0</td>
-                  <td> - </td>
+              <td>₹{{ item.paid_this_due_date }}</td>
+              <td>
+                    {% if item.payment_details %}
+                        
+                            {% for payment in item.payment_details %}
+                                
+                                    
+                                    {% if payment.utr %}<br>UTR: {{ payment.utr }}{% endif %}
+                                    {% if payment.payment_app %}<br>App: {{ payment.payment_app }}{% endif %}
+                                    {% if payment.cash_person %}<br>Cash By: {{ payment.cash_person }}{% endif %}
+                                    <br>Status: {{ payment.status|title }}
+                                    <br>On: {{ payment.created_at|date:"d M Y" }}
+                                
+                            {% endfor %}
+                        
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
                   <td>₹{{ item.total_paid }}</td>
                   <td>₹{{ item.remaining }}</td>
             </tr>

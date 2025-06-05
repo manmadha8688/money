@@ -16,7 +16,7 @@ from django.template.loader import get_template
 from django.http import HttpResponse
 from xhtml2pdf import pisa
 
-from active_loans.models import ActiveLoan
+from active_loans.models import ActiveLoan,ReturnPayment
 
 def apply_filter(loans,request):
 
@@ -60,37 +60,64 @@ def draft_loan(request, lender_id, unique_id):
 
 
 
+from django.db.models import Sum
+
 def get_installment_schedule(loan):
     total_installments = 14
     start_date = loan.taken_date
-    total_amount = loan.amount +loan.interest_amount
-     
-    next_due_date = loan.activeloan.next_due_date
+    total_amount = loan.amount + loan.interest_amount
     
-
+    # ActiveLoan info
+    activeloan = loan.activeloan
+    next_due_date = activeloan.next_due_date
+    
+    # Prefetched ReturnPayments related to this activeloan (assumed loan.prefetch_related('activeloan__return_payments'))
+    repayments = activeloan.return_payments.all()
+    
     schedule = []
     total_paid = 0
     remaining = total_amount
+
     for week in range(total_installments):
         due_date = start_date + timedelta(weeks=week + 1)
-        status = due_date < next_due_date
-        # Mark as paid if enough total_paid is available
-        if status:
-
-            paid = 300 # statis 300 next time take from repayment table
         
-            total_paid += paid
-            remaining -= paid
- 
+        # Sum all payments matching this due_date
+        paid_this_due_date = 0
+        payment_details =[]
+        # If due_date is before next_due_date, consider it paid (or partially paid)
+        status = due_date < next_due_date
+        if status:
+            due_payments = repayments.filter(due_date=due_date)
+            paid_this_due_date = due_payments.aggregate(
+                total_paid=Sum('amount')
+            )['total_paid'] or 0
+
+            total_paid += paid_this_due_date
+            remaining = total_amount - total_paid
+
+            # Collect individual payment records
+            payment_details = list(due_payments.values(
+                
+                'payment_method',
+                'utr',
+                'payment_app',
+                'cash_person',
+                'status',
+            ))
+
         schedule.append({
             'week': week + 1,
             'due_date': due_date,
             'status': status,
+            'paid_this_due_date': paid_this_due_date,
+            
             'total_paid': total_paid,
             'remaining': remaining,
+            'payment_details': payment_details,
         })
 
     return schedule
+
 
 
 def loan_request(request, lender_id, unique_id):
@@ -102,6 +129,8 @@ def loan_request(request, lender_id, unique_id):
         'borrower',
         'payment',
         'activeloan'  
+    ).prefetch_related(
+        'activeloan__return_payments'
     ),
         lender=lender,
         unique_id=unique_id
@@ -138,6 +167,38 @@ def loan_request(request, lender_id, unique_id):
             if loan.payment_plan == "monthly":
                 mini = loan.interest_amount
                 maxi = loan.activeloan.remaining_balance
+                if request.method == "POST":
+
+                    
+                    amount = request.POST.get('amount')
+                    
+                    payment_method = request.POST.get('method')
+                    utr = request.POST.get('utr', '')
+                    cash_person = request.POST.get('cash_person', '')
+                    payment_app = request.POST.get('platform', '')
+                    due_date = loan.activeloan.next_due_date
+                    
+                    existing_payment = ReturnPayment.objects.filter(
+                        returnloan=loan.activeloan,
+                        due_date=due_date,
+                        status='pending'  # optionally filter by pending only
+                        ).first()
+
+                    if not existing_payment:
+                        payment = ReturnPayment(
+                            returnloan=loan.activeloan,
+                            amount=amount,
+                            payment_method=payment_method,
+                            utr=utr,
+                            cash_person=cash_person,
+                            payment_app=payment_app,
+                            due_date=due_date,
+                        )
+                        payment.save()
+                    else:
+    
+                        print("Payment already exists for this loan and due date.")
+
                 return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan, 'mini':mini,'maxi':maxi})
             elif loan.payment_plan == "weekly":
                 schedule = get_installment_schedule(loan)
@@ -146,6 +207,42 @@ def loan_request(request, lender_id, unique_id):
                 maxi = loan.activeloan.remaining_balance
                 if  maxi < mini :
                     mini = maxi
+                
+
+                if request.method == "POST":
+
+                    
+                    amount = request.POST.get('amount')
+                    
+                    payment_method = request.POST.get('method')
+                    utr = request.POST.get('utr', '')
+                    cash_person = request.POST.get('cash_person', '')
+                    payment_app = request.POST.get('platform', '')
+                    due_date = loan.activeloan.next_due_date
+                    
+                    existing_payment = ReturnPayment.objects.filter(
+                        returnloan=loan.activeloan,
+                        due_date=due_date,
+                        status='pending'  # optionally filter by pending only
+                        ).first()
+
+                    if not existing_payment:
+                        payment = ReturnPayment(
+                            returnloan=loan.activeloan,
+                            amount=amount,
+                            payment_method=payment_method,
+                            utr=utr,
+                            cash_person=cash_person,
+                            payment_app=payment_app,
+                            due_date=due_date,
+                        )
+                        payment.save()
+                    else:
+    
+                        print("Payment already exists for this loan and due date.")
+
+
+
                 return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi})
             else :
                 return render(request, "borrower/repaying_onetime_loan.html",{"loan":loan})

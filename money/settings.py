@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret-key-for-dev')
 DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
-
+#ALLOWED_HOSTS =['*']
 
 
 INSTALLED_APPS = [
@@ -100,7 +100,7 @@ DATABASES = {
 }
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+  'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 # Password validation

@@ -2,14 +2,15 @@ from django.shortcuts import render
 from loans.models import LoanRequest
 from loans.views import apply_filter
 from django.db.models import Q
-
 from django.utils.dateparse import parse_date
+
+from active_loans.models import ReturnPayment
 def all_transactions(request):
     lender = request.user
     loans = LoanRequest.objects.filter(
         lender=lender,
         status="paymentreceived"
-    ).select_related('payment', 'borrower').prefetch_related('status_history').order_by('-updated_at')
+    ).select_related('payment', 'borrower','activeloan').prefetch_related('status_history','activeloan__return_payments').order_by('-updated_at')
 
     from_date = request.GET.get('from_date', '').strip()
     to_date = request.GET.get('to_date', '').strip()
@@ -32,7 +33,7 @@ def all_transactions(request):
             if history.status == 'paymentdone':
                 loan.done_at = history.updated_at
                 break  # only need the first one
-
+ 
     context = {
         'loans': loans,
     }

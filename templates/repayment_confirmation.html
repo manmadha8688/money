@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Pending Return Payments</title>
+    <style>
+        .btn {
+            padding: 6px 12px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .btn-close {
+            background: #95a5a6;
+        }
+
+        .btn-close:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-done {
+            background-color: #2980b9;
+        }
+
+        .btn-done:hover {
+            background-color: #1c638f;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom:20px;
+            margin-top: 70px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        thead {
+            background-color: #f8f8f8;
+        }
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        
+        tbody tr:hover{
+            background-color: #ccc;
+        }
+        
+        .btn {
+            padding: 5px 10px; 
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-accept {
+            background-color: #2ecc71;
+            color: white;
+            
+        }
+        .btn-accept:hover {
+            background-color: #27ae60;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(46, 204, 113, 0.4);
+        }
+        
+        .btn-reject {
+            background-color: #e74c3c;
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            background-color: #c0392b;
+            transform: scale(1.05);
+            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4);
+        }
+        .editable-input {
+            width: 70px;
+            padding: 4px;
+            border: none;
+            border-radius: 4px;
+        }
+        .highlight-id {
+            color: #2980b9;
+            font-weight: bold;
+        }
+        .highlight-amount {
+            color: #27ae60;
+            font-weight: bold;
+        }
+        .highlight-interest {
+            color: #d35400;
+            font-weight: bold;
+        }
+        .highlight-referral {
+            font-style: italic;
+            color: blue;
+        }
+        .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+            animation: fadeIn 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .empty-box .icon {
+            font-size: 48px;
+            margin: 0;
+            line-height: 1;
+            display: block;
+            margin-bottom: 50px;
+        }
+        
+        .empty-box h3 {
+            font-size: 22px;
+            margin: 0;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+        
+        .empty-box p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 0;
+            line-height: 1.4;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .blink {
+            border: 2px solid red !important;
+            animation: blinkEffect 0.5s ease-in-out 0s 3;
+          }
+          
+          @keyframes blinkEffect {
+            0% { background-color: #ffe6e6; }
+            50% { background-color: white; }
+            100% { background-color: #ffe6e6; }
+          }
+            .btn-view {
+              background-color: #3498db;
+              color: white;
+              padding: 6px 10px;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+            }
+          
+            .btn-view:hover {
+              background-color: #2980b9;
+              transform: scale(1.03);
+            }
+    </style>
+</head>
+<body>
+    <h2>Pending Repayments from Borrowers</h2>
+  {% if return_payments%}
+    <table>
+        <thead>
+            <tr><th>Date</th>
+                <th>Name</th>
+                <th>Loan ID</th>
+                <th>Amount</th>
+                <th>Payment Method</th>
+                <th>UTR / Cash Person</th>
+                <th>Due Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in return_payments %}
+            <tr>
+                <td>{{payment.created_at}}</td>
+                <td>{{ payment.returnloan.loan_request.borrower.name }}</td>
+                <td>{{ payment.returnloan.loan_request.id }}</td>
+                <td>₹{{ payment.amount }}</td>
+                <td>{{ payment.payment_method }}</td>
+                <td>
+                    {% if payment.payment_method == 'cash' %}
+                        {{ payment.cash_person }}
+                    {% else %}
+                        {{ payment.utr }}
+                    {% endif %}
+                </td>
+                <td>{{ payment.due_date }}</td>
+                <td>
+        <form method="post" action="{% url 'update_repayment_status' %}">
+            {% csrf_token %}
+            <input type="hidden" name="payment_id" value="{{ payment.id }}">
+            <button type="submit" name="action" value="paid" class="btn btn-accept">Paid</button>
+            <button type="submit" name="action" value="not_paid" class="btn btn-reject">Not Paid</button>
+        </form>
+    </td>
+            </tr>
+            
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3>No Repayments Yet</h3>
+
+    </div>
+    {% endif %}
+</body>
+</html>
+{% endblock %}

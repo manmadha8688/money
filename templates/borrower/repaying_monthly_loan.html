@@ -315,7 +315,9 @@
       <th>Total</th>
       <th>Total Paid</th>
       <th>Remaining</th>
-      <th>Last Paid Date</th>
+      <th>Last_Paid <br>
+         (Due_date/paid_on)
+      </th>
       <th>Next Due Date</th>
       <th>Status</th>
       <th>Action</th>
@@ -331,7 +333,20 @@
       <td>₹{{ loan.amount|add:loan.interest_amount }}</td>
       <td>₹{{loan.activeloan.total_paid}}</td>
       <td style="color: green;">₹{{ loan.activeloan.remaining_balance }}</td>
-      <td>{{ loan.activeloan.last_payment_date }}</td>
+      <td>
+        {% if loan.activeloan.last_payment_date %}
+  {{ loan.activeloan.last_payment_date }}/
+  {% for payment in loan.activeloan.return_payments.all %}
+    {% if payment.due_date == loan.activeloan.last_payment_date %}
+      
+        {{ payment.created_at|date:"d M Y, h:i A" }}
+       
+    {% endif %}
+  {% endfor %}
+  {% else %}
+        -
+    {% endif %}
+      </td>
       <td style="color: blue;">{{ loan.activeloan.next_due_date }}</td>
       <td>{{ loan.activeloan.status }}</td>
       <td><button class="pay-btn"  onclick="openModal()">Pay </button></td>

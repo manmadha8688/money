@@ -53,7 +53,6 @@ class ReturnPayment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Return Payment ₹{self.amount} for Loan #{self.loan.id} ({self.method})"
-
+        return f"Return Payment ₹{self.amount} for Loan #{self.returnloan.id} ({self.payment_method})"
 
     

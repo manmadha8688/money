@@ -7,7 +7,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+    <link rel="stylesheet" href="{% static 'css/popup.css' %}">
+
     <title>Loan Requests</title>
     <style>
         .btn {
@@ -247,6 +248,7 @@
           
         
     </style>
+
 </head>
 <body>
     
@@ -276,7 +278,9 @@
     </div>
     </div>
     <h2>Loan Requests Received</h2>
-    
+    <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
     {% if loan_requests %}
 <div class="container">
 
@@ -397,9 +401,13 @@ style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; he
 </div>
 
 </div>
+
+<script src="{% static 'js/popup.js' %}"></script>
 <script src="{% static 'js/filter.js ' %}"></script>
+
 <script>
     
+
 
     // Get unique loan IDs from inputs with data-loan-id
 const uniqueLoanIds = new Set();
@@ -494,6 +502,7 @@ function calculateInterest(loanId, changedField = null) {
             installmentInput.value = installmentDisplay.innerText.trim();
         }
         // Submit the form
+
         form.submit();
       }
 
@@ -542,7 +551,6 @@ function calculateInterest(loanId, changedField = null) {
   </script>
   
   
-    
 </body>
 </html>
 {% endblock %}

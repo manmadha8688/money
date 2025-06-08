@@ -5,37 +5,44 @@ from django.db.models import Q
 from django.utils.dateparse import parse_date
 
 from active_loans.models import ReturnPayment
+from itertools import chain
+
 def all_transactions(request):
     lender = request.user
+
     loans = LoanRequest.objects.filter(
         lender=lender,
-        status="paymentreceived"
-    ).select_related('payment', 'borrower','activeloan').prefetch_related('status_history','activeloan__return_payments').order_by('-updated_at')
-
-    from_date = request.GET.get('from_date', '').strip()
-    to_date = request.GET.get('to_date', '').strip()
-
-    if from_date or to_date:
-        from_date_obj = parse_date(from_date) if from_date else None
-        to_date_obj = parse_date(to_date) if to_date else None
-
-        filtered_loan_ids = LoanStatusHistory.objects.filter(
-            status='paymentdone',
-            updated_at__date__gte=from_date_obj if from_date_obj else datetime.date.min,
-            updated_at__date__lte=to_date_obj if to_date_obj else datetime.date.max
-        ).values_list('loan_id', flat=True)
-
-        loans = loans.filter(id__in=filtered_loan_ids)
-
-    # Add done_at to each loan using prefetched status_history
+        status__in=["paymentdone", "paymentnotreceived","paymentreceived"]
+    ).select_related('payment', 'borrower', 'activeloan') \
+     .prefetch_related('status_history', 'activeloan__return_payments') \
+     .order_by('-updated_at')
+    print(loans)
+    # Add date for sorting
     for loan in loans:
+        loan.entry_type = 'loan'
         for history in loan.status_history.all():
             if history.status == 'paymentdone':
                 loan.done_at = history.updated_at
-                break  # only need the first one
- 
-    context = {
-        'loans': loans,
-    }
-
-    return render(request, 'transactions/all_transactions.html', context)
+                break
+        
+    
+    # Collect return payments
+    return_payments = []
+    for loan in loans:
+        if hasattr(loan, 'activeloan') and loan.activeloan:
+            for rp in loan.activeloan.return_payments.all():
+                rp.entry_type = 'return_payment'
+                rp.done_at = rp.created_at  # so we can sort it
+                return_payments.append(rp)
+    
+    # Merge and sort
+    merged_entries = sorted(
+        chain(loans, return_payments),
+        key=lambda x: x.done_at,
+        reverse=True
+    )
+    
+   
+    return render(request, 'transactions/all_transactions.html', {
+        'loans': merged_entries,
+    })

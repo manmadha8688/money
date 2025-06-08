@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404,redirect
 from django.contrib.auth.models import User
+from django.urls import reverse
 from .models import LoanRequest, Borrower , PaymentDetail ,LoanStatusHistory ,LoanImage
 
 from django.http import JsonResponse
@@ -158,7 +159,7 @@ def loan_request(request, lender_id, unique_id):
         elif loan.status== "paymentprocess":
             payment = PaymentDetail.objects.get(id =loan.payment.id)
             return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
-        elif loan.status == "paymentdone":
+        elif loan.status == "paymentdone" or loan.status == 'paymentnotreceived':
             
             payment = PaymentDetail.objects.get(id =loan.payment.id)
             return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment})
@@ -197,7 +198,8 @@ def loan_request(request, lender_id, unique_id):
                         payment.save()
                     else:
     
-                        print("Payment already exists for this loan and due date.")
+                        
+                        return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 
                 return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan, 'mini':mini,'maxi':maxi})
             elif loan.payment_plan == "weekly":
@@ -294,7 +296,7 @@ def loan_request_list(request):
 
 from decimal import Decimal
 def accept_reject_status(request, loan_id):
-    
+     
     loan = get_object_or_404(LoanRequest, id=loan_id)
     if request.method == "POST":
         action = request.POST.get("action")
@@ -305,11 +307,15 @@ def accept_reject_status(request, loan_id):
             loan.taken_date = request.POST.get("taken_date")
             loan.interest_amount = Decimal(request.POST.get('interest_amount'))
             loan.instalment = request.POST.get('installment')
+            loan.remark = request.POST.get('remark')
+            loan.save()
+            return redirect(f"{reverse('loan-request-list')}?accept=true&loan_id={loan.id}&amount={loan.amount}")
         elif action == "reject":
             loan.status = "rejected"
+            loan.remark = request.POST.get('remark')
+            loan.save()
+            return redirect(f"{reverse('loan-request-list')}?reject=true&loan_id={loan.id}&amount={loan.amount}")
         
-        loan.remark = request.POST.get('remark')
-        loan.save()
 
         return redirect("loan-request-list")  # your loan list page
 
@@ -418,7 +424,7 @@ def paymentdone(request,loan_id):
         loan.status="paymentdone"
         loan.payment.save()
         loan.save()
-        
+        return redirect(f"{reverse('accepted-list')}?paymentdone=true&loan_id={loan.id}&amount={loan.amount}")
 
     return redirect("accepted-list")
 def payment_done_check(request,loan_id):

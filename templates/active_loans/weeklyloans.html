@@ -119,7 +119,9 @@
       <th>Instalment</th>
       <th>Total Paid</th>
       <th>Remaining</th>
-      <th>Last Paid Date</th>
+      <th>Last_Paid <br>
+         (Due_date/paid_on)
+      </th>
       <th>Next Due Date</th>
       <th>Status</th>
       <th>Action</th>
@@ -139,7 +141,20 @@
 <td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">{{ loan.activeloan.last_payment_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">
+  {% if loan.activeloan.last_payment_date %}
+  {{ loan.activeloan.last_payment_date }}/
+  {% for payment in loan.activeloan.return_payments.all %}
+    {% if payment.due_date == loan.activeloan.last_payment_date %}
+      
+        {{ payment.created_at|date:"d M Y, h:i A" }}
+       
+    {% endif %}
+  {% endfor %}
+  {% else %}
+        -
+    {% endif %}
+</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #e67e22; font-size: 15px;">{{ loan.activeloan.next_due_date }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
     {{ loan.activeloan.status|title }}

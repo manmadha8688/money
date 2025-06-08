@@ -84,9 +84,9 @@
   }
 
   .badge.pending { background-color: #f59e0b; }
-  .badge.approved { background-color: #10b981; }
+  .badge.approved { background-color: #28a745; }
   .badge.info { background-color: #3b82f6; }
-  .badge.failed { background-color: #ef4444; }
+  .badge.debited { background-color: #dc3545; }
 
   .filter-form {
     display: flex;
@@ -212,6 +212,8 @@
     </thead>
     <tbody>
       {% for loan in loans %}
+      
+  {% if loan.entry_type == 'loan' %}
       <tr>
         <td>{{ forloop.counter }}</td>
         <td>{{ loan.done_at }}</td>
@@ -242,14 +244,50 @@
            {% endif %}
         </td>
         <td>
-              <span class="badge approved">Payment_Sent</span>
-            
+             {% if loan.status == "paymentreceived"%}
+              <span class="badge debited">debited</span>
+             {% else %}
+               <span class="badge pending">Pending</span>
+             {% endif %}
             
         </td>
         
       </tr>
-      {% endfor %}
+  {% endif %}
+  {% if loan.entry_type == 'return_payment' %}
+  <tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ loan.created_at }}</td>  {# Return payment creation date #}
+    <td>{{ loan.returnloan.loan_request.id }}</td>  {# Original LoanRequest ID #}
+    <td>₹{{ loan.amount }}</td>
+    <td>{{ loan.returnloan.loan_request.borrower.name }}<br>{{ loan.returnloan.loan_request.borrower.phone }}</td>
+    <td>
+      {{ loan.get_payment_method_display }}
+    </td>
+    <td>
+      {% if loan.payment_method == 'cash' %}
+        Given by - {{ loan.cash_person }}
+      {% elif loan.payment_method == 'online' %}
+        {% if loan.payment_app %}
+          App - {{ loan.payment_app }}<br>
+        {% endif %}
+        UTR: {{ loan.utr }}
+      {% else %}
+        —
+      {% endif %}
+    </td>
+    <td>
+      {% if loan.status == 'success' %}
+        <span class="badge approved">Credited</span>
+      {% else %}
+        <span class="badge pending">Pending</span>
+      {% endif %}
+    </td>
+  </tr>
+{% endif %}
 
+      {% endfor %}
+      
     </tbody>
   </table>
 </div>

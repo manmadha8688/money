@@ -367,7 +367,9 @@
         <th>Installment</th>
         <th>Paid</th>
         <th>Remaining</th>
-        <th>Last Paid</th>
+        <th>Last_Paid <br>
+         (Due_date/paid_on)
+      </th>
         <th>Next Due</th>
         <th>Status</th>
         <th>schedule</th>
@@ -385,7 +387,20 @@
 <td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; ">₹{{ loan.instalment }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; ">₹{{ loan.activeloan.total_paid }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; ">₹{{ loan.activeloan.remaining_balance }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; ">{{ loan.activeloan.last_payment_date }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; ">
+  {% if loan.activeloan.last_payment_date %}
+  {{ loan.activeloan.last_payment_date }}/
+  {% for payment in loan.activeloan.return_payments.all %}
+    {% if payment.due_date == loan.activeloan.last_payment_date %}
+      
+        {{ payment.created_at|date:"d M Y, h:i A" }}
+       
+    {% endif %}
+  {% endfor %}
+  {% else %}
+        -
+    {% endif %}
+</td>
 <td style="padding: 12px; border: 1px solid #ddd;  ">{{ loan.activeloan.next_due_date }}</td>
 
   <td style="color: {% if loan.activeloan.status == 'active' %}var(--success){% else %}var(--danger){% endif %};">

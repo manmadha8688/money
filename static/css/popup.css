@@ -1,0 +1,42 @@
+ #custom-alert {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  background-color: #10b981; /* green by default */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: none;
+  transition: all 0.3s ease;
+}
+
+/* Red alert variant */
+#custom-alert.red {
+  background-color: #ef4444;
+}
+
+/* Yellow alert variant */
+#custom-alert.yellow {
+  background-color: #f59e0b;
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.fadeOut {
+  animation: fadeOut 0.5s forwards;
+}

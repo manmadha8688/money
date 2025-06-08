@@ -119,8 +119,52 @@
                 grid-template-columns: 1fr;
             }
         }
-    </style>
+        #custom-alert {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  background-color: #10b981; /* green by default */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: none;
+  transition: all 0.3s ease;
+}
 
+/* Red alert variant */
+#custom-alert.red {
+  background-color: #ef4444;
+}
+
+/* Yellow alert variant */
+#custom-alert.yellow {
+  background-color: #f59e0b;
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.fadeOut {
+  animation: fadeOut 0.5s forwards;
+}
+    </style>
+<div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
     <div class="dashboard">
         <div class="stat-card">
             <h3>Total Loans Issued</h3>
@@ -185,4 +229,37 @@
             </div>
         </div>
     </div>
+    <script>
+function showAlert(message = "Success!", type = "green") {
+  const alertBox = document.getElementById('custom-alert');
+  const messageSpan = document.getElementById('custom-alert-message');
+
+  // Reset classes
+  alertBox.classList.remove("red", "yellow");
+
+  // Add color variant
+  if (type === "red") alertBox.classList.add("red");
+  if (type === "yellow") alertBox.classList.add("yellow");
+
+  messageSpan.innerText = message;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.classList.add('fadeOut');
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+      alertBox.classList.remove('fadeOut');
+    }, 500);
+  }, 4000);
+}
+
+// Example triggers based on URL
+const urlParams = new URLSearchParams(window.location.search);
+
+if (urlParams.get('login') === 'success') {
+  showAlert("Login successful!", "green");
+}
+
+</script>
+
 {% endblock %}

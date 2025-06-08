@@ -7,6 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+    <link rel="stylesheet" href="{% static 'css/popup.css' %}">
     <title>Accepted Loans</title>
     <style>
         body {
@@ -324,7 +325,9 @@
     </div>
     
     <h2>Accepted Loans</h2>
-
+<div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
     {% if loans %}
     <table>
         <thead>
@@ -708,7 +711,8 @@ if (amountInput && amount) {
             
         
     </script>
-    
+    <script src="{% static 'js/popup.js' %}"></script>
+
 <script src="{% static 'js/filter.js ' %}"></script>
 </body>
 </html>

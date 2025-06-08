@@ -65,9 +65,7 @@ def update_repayment_status(request):
                 loan = payment.returnloan.loan_request
                 active_loan = payment.returnloan
                 
-                print(active_loan.total_paid)
                 active_loan.total_paid += payment.amount
-                print(active_loan.total_paid)
                 active_loan.remaining_balance -= payment.amount
                 active_loan.last_payment_date = payment.due_date
                 if  loan.payment_plan == 'weekly':

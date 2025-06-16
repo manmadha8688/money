@@ -26,8 +26,7 @@ class ActiveLoan(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.loan_request.id
-
+        return str(self.loan_request.id)
 
 class ReturnPayment(models.Model):
     PAYMENT_METHOD_CHOICES = [

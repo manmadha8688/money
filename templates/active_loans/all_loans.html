@@ -6,6 +6,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <link rel="stylesheet" href="{% static 'css/popup.css' %}">
+    
   <title>All active Loan Details</title>
   <style>
     body {
@@ -99,10 +102,160 @@
     .sub-table th {
       background-color: #b2bec3;
     }
+    .pay-btn {
+      background: linear-gradient(135deg, #00c6ff, #0261d5);
+      color: white;
+      padding: 6px 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
 
-  </style>
+    .pay-btn:hover {
+      background: linear-gradient(135deg, #0072ff, #00c6ff);
+      transform: translateY(-2px);
+    }
+
+    .pay-btn:active {
+      transform: scale(0.98);
+    }
+
+    @media (max-width: 600px) {
+      .pay-btn {
+        width: 100%;
+      }
+    }
+
+
+  /* Modal overlay */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  /* Modal box */
+  .modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Headings and text */
+  .modal-content h2 {
+    margin-top: 0;
+    font-size: 1.8rem;
+    color: #1abc9c;
+    text-align: center;
+  }
+
+  .modal-content p {
+    font-size: 1rem;
+    color: #555;
+    margin: 10px 0;
+  }
+
+  .form-group {
+    margin: 15px 0;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .modal-buttons button {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .modal-buttons .confirm {
+    background-color: #1abc9c;
+    color: white;
+  }
+
+  .modal-buttons .confirm:hover {
+    background-color: #16a085;
+  }
+
+  .modal-buttons .cancel {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .modal-buttons .cancel:hover {
+    background-color: #c0392b;
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 480px) {
+    .modal-content {
+      padding: 20px;
+      margin: 10% auto;
+    }
+
+    .modal-buttons {
+      flex-direction: column;
+    }
+  }
+</style>
 </head>
 <body>
+
+
+  <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
 
 <h2>All Active Loans</h2>
 
@@ -166,8 +319,7 @@
 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
     {{ loan.activeloan.status|title }}
 </td>
-
-      <td>Paid / Not</td>
+<td><button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }})">Pay </button></td>
     </tr>
 
     <!-- Expandable row -->
@@ -195,10 +347,28 @@
                   ✅ Paid
                 {% else %}
                   ❌ Unpaid
-                {% endif %}
+                {% endif %} 
               </td>
-              <td>₹ 0.0</td>
-                  <td> - </td>
+              <td>₹{{ item.paid_this_due_date }}</td>
+                  <td>
+                    {% if item.payment_details %}
+                        
+                            {% for payment in item.payment_details %}
+                                
+                                    
+                                    {% if payment.payment_app %}<br> <strong>Online App</strong> : {{ payment.payment_app }}{% endif %}
+                                    {% if payment.utr %}<br> <strong>UTR:</strong> {{ payment.utr }}{% endif %}
+                                    {% if payment.cash_person %}<br> <strong>Cash By: </strong>{{ payment.cash_person }}{% endif %}
+                                    
+                                    <br><strong>On :</strong> {{ payment.created_at }}
+                                
+                            {% endfor %}
+                        
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+              
                   <td>₹{{ item.total_paid }}</td>
                   <td>₹{{ item.remaining }}</td>
             </tr>
@@ -217,7 +387,151 @@
 </div>
 {% endif %}
 
+
+
+
+<div id="paymentModal" class="modal">
+  <div class="modal-content">
+    <h2>Payment Details</h2>
+
+    
+    <form id="paymentForm" method="POST">
+      {% csrf_token %}
+       
+      <input type="hidden" name="loan_id" id="loanIdInput" />
+
+      <!-- Amount (common) -->
+      <div class="form-group">
+        <label for="amount">Enter Amount </label>
+        <input type="number" id="amount" name="amount"
+           step="100" required >
+      </div>
+      
+      <!-- Payment Method -->
+      <div class="form-group">
+        <label for="method">Select Payment Method:</label>
+        <select id="method" name="method" onchange="toggleFields()" required>
+          <option value="">-- Select --</option>
+          <option value="cash">Cash</option>
+          <option value="online">Online</option>
+        </select>
+      </div>
+
+      
+
+      <!-- Cash Fields -->
+      <div class="form-group" id="cash-field" style="display: none;">
+        <label for="cashPerson">Cash Given To:</label>
+        <input type="text" id="cashPerson" name="cash_person" placeholder="Enter person name">
+      </div>
+
+      <!-- Online Fields -->
+      <div id="online-fields" style="display: none;">
+        <br>
+        
+        <div class="form-group">
+          <label for="platform">Enter Payment App:</label>
+          <input list="platforms" id="platform" name="platform"
+            placeholder="e.g., GPay, PhonePe, Paytm">
+          <datalist id="platforms">
+            <option value="GPay">
+            <option value="PhonePe">
+            <option value="Paytm">
+            <option value="Amazon Pay">
+            <option value="BHIM">
+            <option value="Mobikwik">
+            <option value="Freecharge">
+            <option value="Other">
+          </datalist>
+        </div>
+
+        <div class="form-group">
+          <label for="utr">Enter UTR Number:</label>
+          <input type="text" id="utr" name="utr" pattern="\d{6,}" title="Enter at least 6 digits">
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="confirm" onclick="validateAndSubmit()">Payment Done</button>
+        <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript -->
 <script>
+  function openModal(loanId) {
+    document.getElementById("paymentModal").style.display = "block";
+     document.getElementById("loanIdInput").value = loanId;
+  }
+
+  function closeModal() {
+    document.getElementById("paymentModal").style.display = "none";
+  }
+
+  function toggleFields() {
+    const method = document.getElementById("method").value;
+    document.getElementById("cash-field").style.display = (method === "cash") ? "block" : "none";
+    document.getElementById("online-fields").style.display = (method === "online") ? "block" : "none";
+  }
+
+  function validateAndSubmit() {
+    const method = document.getElementById("method").value;
+    const amountInput = document.getElementById("amount");
+    const minAmount = parseFloat(amountInput.dataset.min);
+    const maxAmount = parseFloat(amountInput.dataset.max);
+    const amount = parseFloat(amountInput.value);
+
+    if (!method) {
+      alert("Please select a payment method.");
+      return;
+    }
+
+    if (!amount) {
+      alert(`Enter a valid Amount `);
+      amountInput.focus();
+      return;
+    }
+
+    if (method === "cash") {
+      const cashPerson = document.getElementById("cashPerson").value.trim();
+      if (!cashPerson) {
+        alert("Please enter the name of the person to whom cash was given.");
+        document.getElementById("cashPerson").focus();
+        return;
+      }
+    }
+
+    if (method === "online") {
+      const platform = document.getElementById("platform").value.trim();
+      const utr = document.getElementById("utr").value.trim();
+
+      if (!platform) {
+        alert("Please enter the payment app name.");
+        document.getElementById("platform").focus();
+        return;
+      }
+
+      if (!utr || !/^\d{6,}$/.test(utr)) {
+        alert("Please enter a valid UTR number (at least 6 digits).");
+        document.getElementById("utr").focus();
+        return;
+      }
+    }
+
+    document.getElementById("paymentForm").submit();
+  }
+
+    // Optional: Close modal if user clicks outside
+    window.onclick = function(event) {
+      const modal = document.getElementById("paymentModal");
+      if (event.target == modal) {
+        closeModal();
+      }
+    }
+ 
+
   function toggleSchedule(id) {
     const row = document.getElementById('schedule-' + id);
     const arrow = document.getElementById('arrow-' + id);
@@ -231,6 +545,7 @@
   }
 </script>
 
+<script src="{% static 'js/popup.js' %}"></script>
 </body>
 </html>
 {% endblock %}

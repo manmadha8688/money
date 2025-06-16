@@ -42,3 +42,8 @@ if (urlParams.get('paymentdone') === 'true') {
   const amount = urlParams.get('amount');
   showAlert(`Loan #${loanId} amount ₹${amount} has been sent successfully!`, "green");
 }
+if (urlParams.get('paymentexists') === 'true') {
+    
+  showAlert("Payment already done by borrower. Please check in Payments and confirm!..",'yellow');
+}
+

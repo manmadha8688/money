@@ -176,7 +176,7 @@
 
     <div class="details-section" id="paymentDetails">
       <div class="row"><div class="label">Payment Method</div><div class="value">{{ payment.payment_method|capfirst }}</div></div>
-      <div class="row"><div class="label">Given On</div><div class="value">{{ payment.created_at|date:"d M Y, H:i" }}</div></div>
+      <div class="row"><div class="label">Given On</div><div class="value">{{ payment.updated_at|date:"d M Y, H:i" }}</div></div>
       
       {% if payment.payment_method == 'cash' %}
         <div class="row"><div class="label">Cash Request From</div><div class="value">{{ payment.cash_from }}</div></div>

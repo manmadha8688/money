@@ -160,7 +160,6 @@
                 <th>Loan ID</th>
                 <th>Applied On</th>
                 <th>Accepted On</th>
-                <th>Confirmed On</th>
                 <th>Payment Sent On</th>
                 <th>Payment Confirmed On</th>
                 <th>Rejected On</th>
@@ -177,7 +176,6 @@
                 <td>{{ entry.loan.id }}</td>
                 <td>{{ entry.loan.apply_date }}</td>
                 <td>{{ entry.status_dates.accepted|default:"-" }}</td>
-                <td>{{ entry.status_dates.paymentprocess|default:"-" }}</td>
                 <td>{{ entry.status_dates.paymentdone|default:"-" }}</td>
                 <td>{{ entry.status_dates.paymentreceived|default:"-" }}</td>
                 <td>{{ entry.status_dates.rejected|default:"-" }}</td>

@@ -1,190 +1,196 @@
+
 {% load static %}
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loan Application</title>
+  <meta charset="UTF-8">
+  <title>Multi-Step Form with Filling Progress</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{% static 'css/loan_form_1.css' %}">
+  <link rel="stylesheet" href="{% static 'css/payment_details.css' %}">
   <style>
     :root {
-      --primary-color: #1abc9c;
-      --primary-dark: #16a085;
-      --bg-light: #ecf0f1;
-      --text-dark: #2c3e50;
-      --input-bg: #fff;
-      --radius: 12px;
+      --primary: #1abc9c;
+      --inactive: #e0e0e0;
     }
+    #agree-checkbox{
+    transform: scale(1.5); 
+    margin-left: 2%;
+  }
 
-    * {
-      box-sizing: border-box;
+  .proceed-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  
+    .proceed-btn {
+      background-color: #007bff;
+      color: white;
+      cursor: pointer; /* Start with "not-allowed" cursor */
     }
 
     body {
+      font-family: "Segoe UI", sans-serif;
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: var(--bg-light);
-      color: var(--text-dark);
+      padding: 0;
+      background: #f5f5f5;
+    }
+table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
     }
 
-    .header {
-      background: var(--primary-color);
-      color: white;
-      padding: 20px 30px;
-      border-bottom-left-radius: 40px;
-      border-bottom-right-radius: 40px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    td {
+      padding: 10px 8px;
+      vertical-align: top;
+    }
+
+    td:first-child {
+      font-weight: 600;
+      width: 35%;
+      color: #555;
+      text-align: left;
       position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      padding-left: 10%;
     }
 
-    .logo-wrapper {
+    td:first-child::after {
+      content: ":";
       position: absolute;
-      left: 30px;
+      right: 20px;
+      font-weight: bold;
     }
 
-    .company-logo {
-      width: 80px;
-      height: auto;
-      border-radius: 50%;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    td:last-child {
+      color: #222;
     }
 
-    .company-info {
-      text-align: center;
-    }
-
-    .company-info h1 {
-      margin: 0;
-      font-size: 28px;
-      letter-spacing: 1px;
-    }
-
-    .company-info p {
-      margin: 5px 0 0;
-      font-size: 14px;
-      font-style: italic;
-    }
-
-    h3 {
-      text-align: center;
-      margin: 30px auto 20px;
-      font-size: 26px;
-    }
-
-    form {
+    .container {
       max-width: 700px;
-      background: white;
-      margin: 20px auto;
-      padding: 40px;
-      border-radius: var(--radius);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-      animation: fadeIn 0.6s ease;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 40px;
+    }
+
+    .progress-bar {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      height: 4px;
+      width: 100%;
+      background: var(--inactive);
+      z-index: 0;
+      transform: translateY(-50%);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.4s ease-in-out;
+    }
+
+    .step {
+      z-index: 1;
+      text-align: center;
+      flex: 1;
+      position: relative;
+    }
+
+    .circle {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+      background-color: var(--inactive);
+      border-radius: 50%;
+      line-height: 40px;
+      color: white;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #2c3e50;
+      min-width: 160px;
+      margin-left: 20%;
+      display: flex;
+      justify-content: flex-end;
+      position: relative;
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+
+    .active .circle,
+    .completed .circle {
+      background-color: var(--primary);
+    }
+
+    .active .label,
+    .completed .label {
+      color: var(--primary);
+      font-weight: bold;
+    }
+
+    .form-step {
+      display: none;
+    }
+
+    .form-step.active {
+      display: block;
     }
 
     .form-group {
       margin-bottom: 20px;
-      position: relative;
     }
 
-    label {
-      display: block;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
+    
 
-    input, textarea, select {
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
-      padding: 12px 14px;
-      border: 1px solid #ccc;
-      border-radius: var(--radius);
-      background: var(--input-bg);
-      font-size: 15px;
-      transition: border-color 0.3s ease;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--primary-color);
-      outline: none;
-    }
-
-    input[type="file"] {
       padding: 10px;
-    }
-
-    textarea {
-      min-height: 100px;
-      resize: vertical;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
     }
 
     button {
-      width: 100%;
-      background: var(--primary-color);
-      color: white;
-      padding: 14px;
+      padding: 10px 20px;
       font-size: 16px;
-      font-weight: bold;
+      background-color: var(--primary);
       border: none;
-      border-radius: var(--radius);
+      color: white;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s ease;
       margin-top: 10px;
     }
 
     button:hover {
-      background: var(--primary-dark);
+      background-color: #16a085;
     }
 
-    @media (max-width: 600px) {
-      form {
-        padding: 25px;
-      }
-
-      .header h1 {
-        font-size: 28px;
-      }
-    }
-    span{
-      color: red;
-    }
-    .info-icon {
-      cursor: pointer;
-      display: inline-block;
-      margin-left: 8px;
-      vertical-align: middle;
-    }
-    
-    .info-box {
-      position: absolute;
-      background: #fff;
-      color: #333;
-      border: 1px solid #ddd;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      padding: 8px 12px;
-      border-radius: 8px;
-      z-index: 999;
-      font-size: 14px;
-      display: none;
-      max-width: 220px;
-    }
-    
-    label {
+    .btns {
       display: flex;
-      align-items: center;
-      font-weight: 600;
-      margin-bottom: 6px;
+      justify-content: space-between;
+      gap:60px;
+      margin-top: 30px;
     }
-    
   </style>
 </head>
 <body>
-
   <div class="header">
     <div class="logo-wrapper">
       {% if loan.lender.active_user.company_logo %}
@@ -198,11 +204,32 @@
       <p>({{ loan.lender.active_user.tagline }})</p>
     </div>
   </div>
+  <div class="container">
+    <div class="steps">
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+      </div>
 
-  <h3>Apply for a Loan</h3>
+      <div class="step" id="step-1">
+        <div class="circle">1</div>
+        <div class="label">Loan Request</div>
+      </div>
+      <div class="step" id="step-2">
+        <div class="circle">2</div>
+        <div class="label">Confirm Payment</div>
+      </div>
+      <div class="step" id="step-3">
+        <div class="circle">3</div>
+        <div class="label">Done</div>
+      </div>
+    </div>
 
-  <form method="POST" enctype="multipart/form-data" onsubmit="return validateForm();">
+
+<form id="loanform" method="POST" enctype="multipart/form-data" >
     {% csrf_token %}
+    <!-- Step 1 -->
+    <div class="form-step active" id="form-step-1">
+      
     <input type="hidden" id="apply_date" name="apply_date" />
 
     <div class="form-group">
@@ -346,197 +373,289 @@
       <textarea id="notes" name="reason">{{ loan.reason|default_if_none:'' }}</textarea>
     </div>
 
-    <button type="submit">Submit Request</button>
-  </form>
+    <button type="button" onclick="validatestep1()" >Next</button>
+  
+
+      
+    </div>
+
+    <!-- Step 2 -->
+    <div class="form-step" id="form-step-2">
+      <h3 class="payment-heading">💰 Payment Details</h3>
+        
+        <label for="payment_type">Payment Method:</label>
+        <select name="payment_type"  id="payment_type" onchange="togglePaymentDetails()" required>
+          <option value="" disabled selected >-- Select --</option>
+          <option value="cash">Cash</option>
+          <option value="online">Online</option>
+        </select>
+
+        <div id="cashFields" class="hidden">
+          <label for="cash_from">From Whom Cash Was Taken:</label>
+          <input type="text" name="cash_from" id="cash_from" placeholder="Enter name or reference">
+        </div>
+        
+        
+
+        <div id="onlinePlatformFields" class="hidden">
+          <label for="online_method" >Select Payment Platform:</label>
+          <select name="online_method" id="online_method" onchange="toggleOnlineMethodFields()">
+            <option value="" disabled  selected>-- Choose --</option>
+            <option value="phonepay">Phone Pay</option>
+            <option value="googlepay">Google Pay</option>
+            <option value="paytm">Paytm</option>
+            <option value="bank">Bank Account</option>
+          </select>
+
+          <div id="upiFields" class="hidden">
+            <label for="upi_number">UPI Id or Phone Number:</label>
+            <input type="text" name="upi_number" id="upi_number" placeholder="e.g. example@upi or 9876543210" >
+            <label for="account_holder_name">Account Holder Name</label>
+            <input type="text" name="account_holder_name" placeholder="Enter name as per UPI">
+            
+            
+            <label for="upi_screenshot">Upload Payment QR code (optional):</label>
+            <input type="file" name="upi_screenshot">
+          </div>
+
+          <div id="bankFields" class="hidden">
+            <label for="name">Account Holder Name</label>
+            <input type="text" name="bank_account_holder_name" placeholder="Enter name as per UPI">
+          
+            <label for="account_number">Account Number:</label>
+            <input type="text" name="account_number" placeholder="Enter account number">
+
+            <label for="ifsc">IFSC Code:</label>
+            <input type="text" name="ifsc" placeholder="Enter IFSC code">
+            
+            <label for="bank_name">Bank Name:</label>
+            <input type="text" name="bank_name" placeholder="Enter bank name">
+          </div>
+        </div>
+
+        <div class="btns">
+        <button type="button" onclick="prevStep()">Back</button>
+        <button type="button" onclick="validatestep2()">Next</button>
+      </div>
+    </div>
+
+
+    <!-- Step 3 -->
+    <div class="form-step" id="form-step-3">
+      
+      <h3>Confirm Your Loan Details</h3>
+
+  <table>
+        <tr><td>Your Name</td><td><span id="confirm_borrower_name"></span></td></tr>
+        <tr><td>Phone</td><td><span id="confirm_phone"></span></td></tr>
+        <tr><td>Loan Item</td><td><span id="confirm_loan_item"></span></td></tr>
+        <tr><td>Amount</td><td style="color: green;">₹ <span style="color: green;" id="confirm_amount"></span></td></tr>
+        <tr><td>Taken Date</td><td><span id="confirm_taken"></span></td></tr>
+        <tr><td>Return Date</td><td><span id="confirm_return"></span></td></tr>
+        <tr><td>Reason</td><td><span id="confirm_reason"></span></td></tr>
+        
+        <tr><td>Payment Plan</td><td > <span id="confirm_payment_plan"></span></td></tr>
+       <tr> <td colspan="2"> <strong>Payment Details </strong></td>
+      </tr>
+        <tr><td>Payment Method</td><td ><span id="confirm_payment_type"></span></td></tr>
+        
+        <tr><td>Payment Through</td><td ><span id="confirm_payment_info"></span></td></tr>
+        
+       
+  </table>
+<h3>Terms and Conditions</h3>
+
+<!-- Scrollable Terms -->
+<div id="terms-box" style="height: 220px; overflow-y: scroll; border: 1px solid #999; padding: 12px; margin-bottom: 10px;">
+    <ul>
+       <li>You must have 18 years of age or older.</li>
+        <li>You have understood these Terms with the company and you have clearly understood the terms and conditions of the Services.</li>
+        <li>You shall provide us any proof of identity we may request, and as may be specified by the Reserve Bank of India (“RBI”) in relation to any Customer Due Diligence or Know-Your-Customer processes, as may be applicable and shall not refuse to cooperate in an investigation or provide confirmation of your identity or any other information you provide to the company.</li>
+        <li>With all necessary documentation, only the loan will be provided.</li>
+        <li>You have to obeyed the legally binding contracts under the Indian Contract Act, 1872.</li>
+        <li>
+            <strong>Condition Regarding Enforcement of Security Interest under Section 13(4) of the SARFAESI Act, 2002:</strong><br>
+            The Borrower expressly acknowledges and agrees that, in the event of default in repayment of the secured debt or failure to comply with the terms of the loan agreement, the Secured Creditor shall be entitled to invoke its rights under Section 13(4) of the Securitisation and Reconstruction of Financial Assets and Enforcement of Security Interest Act, 2002 (SARFAESI Act). This includes, but is not limited to, the right to take possession of, manage, or sell the secured assets without the intervention of a court, in order to recover the outstanding dues.
+        </li>
+        <li>If interest remains unpaid for over two months, Section 13(4) of the SARFAESI Act, 2002 applies.</li>
+        <li>We are not responsible for your assets' damages or if it was in non-working conditions at the time of return.</li>
+        <li>These Terms, along with Company’s Privacy Policy, as amended and updated from time to time, constitute the entire agreement between the User(s) and company, superseding any prior written or oral contracts in relation to the same subject matter herein.</li>
+    </ul>
+</div>
+
+<!-- Checkbox -->
+ <label for="check">
+    <input type="checkbox" id="agree-checkbox" disabled>
+    I have read and agree to the Terms and Conditions
+</label>
+
+
+<!-- Continue Button -->
+
+      <div class="note1">⚠️ Please carefully review all the details above and ensure you’ve made any necessary edits. <br>
+    Make sure you’ve read the Terms and Conditions. Tick the box Above to confirm before submitting.</div>
+      
+        
+      <div class="btns">
+        <button type="button" onclick="prevStep()">Back</button>
+        <button  class="proceed-btn"  id="continue-btn" disabled> Finish &Submit</button>
+
+      </div>
+    </div>
+  </div>
+
+</form>
+  <script src="{% static 'js/loan_form_1.js' %}"></script>
+  <script src="{% static 'js/payment_details.js' %}"></script>
 
   <script>
-    const todayDate = new Date();
-    const yyyy = todayDate.getFullYear();
-    const mm = String(todayDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(todayDate.getDate()).padStart(2, '0');
-    const today = `${yyyy}-${mm}-${dd}`;
-    document.getElementById("apply_date").value = today;
+    window.addEventListener("DOMContentLoaded", function () {
+        const termsBox = document.getElementById("terms-box");
+        const agreeCheckbox = document.getElementById("agree-checkbox");
+        const continueBtn = document.getElementById("continue-btn");
 
-    const takenDateInput = document.getElementById("taken_date");
-    const returnDateInput = document.getElementById("return_date");
-    takenDateInput.setAttribute("min", today);
-    returnDateInput.setAttribute("min", today);
+        // Enable checkbox after scrolling to bottom
+        termsBox.addEventListener("scroll", () => {
+            const buffer = 5;  // allow slight difference
+    const atBottom = termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - buffer;
 
-    takenDateInput.addEventListener("change", function () {
-      returnDateInput.setAttribute("min", takenDateInput.value);
+           if (atBottom) {
+                agreeCheckbox.disabled = false;
+            }
+        });
+
+        // Enable continue button if checkbox is checked
+        agreeCheckbox.addEventListener("change", () => {
+            continueBtn.disabled = !agreeCheckbox.checked;
+        });
     });
-
-    const loanItemInput = document.getElementById("loan_item");
-    const photoLabel = document.getElementById("photo-label");
-
-    loanItemInput.addEventListener("input", function () {
-      const item = loanItemInput.value.trim();
-      photoLabel.innerText = item ? `Upload ${item} Photos (Optional):` : "Upload Photos (Optional):";
-    });
-
-    function validateForm() {
+    function validatestep1() {
       const reason = document.getElementById("notes").value.trim();
+      const name = document.getElementById('borrower_name').value;
+      if (!name){
+        alert('enter your name');
+         document.getElementById('borrower_name').focus();
+        return ;
+      }
+      const phone = document.getElementById("phone");
+  const loanItem = document.getElementById("loan_item");
+  const amount = document.getElementById("amount");
+  const paymentPlan = document.getElementById("payment_plan");
+  const takenDate = document.getElementById("taken_date");
+
+  const phonePattern = /^\d{10}$/;
+  if (!phonePattern.test(phone.value.trim())) {
+    alert("Phone number must be exactly 10 digits.");
+    phone.focus();
+    return false;
+  }
+
+  if (!loanItem.value.trim()) {
+    alert("Please enter or select a loan item.");
+    loanItem.focus();
+    return false;
+  }
+
+  if (!amount.value.trim() || parseFloat(amount.value) <= 0) {
+    alert("Please enter a valid amount greater than 0.");
+    amount.focus();
+    return false;
+  }
+
+  if (!paymentPlan.value) {
+    alert("Please select a payment plan.");
+    paymentPlan.focus();
+    return false;
+  }
+
+  if (!takenDate.value) {
+    alert("Please select a loan taken date.");
+    takenDate.focus();
+    return false;
+  }
       if (!reason) {
         alert("Please enter a reason for the loan.");
-        return false;
+        document.getElementById("notes").focus();
+        return ;
       }
-      return true;
+      
+      nextStep()
+    }
+    function validatestep2(){
+      val = confirmSubmit();
+      if(val){
+        populateConfirmation();
+        nextStep();
+      }
+      return false ;
     }
 
-    const input = document.getElementById("photos");
-    const previewContainer = document.getElementById("preview-container");
-    let selectedFiles = [];
+    function populateConfirmation() {
+  document.getElementById("confirm_borrower_name").innerText = document.getElementById("borrower_name").value;
+  document.getElementById("confirm_phone").innerText = document.getElementById("phone").value;
+  document.getElementById("confirm_loan_item").innerText = document.getElementById("loan_item").value;
+  document.getElementById("confirm_amount").innerText = document.getElementById("amount").value;
+  document.getElementById("confirm_payment_plan").innerText = document.getElementById("payment_plan").value;
+  document.getElementById("confirm_taken").innerText = document.getElementById("taken_date").value;
+  document.getElementById("confirm_return").innerText = document.getElementById("return_date").value;
+  document.getElementById("confirm_reason").innerText = document.getElementById("notes").value;
 
-    input.addEventListener("change", (e) => {
-      selectedFiles = selectedFiles.concat(Array.from(e.target.files));
-      updatePreview();
-      updateInputFiles();
-    });
+  const paymentType = document.getElementById("payment_type").value;
+  document.getElementById("confirm_payment_type").innerText = paymentType;
 
-    function updatePreview() {
-      previewContainer.innerHTML = "";
-      selectedFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const wrapper = document.createElement("div");
-          wrapper.style.position = "relative";
+  let paymentInfo = "";
+  if (paymentType === "cash") {
+    paymentInfo = "From: " + document.getElementById("cash_from").value;
+  } else if (paymentType === "online") {
+    const method = document.getElementById("online_method").value;
+    if (["phonepay", "googlepay", "paytm"].includes(method)) {
+      paymentInfo = `(${method}): ${document.getElementById("upi_number").value}`;
+    }
+  }
+  document.getElementById("confirm_payment_info").innerText = paymentInfo;
+}
 
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.style.width = "100px";
-          img.style.height = "100px";
-          img.style.objectFit = "cover";
-          img.style.borderRadius = "8px";
-          img.style.boxShadow = "0 0 4px rgba(0,0,0,0.2)";
 
-          const closeBtn = document.createElement("span");
-          closeBtn.innerHTML = "&times;";
-          closeBtn.style.position = "absolute";
-          closeBtn.style.top = "-6px";
-          closeBtn.style.right = "-6px";
-          closeBtn.style.background = "red";
-          closeBtn.style.color = "white";
-          closeBtn.style.borderRadius = "50%";
-          closeBtn.style.cursor = "pointer";
-          closeBtn.style.fontSize = "16px";
-          closeBtn.style.width = "20px";
-          closeBtn.style.height = "20px";
-          closeBtn.style.display = "flex";
-          closeBtn.style.alignItems = "center";
-          closeBtn.style.justifyContent = "center";
+    let currentStep = 1;
+    const totalSteps = 3;
 
-          closeBtn.onclick = () => {
-            selectedFiles.splice(index, 1);
-            updatePreview();
-            updateInputFiles();
-          };
+    function showStep(step) {
+      for (let i = 1; i <= totalSteps; i++) {
+        document.getElementById(`form-step-${i}`).classList.remove('active');
+        document.getElementById(`step-${i}`).classList.remove('active', 'completed');
+      }
 
-          wrapper.appendChild(img);
-          wrapper.appendChild(closeBtn);
-          previewContainer.appendChild(wrapper);
-        };
-        reader.readAsDataURL(file);
-      });
+      for (let i = 1; i < step; i++) {
+        document.getElementById(`step-${i}`).classList.add('completed');
+      }
+
+      document.getElementById(`form-step-${step}`).classList.add('active');
+      document.getElementById(`step-${step}`).classList.add('active');
+
+      updateProgressBar(step);
     }
 
-    function updateInputFiles() {
-      const dataTransfer = new DataTransfer();
-      selectedFiles.forEach((file) => dataTransfer.items.add(file));
-      input.files = dataTransfer.files;
+    function updateProgressBar(step) {
+      const percentage = ((step - 1) / (totalSteps - 1)) * 100;
+      document.getElementById("progress-bar-fill").style.width = percentage + "%";
     }
-      const paymentPlanSelect = document.getElementById("payment_plan");
-      const returnDateLabel = document.querySelector("label[for='return_date']");
-    
-      paymentPlanSelect.addEventListener("change", function () {
-        const plan = this.value;
-        takenDateInput.value = "";
-        
-    
-        returnDateInput.value = ""; // Clear previous value
-      });
-    
-      takenDateInput.addEventListener("change", function () {
-        const plan = paymentPlanSelect.value;
-        if (plan === "monthly") {
-          setDueDateMonthly();
-        } else if (plan === "weekly") {
-          setDueDateByDays(98);
-        } else {
-          setDueDateByDays(100); // Daily one-time with 100 days gap
-        }
-      });
-      
-      function setDueDateByDays(days) {
-        const start = new Date(takenDateInput.value);
-        if (isNaN(start)) return;
-      
-        const due = new Date(start);
-        due.setDate(due.getDate() + days); // Automatically excludes the taken date
-        returnDateInput.value = formatDate(due);
-      }
-      
-      function setDueDateMonthly() {
-        const start = new Date(takenDateInput.value);
-        if (isNaN(start)) return;
-      
-        const due = new Date(start);
-        due.setMonth(due.getMonth() + 1); // Moves to same date next month
-        returnDateInput.value = formatDate(due);
-      }
-      
-      function formatDate(date) {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-      }
-      
-      document.addEventListener('DOMContentLoaded', () => {
-        const fieldInfo = {
-          borrower_name: "Enter your full name.",
-          phone: "Provide a valid 10-digit mobile number of yours.",
-          email: "Enter your Email for updates.",
-          loan_item: "What valuable item are you giving as security for the loan?",
-  amount: "Enter the total amount of money you need.",
-  taken_date: "The date when you received or will receive the loan.",
-  payment_plan: `Choose how you plan to repay the loan:<br><br>
 
-• <strong>100 Days Plan:</strong> Repay the full amount day by day for 100 days.<br><br>
+    function nextStep() {
+      if (currentStep < totalSteps) {
+        currentStep++;
+        showStep(currentStep);
+      }
+    }
 
-• <strong>Weekly:</strong> Make one payment per week over 100 days (about 14 weeks).<br><br>
+    function prevStep() {
+      if (currentStep > 1) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    }
 
-• <strong>Monthly:</strong> Pay once a month. Interest is calculated only for one month, whether you repay Interets or Total amount.
- `,
-  
-  return_date: "The date by which you plan to repay the full loan or Interest.",
-  referral: "Optional – Mention the person who referred you, if any.",
-  photos: "Upload related documents or images (e.g., ID proof, item photos).",
-  notes: "Reason for borrowing the money or any additional information."
-        };
-      
-        Object.entries(fieldInfo).forEach(([id, text]) => {
-          const input = document.getElementById(id);
-          if (input) {
-            const icon = document.getElementById(`${id}-icon`);
-            const infoBox = document.createElement("div");
-            infoBox.className = "info-box";
-            infoBox.innerHTML = text;
-      
-            icon.addEventListener("mouseenter", () => {
-              infoBox.style.display = "block";
-            });
-      
-            icon.addEventListener("mouseleave", () => {
-              infoBox.style.display = "none";
-            });
-      
-            icon.appendChild(infoBox);
-          }
-        });
-      });
-      
-    </script>
-    
-    
+    // Initialize first step
+    showStep(currentStep);
+  </script>
 </body>
 </html>

@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <title>Monthly Loan Overview</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <link rel="stylesheet" href="{% static 'css/popup.css' %}">
   <style>
     :root {
       --primary: #1abc9c;
@@ -275,6 +277,9 @@
 
 </head>
 <body>
+ <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
 
 <div class="header">
   <div class="logo-wrapper">
@@ -303,7 +308,6 @@
     <p><span><i class="fas fa-envelope"></i> Email:</span> {{ loan.lender.active_user.email }}</p>
     <p><span><i class="fas fa-info-circle"></i> Bio:</span> {{ loan.lender.active_user.bio }}</p>
   </div>
-
 <table>
   <thead>
     <tr>
@@ -358,12 +362,18 @@
   <div class="modal-content">
     <h2>Payment Details</h2>
 
-    <p><strong>UPI ID:</strong> <span id="upi-id">{{ loan.lender.active_user.payment_upis }}</span></p>
-    <p><strong>Account Holder Name:</strong> {{ loan.lender.active_user.account_holder_name }}</p>
-
+    
     <form id="paymentForm" method="POST">
       {% csrf_token %}
-
+       
+      <!-- Amount (common) -->
+      <div class="form-group">
+        <label for="amount">Enter Amount (Min ₹{{ mini }}, Max ₹{{ maxi }})</label>
+        <input type="number" id="amount" name="amount"
+          min="{{ mini }}" max="{{ maxi }}" step="100" required
+          data-min="{{ mini }}" data-max="{{ maxi }}">
+      </div>
+      
       <!-- Payment Method -->
       <div class="form-group">
         <label for="method">Select Payment Method:</label>
@@ -374,13 +384,7 @@
         </select>
       </div>
 
-      <!-- Amount (common) -->
-      <div class="form-group">
-        <label for="amount">Enter Amount (Min ₹{{ mini }}, Max ₹{{ maxi }})</label>
-        <input type="number" id="amount" name="amount"
-          min="{{ mini }}" max="{{ maxi }}" step="100" required
-          data-min="{{ mini }}" data-max="{{ maxi }}">
-      </div>
+      
 
       <!-- Cash Fields -->
       <div class="form-group" id="cash-field" style="display: none;">
@@ -390,6 +394,10 @@
 
       <!-- Online Fields -->
       <div id="online-fields" style="display: none;">
+        <br>
+        <p><strong>UPI ID:</strong> <span id="upi-id">{{ loan.lender.active_user.payment_upis }}</span></p>
+    <p><strong>Account Holder Name:</strong> {{ loan.lender.active_user.account_holder_name }}</p>
+        <br>
         <div class="form-group">
           <label for="platform">Enter Payment App:</label>
           <input list="platforms" id="platform" name="platform"
@@ -454,7 +462,7 @@
       return;
     }
 
-    if (method === "cash") {
+    if (method === "cash") { 
       const cashPerson = document.getElementById("cashPerson").value.trim();
       if (!cashPerson) {
         alert("Please enter the name of the person to whom cash was given.");
@@ -509,6 +517,33 @@
         ? '<i class="fas fa-user-circle"></i> Lender Contact Details'
         : '<i class="fas fa-eye-slash"></i> Hide Contact Details';
     }
+         
+     
+function showAlert(message = "Success!", type = "green") {
+  const alertBox = document.getElementById('custom-alert');
+  const messageSpan = document.getElementById('custom-alert-message');
+
+  // Reset classes
+  alertBox.classList.remove("red", "yellow");
+
+  // Add color variant
+  if (type === "red") alertBox.classList.add("red");
+  if (type === "yellow") alertBox.classList.add("yellow");
+
+  messageSpan.innerText = message;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.classList.add('fadeOut');
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+      alertBox.classList.remove('fadeOut');
+    }, 500);
+  }, 4000);
+}
+{% if payment_exists %}
+    showAlert("Payment for this due date is already done and is under confirmation.", 'red');
+  {% endif %}
   </script>
 
 </body>

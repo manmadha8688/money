@@ -2,10 +2,12 @@ from django.shortcuts import render,redirect
 from loans.models import LoanRequest
 from django.db.models import Q
 from loans.views import get_installment_schedule
-from .models import ReturnPayment
+from .models import ReturnPayment,ActiveLoan
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 from django.shortcuts import get_object_or_404
+from decimal import Decimal
+from django.urls import reverse
 # Create your views here.
 def montly_loans(request):
 
@@ -26,11 +28,56 @@ def onetime_loans(request):
     return render(request,'active_loans/onetimeloans.html',{"loans" : loans})
 
 def all_loans(request):
+    if request.method == "POST":
+        id = request.POST.get('loan_id')
+        activeloan = ActiveLoan.objects.select_related('loan_request').get(id=id)
+
+        amount = request.POST.get('amount')
+        amount = Decimal(amount)
+        payment_method = request.POST.get('method')
+        utr = request.POST.get('utr', '')
+        cash_person = request.POST.get('cash_person', '')
+        payment_app = request.POST.get('platform', '')
+        due_date = activeloan.next_due_date
+                     
+        existing_payment = ReturnPayment.objects.filter(
+            returnloan=activeloan,
+            due_date=due_date,
+            status='pending'  # optionally filter by pending only
+            ).first()
+
+        if not existing_payment:
+            payment = ReturnPayment(
+                returnloan=activeloan,
+                amount=amount,
+                payment_method=payment_method,
+                utr=utr,
+                cash_person=cash_person,
+                payment_app=payment_app,
+                due_date=due_date,
+                status='success'
+                )
+            payment.save()
+            activeloan.total_paid += payment.amount
+            
+            activeloan.remaining_balance -= payment.amount
+            activeloan.last_payment_date = payment.due_date
+            if  activeloan.loan_request.payment_plan == 'weekly':
+                activeloan.next_due_date = payment.due_date + timedelta(weeks=1)
+            elif activeloan.loan_request.payment_plan  == 'monthly':
+                activeloan.next_due_date = payment.due_date + relativedelta(months=1)
+            activeloan.save()
+            
+        else:
+            return redirect(f"{reverse('all-loans')}?paymentexists=true")
+
+            
     loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived").select_related('activeloan','borrower')
     for loan in loans:
         if loan.payment_plan == "weekly":
 
             loan.schedule = get_installment_schedule(loan)
+    
 
     return render(request,'active_loans/all_loans.html',{"loans" : loans})
 

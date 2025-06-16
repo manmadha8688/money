@@ -36,13 +36,19 @@
             background-color: #1c638f;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
         }
+
         .container {
             max-width: 1200px;
-            margin: auto;
+            margin: 40px auto;
             padding: 20px;
+            border-radius: 10px;
         }
+
         h2 {
             text-align: center;
             margin-bottom:20px;
@@ -101,6 +107,13 @@
             transform: scale(1.05);
             box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4);
         }
+        .btn-disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+        }
+        .btn-payment { background: #27ae60; }
+        .btn-payment:hover { background: #219150; }
+        
         .editable-input {
             width: 70px;
             padding: 4px;
@@ -117,6 +130,10 @@
         }
         .highlight-interest {
             color: #d35400;
+            font-weight: bold;
+        }
+        .highlight-instalment {
+            color: #05ad0b;
             font-weight: bold;
         }
         .highlight-referral {
@@ -244,8 +261,95 @@
                 gap: 10px;
                 margin-left: -60px;
               }
-              
-          
+            
+              /* Modal styling */
+        .overlay, .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .overlay {
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .modal {
+            z-index: 9999;
+            background: white;
+            width: 500px;
+            top: 50%;
+            margin-top: 2%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            position: fixed;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            color: #34495e;
+            margin-bottom: 15px;
+        }
+
+        .modal p {
+            margin: 10px 0;
+        }
+
+        .modal input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-top: 6px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal img {
+            margin-top: 10px;
+            max-width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        .btn-close {
+            background: #95a5a6;
+        }
+
+        .btn-close:hover {
+            background: #7f8c8d;
+        }
+
+        .btn-done {
+            background-color: #2980b9;
+        }
+
+        .btn-done:hover {
+            background-color: #1c638f;
+        }
+        .close-btn {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: rgb(126, 13, 13);
+            cursor: pointer;
+        }
+        #modalContent{
+            margin-top: 5%;
+        }
+        #modalContent p{
+            margin-left: 10%;
+        }
         
     </style>
 
@@ -293,20 +397,22 @@
                     <th>Token ID</th>
                     <th>Borrower Details</th>
                     <th>Loan Item</th>
-                    <th>Images</th>
                     <th>Amount</th>
                     <th>Interest</th>
                     <th>Payment plan</th>
-                    <th>Loan Start Date</th>
+                    <th>Start Date</th>
                     <th>Reason</th>
                     <th>Referral</th>
-                    
-                    <th>Remark</th>
+                    <th>Payment Details</th>
                     <th>Action</th>
+                    <th>Remark</th>
                 </tr>
             </thead>
             <tbody>
                 {% for loan in loan_requests %}
+
+                {% if loan.status == "pending"%}
+
                 <form method="POST" action="{% url 'accept-reject-status' loan.id %}" class="loan-form" id="loan-form-{{ loan.id }}">
                     {% csrf_token %}
                 <tr><td>{{ forloop.counter }}</td>
@@ -315,13 +421,7 @@
                     <td>{{ loan.borrower.name }} <br>
                     {{ loan.borrower.phone }}</td>
                     <td>{{ loan.loan_item }}</td>
-                    <td>
-                        {% if loan.loan_item_images.all %}
-                          <button type="button" class="btn btn-view" onclick="openImageModal({{ loan.id }})">View Images</button>
-                        {% else %}
-                          No Images
-                        {% endif %}
-                      </td>
+                    
                     
                       <td>
                         <input type="number" name="amount" value="{{ loan.amount }}" class="editable-input highlight-amount" id="amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
@@ -334,8 +434,7 @@
 
                     <td>{{loan.payment_plan}}<br><br>
 
-                        <div id="instalment_{{loan.id}}"></div>
-                        <input type="hidden" name="installment" id="installment-{{ loan.id }}">
+                        <input type="number" name="installment" id="instalment-{{ loan.id }}"  class="editable-input highlight-instalment">
 
                         
                     <input type="hidden" id="payment_plan_{{ loan.id }}" value="{{ loan.payment_plan }}">
@@ -344,6 +443,20 @@
                     
                     <td>{{ loan.reason|default:"-" }}</td>
                     <td class="highlight-referral">{{ loan.referral|default:"-" }}</td>
+                    <td>
+                        <button class="btn btn-disabled" disabled>Make Payment</button>
+                    </td>
+
+
+                    <td>
+                        <div style="display: flex; gap: 6px; justify-content: center;">
+                            <input type="hidden" name="remark" id="hidden-remark-{{ loan.id }}">
+                            <input type="hidden" name="action" id="hidden-action-{{ loan.id }}">
+                            <button type="button" class="btn btn-accept" onclick="submitLoanAction({{ loan.id }}, 'accept')">Accept</button>
+                            <button  type="button" class="btn btn-reject" onclick="submitLoanAction({{ loan.id }}, 'reject')">Reject</button>
+                                
+                    </div>
+                    </td>
                     <td contenteditable="true"
     data-loan-id="{{ loan.id }}"
     id="remark-{{ loan.id }}" 
@@ -367,22 +480,100 @@
 
 
                       
-                    <td>
-                        <div style="display: flex; gap: 6px; justify-content: center;">
-                            <input type="hidden" name="remark" id="hidden-remark-{{ loan.id }}">
-                            <input type="hidden" name="action" id="hidden-action-{{ loan.id }}">
-                            <button type="button" class="btn btn-accept" onclick="submitLoanAction({{ loan.id }}, 'accept')">Accept</button>
-                            <button  type="button" class="btn btn-reject" onclick="submitLoanAction({{ loan.id }}, 'reject')">Reject</button>
-                                
-                    </div>
-                    </td>
+                    
                     
                 </tr>
             </form>
+            {% else %}
+
+            <td>{{ forloop.counter }}</td>
+                <td>{{loan.updated_at}}</td>
+                <td style="color:blue;">{{ loan.id }}</td>
+                <td>{{ loan.borrower.name }}<br>
+                    {{ loan.borrower.phone }}</td>
+                <td>{{ loan.loan_item }}</td>
+                <td style="color: green;">₹ {{ loan.amount }}</td>
+                <td style="color: red;">₹ {{ loan.interest_amount }}</td>
+                <td><b>{{loan.payment_plan}}</b> <br>
+                    ₹ {{loan.instalment}}</td>
+                <td>{{ loan.taken_date }}</td>
+                <td>{{ loan.reason|default:"-" }}</td>
+                <td style="color:rgb(104, 34, 224);">{{loan.referral|default:'-'}}</td>
+                
+                
+                <td>
+                    
+                        <button class="btn btn-payment" onclick="showPaymentModal({{ loan.id }})">Make Payment</button>
+                        <form id="paymentForm-{{loan.id}}" method="POST" action="{% url 'paymentdone' loan.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="bank">
+                            <input type="hidden" name="utr">
+                            <input type="hidden" name="person">
+                        </form>    
+                    
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'accept-reject-status' loan.id %}" class="loan-form" id="loan-form-{{ loan.id }}">
+                
+                        <div style="display: flex; gap: 6px; justify-content: center;">
+                            {% csrf_token %}
+                            <input type="hidden" name="remark" id="hidden-remark-{{ loan.id }}">
+                            <input type="hidden" name="action" id="hidden-action-{{ loan.id }}">
+                            <button  type="button" class="btn btn-reject" onclick="submitLoanAction({{ loan.id }}, 'reject')">Reject</button>
+                    </form>           
+                    </div>
+
+                <td contenteditable="true"
+    data-loan-id="{{ loan.id }}"
+    id="remark-{{ loan.id }}" 
+    class="remark-td"
+    name="remark"
+    style="
+        border: 1px solid #ccc; 
+        border-radius: 6px; 
+        padding: 8px; 
+        width:100px;
+
+        min-height: 100px;
+        max-width: 200px;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        display: block;
+        overflow: auto;
+    ">
+</td>
+        <td>{% if loan.payment %}
+<script id="payment-data-{{ loan.id }}" type="application/json">
+{
+    "amount": "{{ loan.amount|escapejs }}",
+    "method": "{{ loan.payment.payment_method|escapejs }}",
+    "cash_from": "{{ loan.payment.cash_from|default:''|escapejs }}",
+    "online_method": "{{ loan.payment.online_method|default:''|escapejs }}",
+    "account_holder": "{{ loan.payment.account_holder|default:''|escapejs }}",
+    "upi_number": "{{ loan.payment.upi_number|default:''|escapejs }}",
+    "bank_name": "{{ loan.payment.bank_name|default:''|escapejs }}",
+    "account_number": "{{ loan.payment.account_number|default:''|escapejs }}",
+    "ifsc": "{{ loan.payment.ifsc|default:''|escapejs }}",
+    "screenshot": "{% if loan.payment.upi_screenshot %}/media/{{ loan.payment.upi_screenshot|escapejs }}{% endif %}"
+}
+</script>
+
+{% endif %}
+</td>
+            </tr>
+
+
+
+
+            {% endif %}
                 {% endfor %}
             </tbody>
         </table>
         
+        
+
+
     {% else %}
     <div class="empty-box">
         <div class="icon">📭</div>
@@ -400,6 +591,19 @@ style="display:none; position:fixed; z-index:9999; top:0; left:0; width:100%; he
 </div>
 </div>
 
+</div>
+
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="paymentModal">
+    <h3>Payment Details</h3>
+    <div id="modalContent"></div>
+    
+    <div id="paymentError" style="color: red; margin-top: 10px; text-align: center;"></div>
+
+    <div class="modal-buttons">
+        <button onclick="submitPayment()" class="btn btn-done">Payment Done</button>
+        <button onclick="closeModal()" class="btn btn-close">Close</button>
+    </div>
 </div>
 
 <script src="{% static 'js/popup.js' %}"></script>
@@ -429,8 +633,7 @@ function calculateInterest(loanId, changedField = null) {
     const interestRateEl = document.getElementById('interest_' + loanId);
     const interestAmountEl = document.getElementById('interest_amount_' + loanId);
     const paymentPlan = document.getElementById('payment_plan_' + loanId).value;
-    const instalmentEl = document.getElementById('instalment_' + loanId);
-
+    const instalmentEl = document.getElementById('instalment-' + loanId);
     const amount = parseFloat(amountEl.value);
     const interestRate = parseFloat(interestRateEl.value);
     const interestAmount = parseFloat(interestAmountEl.value);
@@ -459,7 +662,7 @@ function calculateInterest(loanId, changedField = null) {
         instalment =  Math.round(amount + finalInterestAmount);
        }
         if (instalment) {
-            instalmentEl.innerText = instalment;
+            instalmentEl.value = instalment;
             
         }
     }
@@ -548,6 +751,189 @@ function calculateInterest(loanId, changedField = null) {
         });
           
       
+
+        function showPaymentModal(loanId) {
+            
+        document.body.style.overflow = 'hidden';
+        currentLoanId = loanId;
+        const dataTag = document.getElementById(`payment-data-${loanId}`);
+        if (!dataTag) return;
+
+        const payment = JSON.parse(dataTag.textContent);
+        let content = `<p><strong>Method:</strong> ${payment.method}</p>`;
+
+        if (payment.method === "cash") {
+            content += `<p><strong>Cash Want From:</strong> ${payment.cash_from}</p>
+            <p><label><strong>Cash Given By:</strong>
+                    <input type="text" name="person" placeholder="Enter name (if paid)" required>
+                </label></p>`;
+        } 
+        else if (payment.method === "online") {
+            content += `
+                <p><strong>Online Method :</strong> ${payment.online_method}</p>
+                <p><strong>Account Holder Name :</strong> ${payment.account_holder}</p>
+                <p><strong>UPI Number or ID:</strong> ${payment.upi_number}</p>
+                <p><label><strong>UTR Number :</strong>
+                    <input type="text" name="utr" placeholder="Enter UTR Number (if paid)" required>
+                </label></p>`;
+            if (payment.screenshot) {
+                content += `<p><strong>Payment QR code:</strong><br>
+                    <img src="${payment.screenshot}" width="100px" height="100px" alt="UPI Screenshot">
+                </p>`;
+            }
+        }else{
+            content += `
+            <p><strong>Bank Name :</strong> ${payment.bank_name}</p>
+            <p><strong>Account Holder Name :</strong> ${payment.account_holder}</p>
+                
+            <p><strong>Account Number :</strong> ${payment.account_number}</p>
+            <p><strong>IFSC :</strong> ${payment.ifsc}</p>
+            <label><strong>Transaction Ref Number :</strong>
+                <input type="text" name="bank" name="bank_ref" required placeholder="Enter Bank Transaction Reference">
+            </label>`;
+        }
+        content +=`<p><label><strong>Enter Amount :</strong>
+                <input type="text" name="amount"  required placeholder="Enter Amount">
+            </label></p>`;
+        document.getElementById('modalContent').innerHTML = content;
+        document.getElementById('overlay').style.display = 'block';
+        document.getElementById('paymentModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.body.style.overflow = 'auto';
+        document.getElementById('overlay').style.display = 'none';
+        document.getElementById('paymentModal').style.display = 'none';
+    }
+
+    function submitPayment() {
+        const modal = document.getElementById("modalContent");
+
+        const errorBox = document.getElementById("paymentError");
+        errorBox.innerText = ""; 
+
+        const utrInput = modal.querySelector('input[name="utr"]');
+        const bankInput = modal.querySelector('input[name="bank"]');
+        const personInput = modal.querySelector('input[name="person"]');
+        
+        const amountInput = modal.querySelector('input[name="amount"]');
+    
+        let utr = utrInput ? utrInput.value.trim() : "";
+        let bank = bankInput ? bankInput.value.trim() : "";
+        let person = personInput ? personInput.value.trim() : "";
+        let amount = amountInput.value.trim();
+         // UTR validation (usually 12+ digits or alphanumeric like 'AXIS1234567890')
+    const utrRegex = /^[A-Za-z0-9]{12,22}$/;
+
+    // Bank Reference validation (often numeric or alphanumeric, similar to UTR)
+    const bankRegex = /^[A-Za-z0-9]{8,20}$/;
+
+    // Track validation state
+    let isValid = true;
+
+    // Reset all blink classes
+    [utrInput, bankInput, personInput].forEach(input => {
+        if (input) input.classList.remove("blink");
+    });
+
+
+    if (utrInput && utr) {
+        if (!utrRegex.test(utr)) {
+            utrInput.classList.add("blink");
+            showError("Please enter a valid UTR Number (min 12 alphanumeric characters).",utrInput);
+            isValid = false;
+        }
+    } else if (bankInput && bank) {
+        if (!bankRegex.test(bank)) {
+            bankInput.classList.add("blink");
+            showError("Please enter a valid Bank Reference Number (min 12 alphanumeric characters).",bankInput);
+            isValid = false;
+        }
+    } else if (personInput && person) {
+        if (!/^[A-Za-z ]{2,50}$/.test(person)) {
+            personInput.classList.add("blink");
+            showError("Please enter a valid name (only letters and spaces, 2-50 characters).",personInput);
+            
+            isValid = false;
+        }
+    }
+
+    
+    const dataTag = document.getElementById(`payment-data-${currentLoanId}`);
+if (!dataTag) return;
+
+const payment = JSON.parse(dataTag.textContent);
+
+if (amountInput && amount) {
+    const inputAmount = parseFloat(amount);
+    const expectedAmount = parseFloat(payment.amount);
+
+    if (inputAmount !== expectedAmount) {
+        amountInput.classList.add("blink");
+        showError(`Entered amount (₹${inputAmount}) must match the loan amount (₹${expectedAmount}).`, amountInput);
+        isValid = false;
+    }
+}
+
+
+    function showError(message,input) {
+        const errorBox = document.getElementById("paymentError");
+        errorBox.innerText = message;
+        setTimeout(() => {
+            errorBox.innerText = "";
+            input.focus();
+        }, 2000);
+    }
+    
+    
+    if (!isValid) {
+        setTimeout(() => {
+            [utrInput, bankInput, personInput].forEach(input => {
+                if (input) input.classList.remove("blink");
+            });
+        }, 1200);
+        return;
+    }
+    
+
+    
+        if (!utr && !bank && !person) {
+            // Blink all empty inputs
+            if (utrInput) utrInput.classList.add("blink");
+            if (bankInput) bankInput.classList.add("blink");
+            if (personInput) personInput.classList.add("blink");
+    
+            // Remove blink after 1 second
+            setTimeout(() => {
+                if (utrInput) utrInput.classList.remove("blink");
+                if (bankInput) bankInput.classList.remove("blink");
+                if (personInput) personInput.classList.remove("blink");
+            }, 1000);
+            return;
+        }
+        if (!amount) {
+            
+            if (amountInput) amountInput.classList.add("blink");
+    
+            // Remove blink after 1 second
+            setTimeout(() => {
+                
+                if (amountInput) amountInput.classList.remove("blink");
+            }, 1000);
+            return;
+        }
+    
+        // Populate the form fields
+        const form = document.getElementById(`paymentForm-${currentLoanId}`);
+        form.querySelector('input[name="utr"]').value = utr;
+        form.querySelector('input[name="bank"]').value = bank;
+        form.querySelector('input[name="person"]').value = person;
+        
+    
+        form.submit();
+    }
+    
+
   </script>
   
   

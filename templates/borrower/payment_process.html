@@ -304,12 +304,20 @@
 {% endif %}
 
   <div class="container">
-    <h2>🟢 Payment Under Process</h2>
+    {% if loan.status == "pending" %}
+    <h2>🟡 Loan Under Review</h2>
     <div class="message">
-      ✅ Thank you! Your payment details have been submitted successfully.<br><br>
-      ⏳ Please wait while we verify your payment and send the money....."
+      ✅ Thank you! Your Loan & payment details have been submitted successfully.<br><br>
+      ⏳ Please wait while We're verifying your loan request. You'll be notified soon..."
     </div>
-
+    
+    {% elif loan.status == "accepted" %}
+    <h2>🟢 Loan Confirmed</h2>
+   <div class="message">
+  ✅ Great news! Your loan has been approved.<br><br>
+  💸 The disbursed amount will reflect shortly in your provided account or platform.
+   </div>
+    {% endif %}
     <button style="margin-left: 50px;" class="toggle-btn" id="loan" onclick="toggleSection('loanDetails')">Show Loan Details</button>
     <button class="toggle-btn" id="payment" onclick="toggleSection('paymentDetails')">Show Payment Details</button>
     <button onclick="toggleContact()" class="toggle-btn" id="contact-btn">Lender Contact Details</button>
@@ -320,13 +328,8 @@
         <div class="row"><div class="label">Email</div><div class="value">{{ loan.borrower.email|default:"-" }}</div></div>
         <div class="row"><div class="label">Loan Item</div><div class="value">{{ loan.loan_item }}</div></div>
         <div class="row"><div class="label">Amount</div><div class="value" style="color: #13e948f3;">₹ {{ loan.amount }}</div></div>
-        <div class="row"><div class="label">Interest</div><div class="value" style="color: rgb(238, 9, 9);">{{ loan.interest_amount }}</div></div>
         <div class="row"><div class="label">Payment Plan</div><div class="value">{{ loan.payment_plan|capfirst }}</div></div>
-      {%if loan.payment_paln == "daily"%}
-      <div class="row"><div class="label">Payment per Day</div><div class="value">{{ loan.instalment }}</div></div>
-      {%elif loan.payment_plan == "weekly"%}
-      <div class="row"><div class="label">Payment per Week</div><div class="value">{{ loan.instalment }}</div></div>
-      {%endif%}
+      
 
         <div class="row"><div class="label">Start Date</div><div class="value">{{ loan.taken_date }}</div></div>
         <div class="row"><div class="label">End Date</div><div class="value">{{ loan.return_date }}</div></div>
@@ -343,7 +346,6 @@
     <!-- Payment Details Display -->
 <div class="details-section" id="paymentDetails">
   <div class="row"><div class="label">Payment Method</div><div class="value">{{ payment.payment_method|capfirst }}</div></div>
-  <div class="row"><div class="label">Given On</div><div class="value">{{ payment.created_at|date:"d M Y, H:i" }}</div></div>
 
   {% if payment.payment_method == 'cash' %}
     <div class="row"><div class="label">Cash From</div><div class="value">{{ payment.cash_from }}</div></div>
@@ -358,7 +360,7 @@
       <div class="row"><div class="label">IFSC Code</div><div class="value">{{ payment.ifsc }}</div></div>
     {% else %}
       <div class="row"><div class="label">Account Holder Name</div><div class="value">{{ payment.account_holder }}</div></div>
-      <div class="row"><div class="label">UPI/Phone</div><div class="value">{{ payment.upi_number }}</div></div>
+      <div class="row"><div class="label">UPI Id/Phone no. </div><div class="value">{{ payment.upi_number }}</div></div>
       {% if payment.upi_screenshot %}
         <div class="row"><div class="label">Screenshot</div><div class="value"><a href="{{ payment.upi_screenshot.url }}" target="_blank">View Payment QR code</a></div></div>
       {% endif %}

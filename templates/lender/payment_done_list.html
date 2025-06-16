@@ -346,10 +346,11 @@
                     {%if loan.status == "paymentnotreceived"%} 
                     
                     <button type="button" class="btn btn-done" onclick="window.location.replace('{% url 'payment-done-check' loan.id %}')">Sent</button>
-
+                    {%else %}
+                    -
                     {%endif%}  
                     
-                    <button type="button" class="btn btn-fail">Failed</button>
+                   
                 </td>
                 
             </tr>

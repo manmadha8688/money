@@ -35,7 +35,7 @@ def apply_filter(loans,request):
     return loans
 def draft_loan(request, lender_id, unique_id):
     if request.method == 'POST':
-        print(lender_id)
+        
         lender = get_object_or_404(User, id=lender_id)
 
         loan = LoanRequest.objects.filter(lender=lender, unique_id=unique_id).first()
@@ -103,7 +103,7 @@ def get_installment_schedule(loan):
                 'utr',
                 'payment_app',
                 'cash_person',
-                'status',
+                'created_at'
             ))
 
         schedule.append({
@@ -138,7 +138,8 @@ def loan_request(request, lender_id, unique_id):
     )
 
     if loan and loan.submitted:
-        if loan.status == "pending":
+        if loan.status == "pending" or loan.status == "accepted":
+            payment = loan.payment
             if request.method == 'POST':
                 if request.POST.get('edit') == 'edit':
                     loan.submitted = False
@@ -147,18 +148,13 @@ def loan_request(request, lender_id, unique_id):
                     unique_id = loan.unique_id
 
                     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
-            return render(request, "borrower/loan_already_submitted.html", {"loan": loan})
-        elif loan.status == "accepted":
-            total = loan.amount + loan.interest_amount
             
-            return render(request, "borrower/loan_confirmation.html", {"loan": loan,"total":total})
+            return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
         elif loan.status== "rejected":
             return render(request, "borrower/loan_rejected.html", {"loan": loan})
         elif loan.status== "cancelled":
             return render(request, "borrower/loan_cancelled.html", {"loan": loan})
-        elif loan.status== "paymentprocess":
-            payment = PaymentDetail.objects.get(id =loan.payment.id)
-            return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
+        
         elif loan.status == "paymentdone" or loan.status == 'paymentnotreceived':
             
             payment = PaymentDetail.objects.get(id =loan.payment.id)
@@ -168,11 +164,11 @@ def loan_request(request, lender_id, unique_id):
             if loan.payment_plan == "monthly":
                 mini = loan.interest_amount
                 maxi = loan.activeloan.remaining_balance
+                payment_exists = False
                 if request.method == "POST":
 
                     
                     amount = request.POST.get('amount')
-                    
                     payment_method = request.POST.get('method')
                     utr = request.POST.get('utr', '')
                     cash_person = request.POST.get('cash_person', '')
@@ -184,7 +180,7 @@ def loan_request(request, lender_id, unique_id):
                         due_date=due_date,
                         status='pending'  # optionally filter by pending only
                         ).first()
-
+                    
                     if not existing_payment:
                         payment = ReturnPayment(
                             returnloan=loan.activeloan,
@@ -196,12 +192,12 @@ def loan_request(request, lender_id, unique_id):
                             due_date=due_date,
                         )
                         payment.save()
-                    else:
-    
                         
-                        return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+                    else:
+                        payment_exists = True
 
-                return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan, 'mini':mini,'maxi':maxi})
+
+                return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
             elif loan.payment_plan == "weekly":
                 schedule = get_installment_schedule(loan)
                 
@@ -210,7 +206,7 @@ def loan_request(request, lender_id, unique_id):
                 if  maxi < mini :
                     mini = maxi
                 
-
+                payment_exists = False
                 if request.method == "POST":
 
                     
@@ -239,13 +235,13 @@ def loan_request(request, lender_id, unique_id):
                             due_date=due_date,
                         )
                         payment.save()
+                        
                     else:
-    
-                        print("Payment already exists for this loan and due date.")
+                        payment_exists = True
 
 
 
-                return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi})
+                return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
             else :
                 return render(request, "borrower/repaying_onetime_loan.html",{"loan":loan})
                 
@@ -253,10 +249,14 @@ def loan_request(request, lender_id, unique_id):
 
 
     if request.method == "POST":
+        
+        name = request.POST.get("name")
+        
         borrower_name = request.POST["borrower_name"]
         phone = request.POST.get("phone", "")
         email = request.POST.get("email", "")
-
+        
+        
         # Get or create borrower
         borrower, _ = Borrower.objects.get_or_create(name=borrower_name, phone=phone, email=email)
 
@@ -275,21 +275,53 @@ def loan_request(request, lender_id, unique_id):
         loan.referral = request.POST.get("referral", "")
         loan.reason = request.POST.get("reason", "")
         loan.submitted = True
+
         photos = request.FILES.getlist('photos')
 
         for photo in photos:
            LoanImage.objects.create(loan=loan, image=photo)
+        
+            
+        payment_type = request.POST.get('payment_type')
 
+        payment = PaymentDetail(
+            payment_method=payment_type
+        )
 
+        if payment_type == 'cash':
+            cash_from = request.POST.get('cash_from')
+            if cash_from:
+                payment.cash_from = cash_from
+
+        elif payment_type == 'online':
+            online_method = request.POST.get('online_method')
+            payment.online_method = online_method
+
+            if online_method in ['phonepay', 'googlepay', 'paytm']:
+                payment.upi_number = request.POST.get('upi_number')
+                payment.account_holder = request.POST.get('account_holder_name').strip()
+                if 'upi_screenshot' in request.FILES:
+                    payment.upi_screenshot = request.FILES['upi_screenshot']
+
+            elif online_method == 'bank':
+                payment.account_number = request.POST.get('account_number')
+                payment.ifsc = request.POST.get('ifsc')
+                payment.bank_name = request.POST.get('bank_name')
+                payment.account_holder = request.POST.get('bank_account_holder_name','').strip()
+                
+        payment.loan = loan
+        payment.save()
+        loan.payment = payment
+        
         loan.save()
 
-        return render(request, "borrower/loan_already_submitted.html", {"loan": loan})
+        return render(request, "borrower/payment_process.html", {"loan": loan})
     
 
     return render(request, "borrower/loan_request_form.html", {"loan": loan})
  
 def loan_request_list(request):
-    loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status="pending").select_related('borrower')
+    loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status__in = ["pending",'accepted']).select_related('borrower','payment')
     if request.method == "GET":
         loan_requests = apply_filter(loan_requests,request)
     return render(request,'lender/loan_requested_list.html',{"loan_requests":loan_requests})
@@ -424,7 +456,7 @@ def paymentdone(request,loan_id):
         loan.status="paymentdone"
         loan.payment.save()
         loan.save()
-        return redirect(f"{reverse('accepted-list')}?paymentdone=true&loan_id={loan.id}&amount={loan.amount}")
+        return redirect(f"{reverse('loan-request-list')}?paymentdone=true&loan_id={loan.id}&amount={loan.amount}")
 
     return redirect("accepted-list")
 def payment_done_check(request,loan_id):

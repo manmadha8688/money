@@ -1,0 +1,51 @@
+.payment-section {
+      display: none;
+      margin-left: 50px;
+      margin-top: 30px;
+      margin-bottom: 100px;
+      background: #f9f9f9;
+      padding: 25px;
+      border-radius: 12px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .payment-section label {
+      font-weight: 600;
+      display: block;
+      margin-top: 30px;
+    }
+
+    .payment-section select,
+    .payment-section input[type="text"],
+    .payment-section input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .payment-section button {
+      margin-top: 30px;
+      background: #2ecc71;
+      border: none;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .payment-section button:hover {
+      background: #27ae60;
+    }
+
+    .hidden {
+      display: none;
+    }
+    .payment-heading{
+           text-align: center; margin: 5px 0 15px; font-size: 22px;
+            color: #2c3e50;
+    }

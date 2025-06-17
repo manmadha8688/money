@@ -180,7 +180,7 @@
       
       {% if payment.payment_method == 'cash' %}
         <div class="row"><div class="label">Cash Request From</div><div class="value">{{ payment.cash_from }}</div></div>
-        <div class="row"><div class="label">Cash taken From</div><div class="value">{{ payment.person|default:'-' }}</div></div>
+        <div class="row"><div class="label">Cash Provided By</div><div class="value">{{ payment.person|default:'-' }}</div></div>
 
       
       {% elif payment.payment_method == 'online' %}

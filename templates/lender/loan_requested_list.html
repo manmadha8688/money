@@ -432,7 +432,7 @@
                         <input type="number" name="interest_amount" value="{{ loan.interest_amount }}" class="editable-input highlight-interest" id="interest_amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
                     </td>
 
-                    <td>{{loan.payment_plan}}<br><br>
+                    <td><b>{{loan.payment_plan|capfirst}}</b><br><br>
 
                         <input type="number" name="installment" id="instalment-{{ loan.id }}"  class="editable-input highlight-instalment">
 

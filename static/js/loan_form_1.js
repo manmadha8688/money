@@ -15,7 +15,7 @@
     });
 
     const loanItemInput = document.getElementById("loan_item");
-    const photoLabel = document.getElementById("photo-label");
+    /* const photoLabel = document.getElementById("photo-label");
 
     loanItemInput.addEventListener("input", function () {
       const item = loanItemInput.value.trim();
@@ -25,7 +25,7 @@
     
     
 
-    const input = document.getElementById("photos");
+     const input = document.getElementById("photos");
     const previewContainer = document.getElementById("preview-container");
     let selectedFiles = [];
 
@@ -34,7 +34,7 @@
       updatePreview();
       updateInputFiles();
     });
-
+*/
     function updatePreview() {
       previewContainer.innerHTML = "";
       selectedFiles.forEach((file, index) => {

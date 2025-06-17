@@ -11,19 +11,41 @@ from django.urls import reverse
 # Create your views here.
 def montly_loans(request):
 
-    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived",payment_plan="monthly").select_related('activeloan','borrower')
-    
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived",payment_plan="monthly",activeloan__status__in=["overdue", "Repaying"]).select_related(
+        'lender__active_user',
+        'borrower',
+        'payment',
+        'activeloan'  
+    ).prefetch_related(
+        'activeloan__return_payments'
+    ).order_by('id')
     return render(request,'active_loans/montlyloans.html',{"loans" : loans})
 
 def weekly_loans(request):
-    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived", payment_plan="weekly").select_related('activeloan','borrower')
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived", payment_plan="weekly",activeloan__status__in=["overdue", "Repaying"]).select_related(
+        'lender__active_user',
+        'borrower',
+        'payment',
+        'activeloan'  
+    ).prefetch_related(
+        'activeloan__return_payments'
+    ).order_by('id')
+    
     for loan in loans:
+        print(loan.activeloan.status)
         loan.schedule = get_installment_schedule(loan)
 
     return render(request,'active_loans/weeklyloans.html',{"loans" : loans})
 
 def onetime_loans(request):
-    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived" , payment_plan="onetime").select_related('activeloan','borrower')
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived" , payment_plan="onetime",activeloan__status__in=["overdue", "Repaying"]).select_related(
+        'lender__active_user',
+        'borrower',
+        'payment',
+        'activeloan'  
+    ).prefetch_related(
+        'activeloan__return_payments'
+    ).order_by('id')
     
     return render(request,'active_loans/onetimeloans.html',{"loans" : loans})
 
@@ -38,12 +60,11 @@ def all_loans(request):
         utr = request.POST.get('utr', '')
         cash_person = request.POST.get('cash_person', '')
         payment_app = request.POST.get('platform', '')
-        due_date = activeloan.next_due_date
-                     
+        due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
+                 
         existing_payment = ReturnPayment.objects.filter(
             returnloan=activeloan,
-            due_date=due_date,
-            status='pending'  # optionally filter by pending only
+            due_date=due_date, # optionally filter by pending only
             ).first()
 
         if not existing_payment:
@@ -62,6 +83,7 @@ def all_loans(request):
             
             activeloan.remaining_balance -= payment.amount
             activeloan.last_payment_date = payment.due_date
+
             if  activeloan.loan_request.payment_plan == 'weekly':
                 activeloan.next_due_date = payment.due_date + timedelta(weeks=1)
             elif activeloan.loan_request.payment_plan  == 'monthly':
@@ -72,7 +94,14 @@ def all_loans(request):
             return redirect(f"{reverse('all-loans')}?paymentexists=true")
 
             
-    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived").select_related('activeloan','borrower')
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived",activeloan__status__in=["overdue", "Repaying"]).select_related(
+        'lender__active_user',
+        'borrower',
+        'payment',
+        'activeloan'  
+    ).prefetch_related(
+        'activeloan__return_payments'
+    ).order_by('id')
     for loan in loans:
         if loan.payment_plan == "weekly":
 
@@ -80,6 +109,26 @@ def all_loans(request):
     
 
     return render(request,'active_loans/all_loans.html',{"loans" : loans})
+
+def closed_loans(request):
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived",activeloan__status="closed").select_related(
+        'lender__active_user',
+        'borrower',
+        'payment',
+        'activeloan'  
+    ).prefetch_related(
+        'activeloan__return_payments'
+    ).order_by('id')
+    for loan in loans:
+        if loan.payment_plan == "weekly":
+
+            loan.schedule = get_installment_schedule(loan)
+    
+
+    return render(request,'closed_loans.html',{"loans" : loans})
+
+
+
 
 def repayment_confirmation(request):
     pending_payments = ReturnPayment.objects.filter(
@@ -94,6 +143,7 @@ def repayment_confirmation(request):
 def update_repayment_status(request):
     if request.method == 'POST':
         payment_id = request.POST.get('payment_id')
+
         action = request.POST.get('action')  # either 'paid' or 'not_paid'
         
         payment = get_object_or_404(
@@ -106,15 +156,22 @@ def update_repayment_status(request):
         id=payment_id
         )
         if action == 'paid':
-                payment.status = 'success'
-                payment.save()
+                 
 
                 loan = payment.returnloan.loan_request
                 active_loan = payment.returnloan
-                
+                active_loan.last_payment_date = payment.due_date
+
                 active_loan.total_paid += payment.amount
                 active_loan.remaining_balance -= payment.amount
-                active_loan.last_payment_date = payment.due_date
+                
+                if active_loan.remaining_balance == 0 :
+                    active_loan.status = 'closed'
+                    
+                payment.status = 'success'
+                
+                payment.save()
+
                 if  loan.payment_plan == 'weekly':
                     active_loan.next_due_date = payment.due_date + timedelta(weeks=1)
                 elif loan.payment_plan  == 'monthly':

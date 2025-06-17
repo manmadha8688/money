@@ -405,10 +405,15 @@
   {% endfor %}
   {% else %}
         -
-    {% endif %}
+    {% endif %} 
 </td>
-<td style="padding: 12px; border: 1px solid #ddd;  ">{{ loan.activeloan.next_due_date }}</td>
-
+<td style="padding: 12px; border: 1px solid #ddd;  ">
+  {% if loan.activeloan.status == "closed"%}
+   --
+   {% else %}
+  {{ loan.activeloan.next_due_date }}
+  {% endif %}
+  </td>
   <td style="color: {% if loan.activeloan.status == 'active' %}var(--success){% else %}var(--danger){% endif %};">
           {{ loan.activeloan.status|title }}
         </td>
@@ -419,8 +424,11 @@
           </button>
         </td>
         <td>
-          
+          {% if loan.activeloan.status == "closed"%}
+           --
+          {% else %}
           <button class="pay-btn"  onclick="openModal()">Pay </button>
+          {% endif %}
         </td>
       </tr>
 
@@ -488,6 +496,8 @@
     
     <form id="paymentForm" method="POST">
       {% csrf_token %}
+ <input type="hidden" name="due_date" value="{{ loan.activeloan.next_due_date|date:'Y-m-d' }}">
+
 
 
       <!-- Amount (common) -->

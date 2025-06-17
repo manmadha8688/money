@@ -4,7 +4,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Multi-Step Form with Filling Progress</title>
+  <title>Loan Application Portal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static 'css/loan_form_1.css' %}">
   <link rel="stylesheet" href="{% static 'css/payment_details.css' %}">
@@ -15,7 +15,7 @@
     }
     #agree-checkbox{
     transform: scale(1.5); 
-    margin-left: 2%;
+    font-size: 14px;
   }
 
   .proceed-btn:disabled {
@@ -49,7 +49,7 @@ table {
     td:first-child {
       font-weight: 600;
       width: 35%;
-      color: #555;
+      color: rgb(59, 59, 59);
       text-align: left;
       position: relative;
       padding-left: 10%;
@@ -63,7 +63,7 @@ table {
     }
 
     td:last-child {
-      color: #222;
+      color: black;
     }
 
     .container {
@@ -125,9 +125,8 @@ table {
       font-weight: 600;
       color: #2c3e50;
       min-width: 160px;
-      margin-left: 20%;
+      justify-content: center;
       display: flex;
-      justify-content: flex-end;
       position: relative;
       font-size: 17px;
       margin-bottom: 6px;
@@ -188,6 +187,27 @@ table {
       gap:60px;
       margin-top: 30px;
     }
+    .custom-checkbox-label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 15px;
+  margin-bottom: 6px;
+  gap: 10px; /* space between checkbox and text */
+}
+
+.custom-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.checkbox-text {
+  text-align: left;
+}
+
+    
   </style>
 </head>
 <body>
@@ -212,18 +232,17 @@ table {
 
       <div class="step" id="step-1">
         <div class="circle">1</div>
-        <div class="label">Loan Request</div>
+        <div class="label" >Loan Info</div>
       </div>
       <div class="step" id="step-2">
         <div class="circle">2</div>
-        <div class="label">Confirm Payment</div>
+        <div class="label">Payment Details</div>
       </div>
       <div class="step" id="step-3">
         <div class="circle">3</div>
-        <div class="label">Done</div>
+        <div class="label">Confirmation</div>
       </div>
     </div>
-
 
 <form id="loanform" method="POST" enctype="multipart/form-data" >
     {% csrf_token %}
@@ -339,7 +358,7 @@ table {
       <input type="text" id="referral" name="referral" value="{{ loan.referral|default:'' }}" placeholder="Enter referral name" />
     </div>
 
-    <div class="form-group">
+    <!-- <div class="form-group">
       <label id="photo-label" for="photos">Upload Photos <span class="info-icon" id="photos-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
           <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1zm0 12.5A5.5 5.5 0 1 1 8 2.5a5.5 5.5 0 0 1 0 11z"/>
@@ -361,7 +380,7 @@ table {
         </div>
       {% endfor %}
     </div>
-
+  -->
     <div class="form-group">
       <label for="notes"><span>* </span>Reason for Loan <span class="info-icon" id="notes-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#0d6efd" viewBox="0 0 16 16">
@@ -391,7 +410,7 @@ table {
         </select>
 
         <div id="cashFields" class="hidden">
-          <label for="cash_from">From Whom Cash Was Taken:</label>
+          <label for="cash_from">From whom do you want cash?</label>
           <input type="text" name="cash_from" id="cash_from" placeholder="Enter name or reference">
         </div>
         
@@ -412,11 +431,9 @@ table {
             <input type="text" name="upi_number" id="upi_number" placeholder="e.g. example@upi or 9876543210" >
             <label for="account_holder_name">Account Holder Name</label>
             <input type="text" name="account_holder_name" placeholder="Enter name as per UPI">
-            
-            
-            <label for="upi_screenshot">Upload Payment QR code (optional):</label>
-            <input type="file" name="upi_screenshot">
           </div>
+            
+            
 
           <div id="bankFields" class="hidden">
             <label for="name">Account Holder Name</label>
@@ -446,20 +463,20 @@ table {
       <h3>Confirm Your Loan Details</h3>
 
   <table>
-        <tr><td>Your Name</td><td><span id="confirm_borrower_name"></span></td></tr>
-        <tr><td>Phone</td><td><span id="confirm_phone"></span></td></tr>
-        <tr><td>Loan Item</td><td><span id="confirm_loan_item"></span></td></tr>
+        <tr><td>Your Name</td><td><div id="confirm_borrower_name"></div></td></tr>
+        <tr><td>Phone</td><td><div  id="confirm_phone"></div></td></tr>
+        <tr><td>Loan Item</td><td><div  id="confirm_loan_item"></div ></td></tr>
         <tr><td>Amount</td><td style="color: green;">₹ <span style="color: green;" id="confirm_amount"></span></td></tr>
-        <tr><td>Taken Date</td><td><span id="confirm_taken"></span></td></tr>
-        <tr><td>Return Date</td><td><span id="confirm_return"></span></td></tr>
-        <tr><td>Reason</td><td><span id="confirm_reason"></span></td></tr>
+        <tr><td>Taken Date</td><td><div  id="confirm_taken"></div ></td></tr>
+        <tr><td>Return Date</td><td><div  id="confirm_return"></div ></td></tr>
+        <tr><td>Reason</td><td><div  id="confirm_reason"></div ></td></tr>
         
-        <tr><td>Payment Plan</td><td > <span id="confirm_payment_plan"></span></td></tr>
+        <tr><td>Payment Plan</td><td > <div  id="confirm_payment_plan"></div ></td></tr>
        <tr> <td colspan="2"> <strong>Payment Details </strong></td>
       </tr>
-        <tr><td>Payment Method</td><td ><span id="confirm_payment_type"></span></td></tr>
+        <tr><td>Payment Method</td><td ><div  id="confirm_payment_type"></div ></td></tr>
         
-        <tr><td>Payment Through</td><td ><span id="confirm_payment_info"></span></td></tr>
+        <tr><td>Payment Through</td><td ><div  id="confirm_payment_info"></div ></td></tr>
         
        
   </table>
@@ -484,9 +501,11 @@ table {
 </div>
 
 <!-- Checkbox -->
- <label for="check">
-    <input type="checkbox" id="agree-checkbox" disabled>
+<label class="custom-checkbox-label">
+  <input type="checkbox" id="agree-checkbox" disabled />
+  <span class="checkbox-text">
     I have read and agree to the Terms and Conditions
+  </span>
 </label>
 
 
@@ -609,7 +628,7 @@ table {
   } else if (paymentType === "online") {
     const method = document.getElementById("online_method").value;
     if (["phonepay", "googlepay", "paytm"].includes(method)) {
-      paymentInfo = `(${method}): ${document.getElementById("upi_number").value}`;
+      paymentInfo = `(${method}): ${document.getElementById("upi_number").value} -- ${document.getElementById("account_holder_name").value}`;
     }
   }
   document.getElementById("confirm_payment_info").innerText = paymentInfo;

@@ -266,7 +266,7 @@
     </td>
     <td>
       {% if loan.payment_method == 'cash' %}
-        Given by - {{ loan.cash_person }}
+        Received by - {{ loan.cash_person }}
       {% elif loan.payment_method == 'online' %}
         {% if loan.payment_app %}
           App - {{ loan.payment_app }}<br>

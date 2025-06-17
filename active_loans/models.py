@@ -2,7 +2,7 @@ from django.db import models
 from loans.models import LoanRequest
 # Create your models here.
 class ActiveLoan(models.Model):
-    loan_request = models.OneToOneField(LoanRequest, on_delete=models.CASCADE)
+    loan_request = models.OneToOneField(LoanRequest, on_delete=models.CASCADE,related_name='activeloan')
 
     # Status specific to active loan lifecycle
     status = models.CharField(max_length=20, choices=[

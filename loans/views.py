@@ -173,12 +173,11 @@ def loan_request(request, lender_id, unique_id):
                     utr = request.POST.get('utr', '')
                     cash_person = request.POST.get('cash_person', '')
                     payment_app = request.POST.get('platform', '')
-                    due_date = loan.activeloan.next_due_date
+                    due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
                     
                     existing_payment = ReturnPayment.objects.filter(
                         returnloan=loan.activeloan,
-                        due_date=due_date,
-                        status='pending'  # optionally filter by pending only
+                        due_date=due_date, # optionally filter by pending only
                         ).first()
                     
                     if not existing_payment:
@@ -216,12 +215,11 @@ def loan_request(request, lender_id, unique_id):
                     utr = request.POST.get('utr', '')
                     cash_person = request.POST.get('cash_person', '')
                     payment_app = request.POST.get('platform', '')
-                    due_date = loan.activeloan.next_due_date
+                    due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
                     
                     existing_payment = ReturnPayment.objects.filter(
                         returnloan=loan.activeloan,
-                        due_date=due_date,
-                        status='pending'  # optionally filter by pending only
+                        due_date=due_date,  # optionally filter by pending only
                         ).first()
 
                     if not existing_payment:
@@ -238,9 +236,11 @@ def loan_request(request, lender_id, unique_id):
                         
                     else:
                         payment_exists = True
+                        request.session['payment_exists'] = True
+                        return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 
 
-
+                payment_exists = request.session.pop('payment_exists', False)
                 return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
             else :
                 return render(request, "borrower/repaying_onetime_loan.html",{"loan":loan})

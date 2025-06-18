@@ -1,178 +1,175 @@
-    const todayDate = new Date();
-    const yyyy = todayDate.getFullYear();
-    const mm = String(todayDate.getMonth() + 1).padStart(2, '0');
-    const dd = String(todayDate.getDate()).padStart(2, '0');
-    const today = `${yyyy}-${mm}-${dd}`;
-    document.getElementById("apply_date").value = today;
-
-    const takenDateInput = document.getElementById("taken_date");
-    const returnDateInput = document.getElementById("return_date");
-    takenDateInput.setAttribute("min", today);
-    returnDateInput.setAttribute("min", today);
-
-    takenDateInput.addEventListener("change", function () {
-      returnDateInput.setAttribute("min", takenDateInput.value);
-    });
-
-    const loanItemInput = document.getElementById("loan_item");
-    const photoLabel = document.getElementById("photo-label");
-
-    loanItemInput.addEventListener("input", function () {
-      const item = loanItemInput.value.trim();
-      photoLabel.innerText = item ? `Upload ${item} Photos (Optional):` : "Upload Photos (Optional):";
-    });
-
-    
-    
-
-    const input = document.getElementById("photos");
-    const previewContainer = document.getElementById("preview-container");
-    let selectedFiles = [];
-
-    input.addEventListener("change", (e) => {
-      selectedFiles = selectedFiles.concat(Array.from(e.target.files));
-      updatePreview();
-      updateInputFiles();
-    });
-
-    function updatePreview() {
-      previewContainer.innerHTML = "";
-      selectedFiles.forEach((file, index) => {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const wrapper = document.createElement("div");
-          wrapper.style.position = "relative";
-
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.style.width = "100px";
-          img.style.height = "100px";
-          img.style.objectFit = "cover";
-          img.style.borderRadius = "8px";
-          img.style.boxShadow = "0 0 4px rgba(0,0,0,0.2)";
-
-          const closeBtn = document.createElement("span");
-          closeBtn.innerHTML = "&times;";
-          closeBtn.style.position = "absolute";
-          closeBtn.style.top = "-6px";
-          closeBtn.style.right = "-6px";
-          closeBtn.style.background = "red";
-          closeBtn.style.color = "white";
-          closeBtn.style.borderRadius = "50%";
-          closeBtn.style.cursor = "pointer";
-          closeBtn.style.fontSize = "16px";
-          closeBtn.style.width = "20px";
-          closeBtn.style.height = "20px";
-          closeBtn.style.display = "flex";
-          closeBtn.style.alignItems = "center";
-          closeBtn.style.justifyContent = "center";
-
-          closeBtn.onclick = () => {
-            selectedFiles.splice(index, 1);
-            updatePreview();
-            updateInputFiles();
-          };
-
-          wrapper.appendChild(img);
-          wrapper.appendChild(closeBtn);
-          previewContainer.appendChild(wrapper);
-        };
-        reader.readAsDataURL(file);
-      });
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Client Loan Overview</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
     }
 
-    function updateInputFiles() {
-      const dataTransfer = new DataTransfer();
-      selectedFiles.forEach((file) => dataTransfer.items.add(file));
-      input.files = dataTransfer.files;
+    .client-summary {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
     }
-      const paymentPlanSelect = document.getElementById("payment_plan");
-      const returnDateLabel = document.querySelector("label[for='return_date']");
-    
-      paymentPlanSelect.addEventListener("change", function () {
-        const plan = this.value;
-        takenDateInput.value = "";
-        
-    
-        returnDateInput.value = ""; // Clear previous value
-      });
-    
-      takenDateInput.addEventListener("change", function () {
-        const plan = paymentPlanSelect.value;
-        if (plan === "monthly") {
-          setDueDateMonthly();
-        } else if (plan === "weekly") {
-          setDueDateByDays(98);
-        } else {
-          setDueDateByDays(100); // Daily one-time with 100 days gap
-        }
-      });
-      
-      function setDueDateByDays(days) {
-        const start = new Date(takenDateInput.value);
-        if (isNaN(start)) return;
-      
-        const due = new Date(start);
-        due.setDate(due.getDate() + days); // Automatically excludes the taken date
-        returnDateInput.value = formatDate(due);
-      }
-      
-      function setDueDateMonthly() {
-        const start = new Date(takenDateInput.value);
-        if (isNaN(start)) return;
-      
-        const due = new Date(start);
-        due.setMonth(due.getMonth() + 1); // Moves to same date next month
-        returnDateInput.value = formatDate(due);
-      }
-      
-      function formatDate(date) {
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        return `${yyyy}-${mm}-${dd}`;
-      }
-      
-      document.addEventListener('DOMContentLoaded', () => {
-        const fieldInfo = {
-          borrower_name: "Enter your full name.",
-          phone: "Provide a valid 10-digit mobile number of yours.",
-          email: "Enter your Email for updates.",
-          loan_item: "What valuable item are you giving as security for the loan?",
-  amount: "Enter the total amount of money you need.",
-  taken_date: "The date when you received or will receive the loan.",
-  payment_plan: `Choose how you plan to repay the loan:<br><br>
 
-• <strong>100 Days Plan:</strong> Repay the full amount day by day for 100 days.<br><br>
+    .loan-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-• <strong>Weekly:</strong> Make one payment per week over 100 days (about 14 weeks).<br><br>
+    .loan-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      transition: 0.3s;
+    }
 
-• <strong>Monthly:</strong> Pay once a month. Interest is calculated only for one month, whether you repay Interets or Total amount.
- `,
-  
-  return_date: "The date by which you plan to repay the full loan or Interest.",
-  referral: "Optional – Mention the person who referred you, if any.",
-  photos: "Upload related documents or images (e.g., ID proof, item photos).",
-  notes: "Reason for borrowing the money or any additional information."
-        };
-      
-        Object.entries(fieldInfo).forEach(([id, text]) => {
-          const input = document.getElementById(id);
-          if (input) {
-            const icon = document.getElementById(`${id}-icon`);
-            const infoBox = document.createElement("div");
-            infoBox.className = "info-box";
-            infoBox.innerHTML = text;
-      
-            icon.addEventListener("mouseenter", () => {
-              infoBox.style.display = "block";
-            });
-      
-            icon.addEventListener("mouseleave", () => {
-              infoBox.style.display = "none";
-            });
-      
-            icon.appendChild(infoBox);
-          }
-        });
-      });
+    .loan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status {
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .status.active { background-color: #f39c12; }
+    .status.completed { background-color: #2ecc71; }
+    .status.overdue { background-color: #e74c3c; }
+
+    .loan-body {
+      margin-top: 10px;
+    }
+
+    .loan-body p {
+      margin: 6px 0;
+    }
+
+    .loan-details {
+      margin-top: 15px;
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .loan-details ul {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    .toggle-btn {
+      margin-top: 10px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .toggle-btn:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="client-summary">
+    <h2>👤 John Doe</h2>
+    <p>📞 +91-9876543210</p>
+    <p>📋 Total Loans: <strong>3</strong></p>
+    <p>💰 Total Borrowed: ₹1,50,000 | Paid: ₹65,000 | Outstanding: ₹85,000</p>
+  </div>
+
+  <div class="loan-cards">
+    <!-- Loan 1 -->
+    <div class="loan-card">
+      <div class="loan-header">
+        <h3>Loan #101</h3>
+        <span class="status active">Active</span>
+      </div>
+      <div class="loan-body">
+        <p>📆 Start Date: 01-Jan-2024</p>
+        <p>💵 Amount: ₹50,000</p>
+        <p>✅ Repaid: ₹20,000 | 🔁 Outstanding: ₹30,000</p>
+        <p>📅 Next Due Date: 01-Jul-2024</p>
+      </div>
+      <button class="toggle-btn" onclick="toggleDetails('loan1')">📂 View Details</button>
+      <div class="loan-details" id="loan1">
+        <ul>
+          <li>01-Feb - ₹5000 - ✅ Paid</li>
+          <li>01-Mar - ₹5000 - ✅ Paid</li>
+          <li>01-Apr - ₹5000 - ❌ Pending</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Loan 2 -->
+    <div class="loan-card">
+      <div class="loan-header">
+        <h3>Loan #102</h3>
+                <span class="status completed">Completed</span>
+      </div>
+      <div class="loan-body">
+        <p>📆 Start Date: 10-Mar-2024</p>
+        <p>💵 Amount: ₹40,000</p>
+        <p>✅ Repaid: ₹40,000 | 🔁 Outstanding: ₹0</p>
+        <p>📅 Closed On: 10-May-2024</p>
+      </div>
+      <button class="toggle-btn" onclick="toggleDetails('loan2')">📂 View Details</button>
+      <div class="loan-details" id="loan2">
+        <ul>
+          <li>10-Apr - ₹20,000 - ✅ Paid</li>
+          <li>10-May - ₹20,000 - ✅ Paid</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Loan 3 -->
+    <div class="loan-card">
+      <div class="loan-header">
+        <h3>Loan #103</h3>
+        <span class="status overdue">Overdue</span>
+      </div>
+      <div class="loan-body">
+        <p>📆 Start Date: 05-May-2024</p>
+        <p>💵 Amount: ₹60,000</p>
+        <p>✅ Repaid: ₹5,000 | 🔁 Outstanding: ₹55,000</p>
+        <p>📅 Next Due Date: 05-Jun-2024</p>
+      </div>
+      <button class="toggle-btn" onclick="toggleDetails('loan3')">📂 View Details</button>
+      <div class="loan-details" id="loan3">
+        <ul>
+          <li>05-Jun - ₹5,000 - ✅ Paid</li>
+          <li>05-Jul - ₹5,000 - ❌ Pending</li>
+          <li>05-Aug - ₹5,000 - ❌ Pending</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function toggleDetails(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+  </script>
+
+</body>
+</html>
+

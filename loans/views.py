@@ -24,6 +24,7 @@ def apply_filter(loans,request):
     borrower = request.GET.get('borrower', '').strip()
     token = request.GET.get('token', '').strip()
     status = request.GET.get('status', '').strip()
+    mobile_number = request.GET.get('mobile_number', '').strip()
     
     if token:
         loans = loans.filter(id=token)
@@ -31,7 +32,9 @@ def apply_filter(loans,request):
         loans = loans.filter(borrower__name__icontains = borrower)
     if status :
         loans = loans.filter(status=status)
-    
+    if mobile_number :
+        
+        loans = loans.filter(borrower__phone__icontains = mobile_number)
     return loans
 def draft_loan(request, lender_id, unique_id):
     if request.method == 'POST':

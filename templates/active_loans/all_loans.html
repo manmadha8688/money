@@ -3,7 +3,7 @@
 {% block content %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
@@ -248,6 +248,82 @@
       flex-direction: column;
     }
   }
+
+  .filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: flex-end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    min-width: 160px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.filter-group input,
+.filter-group select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+}
+.filter-sticky-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fdfcfc;
+    
+    border-bottom: 1px solid #ddd;
+    width: max-content;
+}
+
+
+.filter-bar {
+    min-width: 1200px; /* Match or exceed your table width */
+    background: #fcfdfd;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    margin-left: 0px;
+    
+  }
+  .btn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.btn-close {
+    background: #95a5a6;
+}
+
+.btn-close:hover {
+    background: #7f8c8d;
+}
+
+.btn-done {
+    background-color: #2980b9;
+}
+
+.btn-done:hover {
+    background-color: #1c638f;
+}
 </style>
 </head>
 <body>
@@ -256,8 +332,36 @@
   <div id="custom-alert">
   <span id="custom-alert-message"></span>
 </div>
+<div class="filter-sticky-wrapper">
+  <div class="filter-bar">
+  <form method="GET" action="{% url 'all-loans'%}" class="filter-form">
+      <div class="filter-group">
+          <label for="borrower">Borrower Name:</label>
+          <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
+      </div>
+
+      <div class="filter-group">
+          <label for="token">Token ID:</label>
+          <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
+      </div>
+      
+      <div class="filter-group">
+          <label for="number">Phone Number:</label>
+          <input type="number" name="mobile_number" id="mobile_number" placeholder="Phone Number" value="{{ request.GET.mobile_number|default:'' }}">
+      </div>
+
+      
+
+      <div class="filter-actions">
+          <button type="submit" class="btn btn-done">Filter</button>
+          <a href="{% url 'all-loans'%}" class="btn btn-close">Reset</a>
+      </div>
+  </form>
+</div>
+</div>
 
 <h2>All Active Loans</h2>
+
 
 {% if loans %}
 <table>
@@ -274,11 +378,12 @@
       <th>Total Paid</th>
       <th>Remaining</th>
       <th>Last_Paid <br>
-         (Due_date/paid_on)
+         (paid_on/Due_date)
       </th>
       <th>Next Due Date</th>
       <th>Status</th>
-      <th>Action</th>
+      <th>Make Payment</th>
+      <th>PDF</th>
     </tr>
   </thead>
   <tbody>
@@ -303,11 +408,11 @@
 <td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">
   
   {% if loan.activeloan.last_payment_date %}
-  {{ loan.activeloan.last_payment_date }}/
+  
   {% for payment in loan.activeloan.return_payments.all %}
     {% if payment.due_date == loan.activeloan.last_payment_date %}
       
-        {{ payment.created_at|date:"d M Y, h:i A" }}
+        {{ payment.created_at|date:"d M Y, h:i A" }}/{{ loan.activeloan.last_payment_date }}
        
     {% endif %}
   {% endfor %}
@@ -319,8 +424,9 @@
 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
     {{ loan.activeloan.status|title }}
 </td>
-<td><button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }})">Pay </button></td>
-    </tr>
+<td><button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} , '{{ loan.activeloan.next_due_date|date:'Y-m-d' }}')">Pay </button></td>
+<td>PDF</td>    
+</tr>
 
     <!-- Expandable row -->
     <tr id="schedule-{{ loan.id }}" class="hidden schedule-row">
@@ -400,6 +506,7 @@
        
       <input type="hidden" name="loan_id" id="loanIdInput" />
       
+  <input type="hidden" name="due_date" id="dueDateInput" />
       <!-- Amount (common) -->
       <div class="form-group">
         <label for="amount">Enter Amount </label>
@@ -461,9 +568,12 @@
 
 <!-- JavaScript -->
 <script>
-  function openModal(loanId) {
+  function openModal(loanId,dueDate) {
     document.getElementById("paymentModal").style.display = "block";
      document.getElementById("loanIdInput").value = loanId;
+    document.getElementById("dueDateInput").value = dueDate;
+
+
   }
 
   function closeModal() {
@@ -546,6 +656,8 @@
 </script>
 
 <script src="{% static 'js/popup.js' %}"></script>
+
+<script src="{% static 'js/filter.js ' %}"></script>
 </body>
 </html>
 {% endblock %}

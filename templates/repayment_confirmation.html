@@ -8,6 +8,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
+  <link rel="stylesheet" href="{% static 'css/popup.css' %}">
     <title>Pending Return Payments</title>
     <style>
         .btn {
@@ -195,6 +196,9 @@
     </style>
 </head>
 <body>
+    <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
     <h2>Pending Repayments from Borrowers</h2>
   {% if return_payments%}
     <table>
@@ -245,6 +249,8 @@
 
     </div>
     {% endif %}
+    
+<script src="{% static 'js/popup.js' %}"></script>
 </body>
 </html>
 {% endblock %}

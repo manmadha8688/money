@@ -173,7 +173,7 @@
           <label for="token">Token ID:</label>
           <input type="text" name="token" id="token" placeholder="Loan ID" value="{{ request.GET.token|default:'' }}">
       </div>
-
+      
       
 
       <div class="filter-group">
@@ -297,6 +297,36 @@
         <h3>No Transaction are found.</h3>
     </div>
     {% endif %}
+<script>
+  const fromDateInput = document.getElementById('from_date');
+  const toDateInput = document.getElementById('to_date');
+
+  fromDateInput.addEventListener('change', function () {
+    if (fromDateInput.value) {
+      toDateInput.min = fromDateInput.value;
+    } else {
+      toDateInput.removeAttribute('min');
+    }
+  });
+
+  toDateInput.addEventListener('change', function () {
+    if (toDateInput.value) {
+      fromDateInput.max = toDateInput.value;
+    } else {
+      fromDateInput.removeAttribute('max');
+    }
+  });
+
+  // Set min/max on page load if values already exist
+  window.addEventListener('DOMContentLoaded', function () {
+    if (fromDateInput.value) {
+      toDateInput.min = fromDateInput.value;
+    }
+    if (toDateInput.value) {
+      fromDateInput.max = toDateInput.value;
+    }
+  });
+</script>
 
 <script src="{% static 'js/filter.js ' %}"></script>
 

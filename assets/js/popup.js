@@ -20,7 +20,7 @@ function showAlert(message = "Success!", type = "green") {
       alertBox.style.display = 'none';
       alertBox.classList.remove('fadeOut');
     }, 500);
-  }, 4000);
+  }, 5000);
 }
 
 // Example triggers based on URL
@@ -45,5 +45,15 @@ if (urlParams.get('paymentdone') === 'true') {
 if (urlParams.get('paymentexists') === 'true') {
     
   showAlert("Payment already done by borrower. Please check in Payments and confirm!..",'yellow');
+  
 }
-
+if (urlParams.get('paidpayment') === 'true') {
+    const loanId = urlParams.get('loan_id');
+  const amount = urlParams.get('amount');
+  showAlert(`You've successfully paid ₹${amount} for Loan #${loanId}.`,'green');
+}
+if (urlParams.get('paid') === 'true') {
+    const loanId = urlParams.get('loan_id');
+  const amount = urlParams.get('amount');
+  showAlert(`Loan #${loanId}: ₹${amount} confirmed successfully!`,'green');
+}

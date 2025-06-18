@@ -3,11 +3,13 @@ from loans.models import LoanRequest
 from django.db.models import Q
 from loans.views import get_installment_schedule
 from .models import ReturnPayment,ActiveLoan
-from datetime import timedelta
+from datetime import timedelta,datetime
 from dateutil.relativedelta import relativedelta
 from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.urls import reverse
+
+from loans.views import apply_filter
 # Create your views here.
 def montly_loans(request):
 
@@ -32,7 +34,6 @@ def weekly_loans(request):
     ).order_by('id')
     
     for loan in loans:
-        print(loan.activeloan.status)
         loan.schedule = get_installment_schedule(loan)
 
     return render(request,'active_loans/weeklyloans.html',{"loans" : loans})
@@ -60,8 +61,8 @@ def all_loans(request):
         utr = request.POST.get('utr', '')
         cash_person = request.POST.get('cash_person', '')
         payment_app = request.POST.get('platform', '')
+
         due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
-                 
         existing_payment = ReturnPayment.objects.filter(
             returnloan=activeloan,
             due_date=due_date, # optionally filter by pending only
@@ -90,6 +91,8 @@ def all_loans(request):
                 activeloan.next_due_date = payment.due_date + relativedelta(months=1)
             activeloan.save()
             
+            return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
+            
         else:
             return redirect(f"{reverse('all-loans')}?paymentexists=true")
 
@@ -102,6 +105,10 @@ def all_loans(request):
     ).prefetch_related(
         'activeloan__return_payments'
     ).order_by('id')
+
+    if request.method == "GET":
+        loans = apply_filter(loans, request)
+
     for loan in loans:
         if loan.payment_plan == "weekly":
 
@@ -177,13 +184,12 @@ def update_repayment_status(request):
                 elif loan.payment_plan  == 'monthly':
                     active_loan.next_due_date = payment.due_date + relativedelta(months=1)
                 active_loan.save()
-                
-                
+                return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
+            
         elif action == 'not_paid':
-                print('not paid')
+            print('not paid')
+            return redirect(f"{reverse('repayment-confirmation')}?paid=false")
                 
                 
-
-        return redirect('repayment-confirmation')  
 
     return redirect('repayment-confirmation')

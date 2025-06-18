@@ -1,13 +1,21 @@
 
 function handleEnter(event, fieldId) {
     if (event.key === 'Enter') {
-      const allFields = ['borrower', 'token', 'status', 'from_date', 'to_date'];
+      const allFields = ['borrower', 'token', 'status','number','from_date', 'to_date'];
  
       allFields.forEach((fid) => {
         if (fieldId === 'token') {
           // If current field is "token", clear all except itself
           if (fid !== 'token') document.getElementById(fid).value = '';
-        } else {
+          
+        } 
+        else if (fieldId === 'number') {
+          // If current field is "token", clear all except itself
+          if (fid !== 'number') document.getElementById(fid).value = '';
+          
+        } 
+        
+        else {
           // If current field is NOT "token", clear only the token field
           if (fid === 'token') document.getElementById(fid).value = '';
         }
@@ -26,15 +34,20 @@ function handleEnter(event, fieldId) {
     handleEnter(e, 'token');
   });
 
-  document.getElementById('status').addEventListener('keydown', function(e) {
+  const statusInput = document.getElementById('status');
+
+  if (statusInput) {
+  statusInput.addEventListener('keydown', function (e) {
     handleEnter(e, 'status');
   });
+ }
+ const numberInput = document.getElementById('mobile_number');
 
-  document.getElementById('from_date').addEventListener('keydown', function(e) {
-    handleEnter(e, 'from_date');
+ if (numberInput) {
+  numberInput.addEventListener('keydown', function (e) {
+    handleEnter(e, 'number');
   });
+ }
 
-  document.getElementById('to_date').addEventListener('keydown', function(e) {
-    handleEnter(e, 'to_date');
-  });
 
+ 

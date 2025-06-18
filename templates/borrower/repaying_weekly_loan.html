@@ -468,7 +468,7 @@
                                     {% if payment.utr %}<br> <strong>UTR:</strong> {{ payment.utr }}{% endif %}
                                     {% if payment.cash_person %}<br> <strong>Cash By: </strong>{{ payment.cash_person }}{% endif %}
                                     
-                                    <br><strong>On : </strong>s {{ payment.created_at }}
+                                    <br><strong>On : </strong> {{ payment.created_at }}
                                
                             {% endfor %}
                         

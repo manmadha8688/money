@@ -120,11 +120,10 @@
       <th>Total Paid</th>
       <th>Remaining</th>
       <th>Last_Paid <br>
-         (Due_date/paid_on)
+         (paid_on/Due_date)
       </th>
       <th>Next Due Date</th>
       <th>Status</th>
-      <th>Action</th>
     </tr>
   </thead>
   <tbody>
@@ -143,11 +142,11 @@
 <td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">
   {% if loan.activeloan.last_payment_date %}
-  {{ loan.activeloan.last_payment_date }}/
   {% for payment in loan.activeloan.return_payments.all %}
     {% if payment.due_date == loan.activeloan.last_payment_date %}
       
-        {{ payment.created_at|date:"d M Y, h:i A" }}
+        {{ payment.created_at|date:"d M Y, h:i A" }}/
+  {{ loan.activeloan.last_payment_date }}
        
     {% endif %}
   {% endfor %}
@@ -160,7 +159,6 @@
     {{ loan.activeloan.status|title }}
 </td>
 
-      <td>Paid / Not</td>
     </tr>
 
     <!-- Expandable row -->

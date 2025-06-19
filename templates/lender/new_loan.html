@@ -100,7 +100,7 @@
         document.getElementById("loanLink").value = loanLink;  // Show in input field
     
         let draftUrl = `${window.location.origin}/loans/draft-loan/${lenderId}/${uniqueId}/`;
-    
+        console.log(draftUrl)
         fetch(draftUrl, {
             method: 'POST',
             headers: {

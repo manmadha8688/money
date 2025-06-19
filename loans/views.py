@@ -48,7 +48,6 @@ def draft_loan(request, lender_id, unique_id):
                 unique_id=unique_id,
                 submitted=False,
                 amount=0,
-                apply_date=now()
             )
             created = True
         else:
@@ -150,7 +149,7 @@ def loan_request(request, lender_id, unique_id):
                     lender_id = loan.lender.id
                     unique_id = loan.unique_id
 
-                    return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+                return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
             
             return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
         elif loan.status== "rejected":

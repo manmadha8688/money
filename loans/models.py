@@ -64,7 +64,8 @@ class LoanRequest(models.Model):
         ('weekly', 'Weekly'),
         ('monthly', 'Monthly'),
     ]
-    lender = models.ForeignKey(User, on_delete=models.CASCADE)
+    lender = models.ForeignKey(User, on_delete=models.CASCADE,related_name="lender_loans")
+    client = models.ForeignKey(User, on_delete=models.CASCADE, related_name='client_loans')
     borrower = models.ForeignKey(Borrower,null=True, on_delete=models.CASCADE) 
     payment = models.OneToOneField(PaymentDetail,on_delete=models.CASCADE,null=True,related_name="payment_details") # Links to Borrower model
     

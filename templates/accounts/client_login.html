@@ -1,0 +1,318 @@
+
+<div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
+
+<div class="auth-container">
+    
+    <div class="auth-card">
+        <div class="auth-header"> 
+            <h2>Welcome Back</h2>
+            <p>Please login to your account</p>
+        </div>
+        
+        
+        
+        <form id="loginForm" method="POST" action="{% url 'client-login' %}" class="auth-form">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </span>
+                    <input type="text" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-group">
+                    <span class="input-icon">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                        </svg>
+                    </span>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword('password')">
+                        <svg class="icon" viewBox="0 0 24 24">
+                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember">
+                    <span>Remember me</span>
+                </label>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="auth-button">
+                <span>Login</span>
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path d="M10 17l5-5-5-5v10z"/>
+                </svg>
+            </button>
+        </form>
+
+    
+    </div>
+</div>
+
+<style>
+  
+/* Main alert box styles */
+#custom-alert {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: white;
+  background-color: #10b981; /* green by default */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: none;
+  transition: all 0.3s ease;
+}
+
+/* Red alert variant */
+#custom-alert.red {
+  background-color: #ef4444;
+}
+
+/* Yellow alert variant */
+#custom-alert.yellow {
+  background-color: #f59e0b;
+}
+
+/* Fade out animation */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.fadeOut {
+  animation: fadeOut 0.5s forwards;
+}
+
+
+    body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #e0f7fa, #e1bee7);
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  transition: transform 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: scale(1.01);
+}
+
+.auth-header h2 {
+  font-size: 28px;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.auth-header p {
+  color: #666;
+  margin-bottom: 30px;
+}
+
+.auth-form .form-group {
+  margin-bottom: 20px;
+}
+
+.auth-form label {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.input-group {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 8px 12px;
+  background: #f9f9f9;
+}
+
+.input-icon {
+  margin-right: 8px;
+}
+
+.input-icon .icon {
+  width: 22px;
+  height: 22px;
+  fill: #666;
+}
+
+.input-group input {
+  border: none;
+  outline: none;
+  background: transparent;
+  flex: 1;
+  font-size: 16px;
+  padding: 8px 4px;
+}
+
+.toggle-password {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.toggle-password .icon {
+  fill: #888;
+  width: 20px;
+  height: 20px;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.remember-me input {
+  margin-right: 6px;
+}
+
+.forgot-password {
+  text-decoration: none;
+  color: #007bff;
+}
+
+.auth-button {
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: background 0.3s ease;
+}
+
+.auth-button:hover {
+  background: linear-gradient(135deg, #5e0fc5, #1a6bfa);
+}
+
+.auth-button .icon {
+  fill: white;
+  width: 20px;
+  height: 20px;
+}
+
+
+
+</style>
+
+<script>
+    function togglePassword(inputId) {
+        const input = document.getElementById(inputId);
+        const button = input.nextElementSibling;
+        if (input.type === "password") {
+            input.type = "text";
+            button.innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/></svg>';
+        } else {
+            input.type = "password";
+            button.innerHTML = '<svg class="icon" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>';
+        }
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", function(event) {
+        let username = document.getElementById("username").value;
+        let password = document.getElementById("password").value;
+
+        if (username.trim() === "" || password.trim() === "") {
+            alert("Both fields are required!");
+            event.preventDefault();
+        }
+    });
+  
+function showAlert(message = "Success!", type = "green") {
+  const alertBox = document.getElementById('custom-alert');
+  const messageSpan = document.getElementById('custom-alert-message');
+
+  // Reset classes
+  alertBox.classList.remove("red", "yellow");
+
+  // Add color variant
+  if (type === "red") alertBox.classList.add("red");
+  if (type === "yellow") alertBox.classList.add("yellow");
+
+  messageSpan.innerText = message;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.classList.add('fadeOut');
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+      alertBox.classList.remove('fadeOut');
+    }, 500);
+  }, 4000);
+}
+
+// Example triggers based on URL
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('registered') === 'true') {
+  showAlert("You have registered successfully!", "green");
+}
+if (urlParams.get('logout') === 'true') {
+  showAlert("You have loged out successfully!", "green");
+}
+
+if (urlParams.get('error') === 'invalid') {
+  showAlert("Invalid username or password.", "red");
+}
+
+</script>
+

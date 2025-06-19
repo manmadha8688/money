@@ -1,0 +1,787 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Monthly Loan Overview</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  
+  <link rel="stylesheet" href="{% static 'css/popup.css' %}">
+  <style>
+    :root {
+      --primary: #1abc9c;
+      --dark-primary: #16a085;
+      --white: #fff;
+      --gray: #f5f6fa;
+      --text: #2d3436; 
+      --success: #2ecc71;
+      --danger: #e74c3c;
+      --radius: 10px;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: rgb(253, 247, 247);
+      margin: 0px;
+      padding: 0px 30px 50px;
+    }
+
+    .header {
+      background-color: var(--primary);
+      color: #fff;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+      box-shadow: var(--shadow);
+    }
+
+    .logo-wrapper {
+      position: absolute;
+      left: 30px;
+    }
+
+    .company-logo {
+      width: 70px;
+      border-radius: 50%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .company-info h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .company-info p {
+      font-size: 14px;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+
+    .client-summary {
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .loan-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .loan-card {
+      background: #f4f6f8;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+      transition: 0.3s;
+    }
+
+    .loan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status {
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .status.active { background-color: #f39c12; }
+    .status.completed { background-color: #2ecc71; }
+    .status.overdue { background-color: #e74c3c; }
+
+    .loan-body {
+      margin-top: 10px;
+    }
+
+    .loan-body p {
+      margin: 6px 0;
+    }
+
+    .loan-details {
+      margin-top: 15px;
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .loan-details table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    .loan-details td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .loan-details td:first-child {
+      font-weight: 600;
+      width: 30%;
+      color: #555;
+    }
+
+    .loan-details td:nth-child(2) {
+      width: 5%;
+      text-align: center;
+      color: #aaa;
+    }
+
+    .loan-details td:last-child {
+      color: #222;
+      width: 65%;
+    }
+
+    .toggle-btn {
+      margin-top: 10px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .toggle-btn:hover {
+      background-color: #2980b9;
+    }
+    .loan-progress-bar {
+  margin-top: 6px;
+  width: 120px;
+  height: 8px;
+  background: #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.loan-progress-bar .fill {
+  height: 100%;
+  background: #27ae60;
+  width: 0%;
+  transition: width 0.4s ease;
+}
+.pay-btn {
+      background: linear-gradient(135deg, #44e720, #059775);
+      color: white;
+      padding: 10px 2cap;
+      margin-left: 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .pay-btn:hover {
+      background: linear-gradient(135deg, #13bd0a, #3d8c41);
+      transform: translateY(-2px);
+    }
+
+    .pay-btn:active {
+      transform: scale(0.98);
+    }
+
+    @media (max-width: 600px) {
+      .pay-btn {
+        width: 100%;
+      }
+    }
+
+  /* Modal overlay */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  /* Modal box */
+  .modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Headings and text */
+  .modal-content h2 {
+    margin-top: 0;
+    font-size: 1.8rem;
+    color: #1abc9c;
+    text-align: center;
+  }
+
+  .modal-content p {
+    font-size: 1rem;
+    color: #555;
+    margin: 10px 0;
+  }
+
+  .form-group {
+    margin: 15px 0;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .form-group input,
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    transition: border-color 0.3s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #1abc9c;
+    box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+  }
+
+  .modal-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .modal-buttons button {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .modal-buttons .confirm {
+    background-color: #1abc9c;
+    color: white;
+  }
+
+  .modal-buttons .confirm:hover {
+    background-color: #16a085;
+  }
+
+  .modal-buttons .cancel {
+    background-color: #e74c3c;
+    color: white;
+  }
+
+  .modal-buttons .cancel:hover {
+    background-color: #c0392b;
+  }
+
+  /* Responsive improvements */
+  @media (max-width: 480px) {
+    .modal-content {
+      padding: 20px;
+      margin: 10% auto;
+    }
+
+    .modal-buttons {
+      flex-direction: column;
+    }
+  }
+  .s_modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.s_modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 1000px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.s_modal-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px; /* vertical gap between rows */
+}
+
+.s_modal-content th, .s_modal-content td {
+  padding: 12px;
+  background-color: #fff;
+  border-radius: 8px;
+  vertical-align: top;
+  text-align: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.s_modal-content thead th {
+  background-color: #f2f4f7;
+  color: #333;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+.s_modal-content tbody tr {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-radius: 6px;
+}
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.status-paid {
+  color: green;
+  font-weight: bold;
+}
+
+.status-unpaid {
+  color: red;
+  font-weight: bold;
+}
+.schedule-btn {
+  background-color: #8c0ac8; /* Orange base */
+  color: #fff;
+  font-weight: 600;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-left: 20px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-btn:hover {
+  background-color: #6e04ac; /* Darker orange on hover */
+  transform: translateY(-1px);
+}
+
+.schedule-btn:active {
+  transform: scale(0.98);
+}
+
+</style>
+
+</head>
+<body>
+<body>
+ <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
+
+<div class="header">
+  <div class="logo-wrapper">
+    
+    <img src="{% static 'images/default_logo.jpeg' %}" class="company-logo" alt="Default Logo" />
+    
+  </div>
+  <div class="company-info">
+    <h1>{{ lender.active_user.company_name }}</h1>
+    <p>({{ lender.active_user.tagline }})</p>
+  </div>
+</div>
+
+  <div class="client-summary">
+    <h2>👤 {{request.user.first_name}}</h2>
+    <p>📞 +91 - {{request.user.username}}</p>
+    <p>📋 Total Loans: <strong>{{count}}</strong></p>
+    <p>💰 Total Borrowed: ₹1,50,000 | Paid: ₹65,000 | Outstanding: ₹85,000</p>
+  </div>
+
+      {% for loan in loans%}
+  <div class="loan-cards">
+    <!-- Loan 1 -->
+    <div class="loan-card">
+      <div class="loan-header">
+        <h3> {{ loan.payment_plan }} - Loan  #{{loan.id}}</h3>
+        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+       {% if loan.activeloan.status == "Repaying"%}
+      <span class="status active">Active</span>
+      <div class="loan-progress-bar">
+        <div class="fill" style="width: {{loan.percentage}}%;"></div>
+        
+      </div>
+      <div style="font-size: 12px; color: #555; margin-top: 2px;">{{loan.percentage}}% Paid</div>
+
+        {% elif loan.activeloan.status == "closed"%}
+         
+      <span class="status completed">Closed</span>
+      {% else%}
+      <span class="status overdue">Overdue</span>
+      <div class="loan-progress-bar">
+        <div class="fill" style="width: 36%;"></div>
+        
+      </div>
+      <div style="font-size: 12px; color: #555; margin-top: 2px;">36% Paid</div>
+
+       {% endif %}
+
+
+      
+    </div>
+      </div>
+
+      <div class="loan-body">
+        <p>📆 <span style="font-weight: 700;">Start Date :</span> {{ loan.taken_date }}</p>
+<p>💵 <span style="font-weight: 700;">Amount :</span> ₹{{ loan.amount }}</p>
+<p>✅ <span style="font-weight: 700;">Repaid :</span> ₹{{loan.activeloan.total_paid}} | 🔁 <span style="font-weight: 700;">Outstanding :</span> ₹{{ loan.activeloan.remaining_balance }}</p>
+<p>📅 <span style="font-weight: 700;">Next Due Date :</span> {{ loan.activeloan.next_due_date }}</p>
+
+      </div>
+      <button class="toggle-btn" onclick="toggleDetails('{{loan.id}}')">📂 View Details</button>
+      {% if loan.activeloan.status == "closed"%}
+          
+          {% else %}
+          <button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} , '{{ loan.activeloan.next_due_date|date:'Y-m-d' }}')">Pay </button>
+          {% endif %}
+        
+          {% if loan.payment_plan == "weekly" %}
+          <button class="schedule-btn" onclick="openScheduleModal({{ loan.id }})">📅 Schedul </button>
+          {% endif %}
+    <div id="scheduleModal-{{ loan.id }}" class="s_modal">
+  <div class="s_modal-content">
+    <span class="close" onclick="closeScheduleModal({{ loan.id }})">&times;</span>
+    <h3><i class="fas fa-calendar-alt"></i>  Weekly Schedule #{{loan.id}}</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Week</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Paid Amount</th>
+          <th>Payment Details</th>
+          <th>Total Paid</th>
+          <th>Remaining</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in loan.schedule %}
+        <tr>
+          <td>Week {{ item.week }}</td>
+          <td>{{ item.due_date }}</td>
+          <td class="{% if item.status %}status-paid{% else %}status-unpaid{% endif %}">
+            {% if item.status %}✅ Paid{% else %}❌ Not Paid{% endif %}
+          </td>
+          <td>₹{{ item.paid_this_due_date }}</td>
+          <td>
+            {% if item.payment_details %}
+              {% for payment in item.payment_details %}
+                {% if payment.payment_app %}<br> <strong>Online App</strong>: {{ payment.payment_app }}{% endif %}
+                {% if payment.utr %}<br> <strong>UTR:</strong> {{ payment.utr }}{% endif %}
+                {% if payment.cash_person %}<br> <strong>Cash By:</strong> {{ payment.cash_person }}{% endif %}
+                <br><strong>On:</strong> {{ payment.created_at }}
+              {% endfor %}
+            {% else %}-{% endif %}
+          </td>
+          <td>₹{{ item.total_paid }}</td>
+          <td>₹{{ item.remaining }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+      <div class="loan-details" id="{{loan.id}}">
+      <table>
+        <tr><td>Token ID</td><td>:</td><td>{{loan.id}}</td></tr>
+        <tr><td>Start Date (Date of taken)</td><td>:</td><td>05-May-2024</td></tr>
+        <tr><td>Loan Amount</td><td>:</td><td>₹ {{ loan.amount }}</td></tr>
+        <tr><td>Interest</td><td>:</td><td>₹ {{loan.interest_amount}}</td></tr>
+        <tr><td>Total Amount</td><td>:</td><td style="color: green;"> ₹ {{ loan.amount|add:loan.interest_amount }}</td></tr>
+        {% if loan.payment_plan == "monthly" %}
+        {% else %}
+        <tr><td>Intalment</td><td>:</td><td>₹ {{loan.instalment}}</td></tr>
+        {% endif %}
+        <tr><td>Total Paid</td><td>:</td><td>₹ {{loan.activeloan.total_paid}}</td></tr>
+        <tr><td>Remaining</td><td>:</td><td style="color: orange;">₹ {{ loan.activeloan.remaining_balance }}</td></tr>
+        <tr><td>Last Paid Due_date (paid_on)</td><td>:</td><td>
+        {% if loan.activeloan.last_payment_date %}
+  {{ loan.activeloan.last_payment_date }} 
+   (
+  {% for payment in loan.activeloan.return_payments.all %}
+    {% if payment.due_date == loan.activeloan.last_payment_date %}
+      
+        {{ payment.created_at|date:"d M Y, h:i A" }}
+       
+    {% endif %}
+  {% endfor %}
+  )
+  {% else %}
+        -
+    {% endif %}
+      </td>
+    </tr>
+        <tr><td>Next Due Date</td><td>:</td><td>{{ loan.activeloan.next_due_date }}</td></tr>
+      </table>
+    </div>
+    </div>
+{% endfor%}
+
+<div id="paymentModal" class="modal">
+  <div class="modal-content">
+    <h2>Payment Details</h2>
+
+     
+    <form id="paymentForm" method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="loan_id" id="loanIdInput" />
+      
+      <input type="hidden" name="due_date" id="dueDateInput" />
+      <!-- Amount (common) -->
+      <div class="form-group">
+        <label for="amount">Enter Amount (Min ₹{{ mini }}, Max ₹{{ maxi }})</label>
+        <input type="number" id="amount" name="amount"
+          min="{{ mini }}" max="{{ maxi }}" step="100" required
+          data-min="{{ mini }}" data-max="{{ maxi }}">
+      </div>
+      
+      <!-- Payment Method -->
+      <div class="form-group">
+        <label for="method">Select Payment Method:</label>
+        <select id="method" name="method" onchange="toggleFields()" required>
+          <option value="">-- Select --</option>
+          <option value="cash">Cash</option>
+          <option value="online">Online</option>
+        </select>
+      </div>
+
+      
+
+      <!-- Cash Fields -->
+      <div class="form-group" id="cash-field" style="display: none;">
+        <label for="cashPerson">Cash Given To:</label>
+        <input type="text" id="cashPerson" name="cash_person" placeholder="Enter person name">
+      </div>
+
+      <!-- Online Fields -->
+      <div id="online-fields" style="display: none;">
+        <br>
+        <p><strong>UPI ID:</strong> <span id="upi-id">{{ lender.active_user.payment_upis }}</span></p>
+    <p><strong>Account Holder Name:</strong> {{ lender.active_user.account_holder_name }}</p>
+        <br>
+        <div class="form-group">
+          <label for="platform">Enter Payment App:</label>
+          <input list="platforms" id="platform" name="platform"
+            placeholder="e.g., GPay, PhonePe, Paytm">
+          <datalist id="platforms">
+            <option value="GPay">
+            <option value="PhonePe">
+            <option value="Paytm">
+            <option value="Amazon Pay">
+            <option value="BHIM">
+            <option value="Mobikwik">
+            <option value="Freecharge">
+            <option value="Other">
+          </datalist>
+        </div>
+
+        <div class="form-group">
+          <label for="utr">Enter UTR Number:</label>
+          <input type="text" id="utr" name="utr" pattern="\d{6,}" title="Enter at least 6 digits">
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="confirm" onclick="validateAndSubmit()">Payment Done</button>
+        <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script> 
+  function toggleDetails(id) {
+      const el = document.getElementById(id);
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    }
+  function openModal(loanId,dueDate) {
+    document.getElementById("paymentModal").style.display = "block";
+    document.getElementById("loanIdInput").value = loanId;
+    document.getElementById("dueDateInput").value = dueDate;
+
+  }
+
+  function closeModal() {
+    document.getElementById("paymentModal").style.display = "none";
+  }
+
+  function toggleFields() {
+    const method = document.getElementById("method").value;
+    document.getElementById("cash-field").style.display = (method === "cash") ? "block" : "none";
+    document.getElementById("online-fields").style.display = (method === "online") ? "block" : "none";
+  }
+
+  function validateAndSubmit() {
+    const method = document.getElementById("method").value;
+    const amountInput = document.getElementById("amount");
+    const minAmount = parseFloat(amountInput.dataset.min);
+    const maxAmount = parseFloat(amountInput.dataset.max);
+    const amount = parseFloat(amountInput.value);
+
+    if (!method) {
+      alert("Please select a payment method.");
+      return;
+    }
+
+    if (!amount || amount < minAmount || amount > maxAmount) {
+      alert(`Amount should be between ₹${minAmount} and ₹${maxAmount}.`);
+      amountInput.focus();
+      return;
+    }
+
+    if (method === "cash") { 
+      const cashPerson = document.getElementById("cashPerson").value.trim();
+      if (!cashPerson) {
+        alert("Please enter the name of the person to whom cash was given.");
+        document.getElementById("cashPerson").focus();
+        return;
+      }
+    }
+
+    if (method === "online") {
+      const platform = document.getElementById("platform").value.trim();
+      const utr = document.getElementById("utr").value.trim();
+
+      if (!platform) {
+        alert("Please enter the payment app name.");
+        document.getElementById("platform").focus();
+        return;
+      }
+
+      if (!utr || !/^\d{6,}$/.test(utr)) {
+        alert("Please enter a valid UTR number (at least 6 digits).");
+        document.getElementById("utr").focus();
+        return;
+      }
+    }
+
+    document.getElementById("paymentForm").submit();
+  }
+
+    // Optional: Close modal if user clicks outside
+   
+ 
+    function toggleSchedule(id, btn) {
+      const row = document.getElementById(id);
+      const icon = btn.querySelector('.icon');
+      const isVisible = row.style.display === 'table-row';
+      row.style.display = isVisible ? 'none' : 'table-row';
+      icon.classList.toggle('rotate', !isVisible);
+      icon.textContent = isVisible ? '▼' : '▲';
+    }
+
+    function toggleContact() {
+      const contact = document.getElementById('contact-details');
+      const btn = document.getElementById('contact-btn');
+      const visible = contact.style.display === 'block';
+      contact.style.display = visible ? 'none' : 'block';
+      btn.innerHTML = visible 
+        ? '<i class="fas fa-user-circle"></i> Lender Contact Details'
+        : '<i class="fas fa-eye-slash"></i> Hide Contact Details';
+    }
+         
+     
+function showAlert(message = "Success!", type = "green") {
+  const alertBox = document.getElementById('custom-alert');
+  const messageSpan = document.getElementById('custom-alert-message');
+
+  // Reset classes
+  alertBox.classList.remove("red", "yellow");
+
+  // Add color variant
+  if (type === "red") alertBox.classList.add("red");
+  if (type === "yellow") alertBox.classList.add("yellow");
+
+  messageSpan.innerText = message;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.classList.add('fadeOut');
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+      alertBox.classList.remove('fadeOut');
+    }, 500);
+  }, 4000);
+}
+
+{% for message in messages %}
+      {% if message.tags == 'success' %}
+        showAlert("You have successfully submitted your payment. Your lender will review and confirm it shortly.", 'green');
+      {% elif message.tags == 'error' %}
+        showAlert("Payment for this due date is already done and is under confirmation.", 'red');
+      
+      {% endif %}
+    {% endfor %}
+
+  function openScheduleModal(id) {
+  document.getElementById('scheduleModal-' + id).style.display = 'block';
+}
+
+function closeScheduleModal(id) {
+  document.getElementById('scheduleModal-' + id).style.display = 'none';
+}
+ window.onclick = function(event) {
+      const modal = document.getElementById("paymentModal");
+      if (event.target == modal) {
+        closeModal();
+      }
+    }
+  </script>
+
+</body>
+</html>
+

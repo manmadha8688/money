@@ -50,3 +50,24 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect(f"{reverse('login')}?logout=true")
+
+def client_login_view(request):
+    if request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        remember_me = request.POST.get('remember', False)
+        print(password)
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            if not remember_me:
+                request.session.set_expiry(0)
+            if user.last_name == "true":
+                return redirect('change-client-password')  # create this URL/view
+            else:
+                return redirect('client-dashboard')
+        else:
+            return redirect(f"{reverse('client-login')}?error=invalid")
+
+    return render(request, "accounts/client_login.html")

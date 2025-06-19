@@ -163,6 +163,27 @@ def loan_request(request, lender_id, unique_id):
             payment = PaymentDetail.objects.get(id =loan.payment.id)
             return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment})
         else :
+            return render(request,'borrower/completed_loan.html',{"loan": loan})
+        """ 
+        elif loan.status == 'paymentreceived':
+            username = 
+            default_password = User.objects.make_random_password(length=8)  # You can also use a fixed one
+    
+   
+            user = User.objects.create_user(
+                username=username,
+                password=default_password,
+                email=email,
+                first_name=name,
+                last_name="True"  # Flag for password change
+                )
+
+    # Return the created user and password to inform admin or send via SMS/email
+            return {
+                    "username": username,
+                    "temporary_password": default_password
+                }
+        else :
             
             if loan.payment_plan == "monthly":
                 mini = loan.interest_amount
@@ -199,7 +220,7 @@ def loan_request(request, lender_id, unique_id):
                         payment_exists = True
 
 
-                return render(request, "borrower/repaying_monthly_loan.html",{"loan":loan, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
+                return render(request, "borrower/loan_details.html",{"loan":loan, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
             elif loan.payment_plan == "weekly":
                 schedule = get_installment_schedule(loan)
                 
@@ -244,11 +265,11 @@ def loan_request(request, lender_id, unique_id):
 
 
                 payment_exists = request.session.pop('payment_exists', False)
-                return render(request, "borrower/repaying_weekly_loan.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
+                return render(request, "borrower/loan_details.html",{"loan":loan,'schedule': schedule, 'mini':mini,'maxi':maxi,"payment_exists":payment_exists})
             else :
                 return render(request, "borrower/repaying_onetime_loan.html",{"loan":loan})
                 
-
+    """
 
 
     if request.method == "POST":
@@ -435,7 +456,7 @@ def payment_details(request, loan_id):
     
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
 def cancel_reject_list(request):
-    loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="rejected") | Q(status="cancelled")).order_by('-updated_at')
+    loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="rejected") | Q(status="cancelled")).select_related('lender__active_user').order_by('-updated_at')
     if request.method == 'GET':
         loans = apply_filter(loans,request)
     return render(request, 'lender/cancel_reject_list.html', {'loans': loans})
@@ -468,7 +489,7 @@ def payment_done_check(request,loan_id):
     loan.save()
     return redirect("payment-done-list")
 def paymentreceived(request,loan_id):
-    loan = get_object_or_404(LoanRequest, id=loan_id)
+    loan = get_object_or_404(LoanRequest.objects.select_related('lender__active_user','borrower'), id=loan_id)
     if request.method == "POST":
         
         confirmation = request.POST.get('confirmation')
@@ -489,6 +510,22 @@ def paymentreceived(request,loan_id):
                 remaining_balance = loan.amount + loan.interest_amount,
                 next_due_date = due_date
             )
+            username = loan.borrower.phone
+            default_password = "client@123" # You can also use a fixed one
+    
+            # Create user
+            if not User.objects.filter(username=username).exists():
+                user = User.objects.create_user(
+                username=username,
+                password=default_password,
+                first_name=loan.borrower.name,
+                last_name="true"  # You are using this as a flag
+                )
+            else:
+                return redirect('client-login')
+            return render(request,'borrower/client_inform.html',{"password":default_password})
+    
+    
 
         else:
             loan.status = "paymentnotreceived"

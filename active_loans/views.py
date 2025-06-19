@@ -85,6 +85,16 @@ def all_loans(request):
             activeloan.remaining_balance -= payment.amount
             activeloan.last_payment_date = payment.due_date
 
+            if activeloan.remaining_balance == 0 :
+                activeloan.status = 'closed'
+                if  ctiveloan.loan_request.payment_plan == 'weekly':
+                    activeloan.next_due_date = None
+                elif activeloan.loan_request.payment_plan  == 'monthly':
+                    activeloan.next_due_date = None
+                activeloan.save()
+                return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
+            
+            
             if  activeloan.loan_request.payment_plan == 'weekly':
                 activeloan.next_due_date = payment.due_date + timedelta(weeks=1)
             elif activeloan.loan_request.payment_plan  == 'monthly':
@@ -171,13 +181,20 @@ def update_repayment_status(request):
 
                 active_loan.total_paid += payment.amount
                 active_loan.remaining_balance -= payment.amount
-                
-                if active_loan.remaining_balance == 0 :
-                    active_loan.status = 'closed'
-                    
                 payment.status = 'success'
                 
                 payment.save()
+                
+                if active_loan.remaining_balance == 0 :
+                    active_loan.status = 'closed'
+                    if  loan.payment_plan == 'weekly':
+                        active_loan.next_due_date = None
+                    elif loan.payment_plan  == 'monthly':
+                        active_loan.next_due_date = None
+                    active_loan.save()
+                    return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
+            
+                
 
                 if  loan.payment_plan == 'weekly':
                     active_loan.next_due_date = payment.due_date + timedelta(weeks=1)

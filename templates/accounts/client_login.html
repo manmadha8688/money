@@ -91,7 +91,7 @@
 }
 
 /* Yellow alert variant */
-#custom-alert.yellow {
+#custom-alert.orange {
   background-color: #f59e0b;
 }
 
@@ -283,11 +283,11 @@ function showAlert(message = "Success!", type = "green") {
   const messageSpan = document.getElementById('custom-alert-message');
 
   // Reset classes
-  alertBox.classList.remove("red", "yellow");
+  alertBox.classList.remove("red", "orange");
 
   // Add color variant
   if (type === "red") alertBox.classList.add("red");
-  if (type === "yellow") alertBox.classList.add("yellow");
+  if (type === "orange") alertBox.classList.add("orange");
 
   messageSpan.innerText = message;
   alertBox.style.display = 'block';
@@ -303,16 +303,22 @@ function showAlert(message = "Success!", type = "green") {
 
 // Example triggers based on URL
 const urlParams = new URLSearchParams(window.location.search);
-if (urlParams.get('registered') === 'true') {
-  showAlert("You have registered successfully!", "green");
-}
+
 if (urlParams.get('logout') === 'true') {
   showAlert("You have loged out successfully!", "green");
-}
+} 
 
 if (urlParams.get('error') === 'invalid') {
   showAlert("Invalid username or password.", "red");
 }
-
+if (urlParams.get('loan') === 'true') {
+  showAlert("Loan process completed successfully. Your loan is now active.", "orange");
+  setTimeout(() => {
+    showAlert("Login using your phone number and the password you used for your last loan.", "blue");
+  }, 5000); 
+}
+if (urlParams.get('user') === 'false') {
+  showAlert("Not A active user.", "red");
+}
 </script>
 

@@ -471,6 +471,8 @@ table {
         <tr><td>Taken Date</td><td><div  id="confirm_taken"></div ></td></tr>
         <tr><td>Return Date</td><td><div  id="confirm_return"></div ></td></tr>
         <tr><td>Reason</td><td><div  id="confirm_reason"></div ></td></tr>
+          
+        <tr><td>Referral</td><td><div  id="confirm_referral"></div ></td></tr>
         
         <tr><td>Payment Plan</td><td > <div  id="confirm_payment_plan"></div ></td></tr>
        <tr> <td colspan="2"> <strong>Payment Details </strong></td>
@@ -619,6 +621,8 @@ table {
   document.getElementById("confirm_taken").innerText = document.getElementById("taken_date").value;
   document.getElementById("confirm_return").innerText = document.getElementById("return_date").value;
   document.getElementById("confirm_reason").innerText = document.getElementById("notes").value;
+  
+  document.getElementById("confirm_referral").innerText = document.getElementById("referral").value;
 
   const paymentType = document.getElementById("payment_type").value;
   document.getElementById("confirm_payment_type").innerText = paymentType;

@@ -24,7 +24,7 @@ def change_client_password(request):
             user.last_name = ""  # unset first-login flag
             user.save()
             update_session_auth_hash(request, user)  # keep the user logged in
-            messages.success(request, "Password changed successfully.")
+            messages.success(request, "You’ve successfully logged in, and your password has been changed.")
             
             return redirect('client-dashboard')  
 
@@ -59,8 +59,8 @@ def client_dashboard(request):
                 due_date=due_date,
                 )
             payment.save()
-            
-            messages.success(request,'success')
+             
+            messages.success(request,'You have successfully submitted your payment. Your lender will review and confirm it shortly.')
             return redirect(f"{reverse('client-dashboard')}")
             
         else:
@@ -76,13 +76,30 @@ def client_dashboard(request):
     ).prefetch_related(
         'activeloan__return_payments'
     )
+    total ,paid , remaining = 0 ,0 ,0
     for loan in borrowed_loans:
         loan.percentage = round((loan.activeloan.total_paid / (loan.amount + loan.interest_amount)) * 100 , 2)
+        total += loan.amount
+        paid += loan.activeloan.total_paid
+        remaining += loan.activeloan.remaining_balance
         if loan.payment_plan == "weekly":
 
             loan.schedule = get_installment_schedule(loan)
     
-    lender = borrowed_loans[0].lender
     count = borrowed_loans.count()
+    if count==0:
+        
+        return redirect(f"{reverse('client-login')}?user=false")
+    lender = borrowed_loans[0].lender
     
-    return render(request,'borrower/loan_details.html',{'count':count,'loans':borrowed_loans , "lender":lender , 'mini':1,'maxi':1000})
+    return render(request,'borrower/loan_details.html',
+    {'loans':borrowed_loans ,
+     "lender":lender ,
+      'mini':1,
+      'maxi':1000,
+      'count':count,
+      'total':total,
+      'paid':paid,
+      'remaining':remaining
+      }
+      )

@@ -371,7 +371,7 @@
 </div>
 
 <!-- Payment Edit Form (Initially Hidden) -->
-<form id="payment-edit-form" onsubmit="return validatePaymentForm()" style="display: none; margin-top: 20px;" method="POST" action="" enctype="multipart/form-data">
+<form id="payment-edit-form" onsubmit="return validatePaymentForm()" style="display: none; margin-top: 20px;" method="POST"  enctype="multipart/form-data">
   {% csrf_token %}
   
   <div class="row">
@@ -412,10 +412,7 @@
         <label class="label">UPI/Phone</label>
         <input type="text" name="upi_number" value="{{ payment.upi_number|default:'' }}">
       </div>
-      <div class="row">
-        <label class="label">Screenshot</label>
-        <input type="file" name="upi_screenshot">
-      </div>
+      
     </div>
 
     <div id="bank-section" style="display: none;">

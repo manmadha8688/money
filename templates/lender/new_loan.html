@@ -87,7 +87,7 @@
         <button class="copy-btn" onclick="copyLink()">Generate & Copy Link</button>
         <button class="whatsapp-btn" onclick="shareOnWhatsApp()">Share on WhatsApp</button>
     </div>
-
+    <input type="number" id="phone" >
     <input type="text" id="loanLink" class="hidden-input" readonly>
 </div>
 
@@ -95,19 +95,19 @@
     function generateLoanLink() {
         let lenderId = {{ request.user.id }};  // Injected from Django
         let uniqueId = Math.random().toString(36).substr(2, 9);
-    
+        let phone = document.getElementById("phone").value;
         let loanLink = `${window.location.origin}/loans/new-loan/${lenderId}/${uniqueId}/`;
         document.getElementById("loanLink").value = loanLink;  // Show in input field
     
         let draftUrl = `${window.location.origin}/loans/draft-loan/${lenderId}/${uniqueId}/`;
-        console.log(draftUrl)
+        
         fetch(draftUrl, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ draft: true })  // Optional flag
+            body: JSON.stringify({ draft: true , phone: phone })  // Optional flag
         })
         .then(response => {
             if (!response.ok) {

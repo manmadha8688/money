@@ -437,7 +437,7 @@
     <h2>👤 {{request.user.first_name}}</h2>
     <p>📞 +91 - {{request.user.username}}</p>
     <p>📋 Total Loans: <strong>{{count}}</strong></p>
-    <p>💰 Total Borrowed: ₹1,50,000 | Paid: ₹65,000 | Outstanding: ₹85,000</p>
+    <p>💰 Total Borrowed: ₹ {{total}} | Paid: ₹ {{paid}} | Outstanding: ₹ {{remaining}}</p>
   </div>
 
       {% for loan in loans%}
@@ -533,7 +533,7 @@
     </table>
   </div>
 </div>
-
+ 
       <div class="loan-details" id="{{loan.id}}">
       <table>
         <tr><td>Token ID</td><td>:</td><td>{{loan.id}}</td></tr>
@@ -760,7 +760,7 @@ function showAlert(message = "Success!", type = "green") {
 
 {% for message in messages %}
       {% if message.tags == 'success' %}
-        showAlert("You have successfully submitted your payment. Your lender will review and confirm it shortly.", 'green');
+        showAlert("{{message}}", 'green');
       {% elif message.tags == 'error' %}
         showAlert("Payment for this due date is already done and is under confirmation.", 'red');
       

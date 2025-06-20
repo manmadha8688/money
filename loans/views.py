@@ -18,7 +18,7 @@ from django.http import HttpResponse
 from xhtml2pdf import pisa
 
 from active_loans.models import ActiveLoan,ReturnPayment
-
+import json
 def apply_filter(loans,request):
 
     borrower = request.GET.get('borrower', '').strip()
@@ -38,7 +38,9 @@ def apply_filter(loans,request):
     return loans
 def draft_loan(request, lender_id, unique_id):
     if request.method == 'POST':
-        
+        data = json.loads(request.body)
+        phone = data.get('phone')
+        print(phone)
         lender = get_object_or_404(User, id=lender_id)
 
         loan = LoanRequest.objects.filter(lender=lender, unique_id=unique_id).first()
@@ -142,15 +144,33 @@ def loan_request(request, lender_id, unique_id):
     if loan and loan.submitted:
         if loan.status == "pending" or loan.status == "accepted":
             payment = loan.payment
-            if request.method == 'POST':
-                if request.POST.get('edit') == 'edit':
-                    loan.submitted = False
-                    loan.save()
-                    lender_id = loan.lender.id
-                    unique_id = loan.unique_id
 
-                return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
-            
+            if request.method == 'POST':
+                payment_type = request.POST.get('payment_method')
+                payment.payment_method = payment_type
+                if payment_type == 'cash':
+                    cash_from = request.POST.get('cash_from')
+                    if cash_from:
+                        payment.cash_from = cash_from
+
+                elif payment_type == 'online':
+                    online_method = request.POST.get('online_method')
+                    payment.online_method = online_method
+
+                    if online_method in ['phonepay', 'googlepay', 'paytm']:
+                        payment.upi_number = request.POST.get('upi_number')
+                        payment.account_holder = request.POST.get('account_holder').strip()
+                        if 'upi_screenshot' in request.FILES:
+                            payment.upi_screenshot = request.FILES['upi_screenshot']
+
+                    elif online_method == 'bank':
+                        payment.account_number = request.POST.get('account_number')
+                        payment.ifsc = request.POST.get('ifsc')
+                        payment.bank_name = request.POST.get('bank_name')
+                        payment.account_holder = request.POST.get('bank_account_holder_name','').strip()
+                
+                payment.save()
+
             return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
         elif loan.status== "rejected":
             return render(request, "borrower/loan_rejected.html", {"loan": loan})
@@ -331,7 +351,7 @@ def loan_request(request, lender_id, unique_id):
                 payment.ifsc = request.POST.get('ifsc')
                 payment.bank_name = request.POST.get('bank_name')
                 payment.account_holder = request.POST.get('bank_account_holder_name','').strip()
-                
+              
         payment.loan = loan
         payment.save()
         loan.payment = payment
@@ -341,7 +361,7 @@ def loan_request(request, lender_id, unique_id):
         return render(request, "borrower/payment_process.html", {"loan": loan})
     
 
-    return render(request, "borrower/loan_request_form.html", {"loan": loan})
+    return render(request, "borrower/loan_request_form.html", {"loan": loan,"payment":payment})
  
 def loan_request_list(request):
     loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status__in = ["pending",'accepted']).select_related('borrower','payment')
@@ -503,7 +523,7 @@ def paymentreceived(request,loan_id):
 
 
             loan.status = "paymentreceived"
-            loan.save()
+            
             ActiveLoan.objects.create(
                 loan_request = loan,
                 remaining_balance = loan.amount + loan.interest_amount,
@@ -520,8 +540,11 @@ def paymentreceived(request,loan_id):
                 first_name=loan.borrower.name,
                 last_name="true"  # You are using this as a flag
                 )
+                loan.client=user
+                loan.save()
             else:
-                return redirect('client-login')
+                loan.save()
+                return redirect(f"{reverse('client-login')}?loan=true")
             return render(request,'borrower/client_inform.html',{"password":default_password})
     
     

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
-
+from django.contrib import messages
 def register(request):
     if request.method == "POST":
         name = request.POST['name']
@@ -56,7 +56,7 @@ def client_login_view(request):
         username = request.POST['username']
         password = request.POST['password']
         remember_me = request.POST.get('remember', False)
-        print(password)
+        
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -66,6 +66,7 @@ def client_login_view(request):
             if user.last_name == "true":
                 return redirect('change-client-password')  # create this URL/view
             else:
+                messages.success(request,'Welcome back')
                 return redirect('client-dashboard')
         else:
             return redirect(f"{reverse('client-login')}?error=invalid")

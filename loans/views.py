@@ -171,7 +171,7 @@ def loan_request(request, lender_id, unique_id):
                 
                 payment.save()
 
-            return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
+            return render(request, "borrower/payment_process.html", {"loan": loan})
         elif loan.status== "rejected":
             return render(request, "borrower/loan_rejected.html", {"loan": loan})
         elif loan.status== "cancelled":

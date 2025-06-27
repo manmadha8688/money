@@ -140,6 +140,7 @@ def loan_request(request, lender_id, unique_id):
         lender=lender,
         unique_id=unique_id
     )
+    payment = loan.payment
 
     if loan and loan.submitted:
         if loan.status == "pending" or loan.status == "accepted":
@@ -179,7 +180,7 @@ def loan_request(request, lender_id, unique_id):
         
         elif loan.status == "paymentdone" or loan.status == 'paymentnotreceived':
             
-            payment = PaymentDetail.objects.get(id =loan.payment.id)
+            payment = loan.payment
             return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment})
         else :
             return render(request,'borrower/completed_loan.html',{"loan": loan})
@@ -361,7 +362,7 @@ def loan_request(request, lender_id, unique_id):
         return render(request, "borrower/payment_process.html", {"loan": loan})
     
 
-    return render(request, "borrower/loan_request_form.html", {"loan": loan})
+    return render(request, "borrower/loan_request_form.html", {"loan": loan,"payment":payment})
  
 def loan_request_list(request):
     loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status__in = ["pending",'accepted']).select_related('borrower','payment')

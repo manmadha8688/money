@@ -361,7 +361,7 @@ def loan_request(request, lender_id, unique_id):
         return render(request, "borrower/payment_process.html", {"loan": loan})
     
 
-    return render(request, "borrower/loan_request_form.html", {"loan": loan,"payment":payment})
+    return render(request, "borrower/loan_request_form.html", {"loan": loan})
  
 def loan_request_list(request):
     loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status__in = ["pending",'accepted']).select_related('borrower','payment')

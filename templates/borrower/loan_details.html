@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Monthly Loan Overview</title>
+  <title>{{request.user.first_name}} Loans Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   
   <link rel="stylesheet" href="{% static 'css/popup.css' %}">
@@ -431,11 +431,20 @@
     <h1>{{ lender.active_user.company_name }}</h1>
     <p>({{ lender.active_user.tagline }})</p>
   </div>
+  <br>
+  
+
 </div>
 
   <div class="client-summary">
+
+    <a href="{% url 'client-logout' %}" 
+   style="position: absolute; top: 180px; right: 40px; padding: 8px 12px; background: #f06161; color: white; border-radius: 6px; text-decoration: none; font-weight: bold;">
+   🚪 Logout
+</a>
     <h2>👤 {{request.user.first_name}}</h2>
     <p>📞 +91 - {{request.user.username}}</p>
+    <p>🎭 Your ID - <strong>{{request.user.id}}</strong></p>
     <p>📋 Total Loans: <strong>{{count}}</strong></p>
     <p>💰 Total Borrowed: ₹ {{total}} | Paid: ₹ {{paid}} | Outstanding: ₹ {{remaining}}</p>
   </div>
@@ -484,7 +493,7 @@
       {% if loan.activeloan.status == "closed"%}
           
           {% else %}
-          <button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} , '{{ loan.activeloan.next_due_date|date:'Y-m-d' }}')">Pay </button>
+          <button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} , '{{ loan.activeloan.next_due_date|date:'Y-m-d' }}',{{loan.mini}},{{loan.maxi}})">Pay </button>
           {% endif %}
         
           {% if loan.payment_plan == "weekly" %}
@@ -537,10 +546,10 @@
       <div class="loan-details" id="{{loan.id}}">
       <table>
         <tr><td>Token ID</td><td>:</td><td>{{loan.id}}</td></tr>
-        <tr><td>Start Date (Date of taken)</td><td>:</td><td>05-May-2024</td></tr>
+        <tr><td>Start Date (Date of taken)</td><td>:</td><td>{{loan.taken_date}}</td></tr>
         <tr><td>Loan Amount</td><td>:</td><td>₹ {{ loan.amount }}</td></tr>
         <tr><td>Interest</td><td>:</td><td>₹ {{loan.interest_amount}}</td></tr>
-        <tr><td>Total Amount</td><td>:</td><td style="color: green;"> ₹ {{ loan.amount|add:loan.interest_amount }}</td></tr>
+        <tr><td>Total Repayable Amount</td><td>:</td><td style="color: green;"> ₹ {{ loan.amount|add:loan.interest_amount }}</td></tr>
         {% if loan.payment_plan == "monthly" %}
         {% else %}
         <tr><td>Intalment</td><td>:</td><td>₹ {{loan.instalment}}</td></tr>
@@ -582,10 +591,8 @@
       <input type="hidden" name="due_date" id="dueDateInput" />
       <!-- Amount (common) -->
       <div class="form-group">
-        <label for="amount">Enter Amount (Min ₹{{ mini }}, Max ₹{{ maxi }})</label>
-        <input type="number" id="amount" name="amount"
-          min="{{ mini }}" max="{{ maxi }}" step="100" required
-          data-min="{{ mini }}" data-max="{{ maxi }}">
+        <label for="amount">Enter Amount (Min ₹ <span id="mini"></span>, Max ₹ <span id="maxi"></span>)</label>
+        <input type="number" id="amount" name="amount" step="100" required >
       </div>
       
       <!-- Payment Method -->
@@ -648,10 +655,12 @@
       const el = document.getElementById(id);
       el.style.display = el.style.display === 'block' ? 'none' : 'block';
     }
-  function openModal(loanId,dueDate) {
+  function openModal(loanId,dueDate,mini,maxi) {
     document.getElementById("paymentModal").style.display = "block";
     document.getElementById("loanIdInput").value = loanId;
     document.getElementById("dueDateInput").value = dueDate;
+    document.getElementById('mini').innerText =mini;
+    document.getElementById('maxi').innerText =maxi;
 
   }
 
@@ -668,8 +677,8 @@
   function validateAndSubmit() {
     const method = document.getElementById("method").value;
     const amountInput = document.getElementById("amount");
-    const minAmount = parseFloat(amountInput.dataset.min);
-    const maxAmount = parseFloat(amountInput.dataset.max);
+    const minAmount = parseFloat(document.getElementById("mini").innerText);
+    const maxAmount = parseFloat(document.getElementById("maxi").innerText);
     const amount = parseFloat(amountInput.value);
 
     if (!method) {

@@ -72,3 +72,7 @@ def client_login_view(request):
             return redirect(f"{reverse('client-login')}?error=invalid")
 
     return render(request, "accounts/client_login.html")
+
+def client_logout_view(request):
+    logout(request)
+    return redirect(f"{reverse('client-login')}?logout=true")

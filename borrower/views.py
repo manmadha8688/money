@@ -26,7 +26,7 @@ def change_client_password(request):
             update_session_auth_hash(request, user)  # keep the user logged in
             messages.success(request, "You’ve successfully logged in, and your password has been changed.")
             
-            return redirect('client-dashboard')  
+            return redirect('client-dashboard') 
 
     return render(request,'borrower/change_password.html')
 
@@ -78,14 +78,17 @@ def client_dashboard(request):
     )
     total ,paid , remaining = 0 ,0 ,0
     for loan in borrowed_loans:
+        loan.mini = loan.instalment
+        loan.maxi = loan.activeloan.remaining_balance
         loan.percentage = round((loan.activeloan.total_paid / (loan.amount + loan.interest_amount)) * 100 , 2)
         total += loan.amount
         paid += loan.activeloan.total_paid
         remaining += loan.activeloan.remaining_balance
         if loan.payment_plan == "weekly":
-
+            
             loan.schedule = get_installment_schedule(loan)
-    
+        if loan.payment_plan == "monthly":
+            loan.mini = loan.interest_amount
     count = borrowed_loans.count()
     if count==0:
         
@@ -95,8 +98,6 @@ def client_dashboard(request):
     return render(request,'borrower/loan_details.html',
     {'loans':borrowed_loans ,
      "lender":lender ,
-      'mini':1,
-      'maxi':1000,
       'count':count,
       'total':total,
       'paid':paid,

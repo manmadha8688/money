@@ -144,7 +144,7 @@ def loan_request(request, lender_id, unique_id):
 
     if loan and loan.submitted:
         if loan.status == "pending" or loan.status == "accepted":
-            payment = loan.payment
+            
 
             if request.method == 'POST':
                 payment_type = request.POST.get('payment_method')
@@ -172,7 +172,7 @@ def loan_request(request, lender_id, unique_id):
                 
                 payment.save()
 
-            return render(request, "borrower/payment_process.html", {"loan": loan})
+            return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
         elif loan.status== "rejected":
             return render(request, "borrower/loan_rejected.html", {"loan": loan})
         elif loan.status== "cancelled":
@@ -359,7 +359,7 @@ def loan_request(request, lender_id, unique_id):
         
         loan.save()
 
-        return render(request, "borrower/payment_process.html", {"loan": loan})
+        return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
     
 
     return render(request, "borrower/loan_request_form.html", {"loan": loan,"payment":payment})
@@ -534,16 +534,18 @@ def paymentreceived(request,loan_id):
             default_password = "client@123" # You can also use a fixed one
     
             # Create user
-            if not User.objects.filter(username=username).exists():
-                user = User.objects.create_user(
+            user = User.objects.filter(username=username)
+            if not user.exists():
+                user1 = User.objects.create_user(
                 username=username,
                 password=default_password,
                 first_name=loan.borrower.name,
                 last_name="true"  # You are using this as a flag
                 )
-                loan.client=user
+                loan.client=user1
                 loan.save()
             else:
+                loan.client=user.first()
                 loan.save()
                 return redirect(f"{reverse('client-login')}?loan=true")
             return render(request,'borrower/client_inform.html',{"password":default_password})

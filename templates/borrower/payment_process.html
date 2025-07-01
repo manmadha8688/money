@@ -4,6 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Loan Under Review</title>
+  
+  <link rel="stylesheet" href="{% static 'css/popup.css' %}">
   <style>
     * { box-sizing: border-box; }
 
@@ -275,10 +277,85 @@
     font-weight: 500;
     text-align: center;
 }
+.form-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.form-row label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-row input,
+.form-row select {
+    padding: 10px 14px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-row input:focus,
+.form-row select:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Primary button (e.g., Save) */
+button[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: #43a047;
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+/* Secondary button (e.g., Cancel) */
+button.cancel,
+button[type="button"] {
+    background-color: #f44336;
+    color: white;
+    margin-left: 10px;
+}
+
+button.cancel:hover,
+button[type="button"]:hover {
+    background-color: #d32f2f;
+    box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
+}
+
+/* Disabled state */
+button:disabled {
+    background-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
+    box-shadow: none;
+}
 
   </style>
 </head>
 <body>
+  <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
+
 
   <div class="header">
     <div class="logo-wrapper">
@@ -337,12 +414,64 @@
         <div class="row"><div class="label">Referral</div><div class="value">{{ loan.referral|default:"-" }}</div></div>
         <div class="row"><div class="label">Token Id</div><div class="value">{{ loan.id }}</div></div>
        
-      
+      {% if loan.status == "pending"%}
         
-    
+    <button class="toggle-btn" onclick="toggleEdit()">Edit</button>
+    {% endif %}
     </div>
 
-    
+    <form id="editForm" style="display: none; margin-top: 30px;" onsubmit="return verifyAndSubmit()" method="post"  enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="hidden" name="form_type" value="loan_details">
+    <div class="form-row">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" name="name" value="{{ loan.borrower.name }}">
+    </div>
+    <div class="form-row">
+        <label for="phone">Phone</label>
+        <input type="text" id="phone" name="phone" value="{{ loan.borrower.phone }}">
+    </div>
+    <div class="form-row">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ loan.borrower.email }}">
+    </div>
+    <div class="form-row">
+        <label for="loan_item">Loan Item</label>
+        <input type="text" id="loan_item" name="loan_item" value="{{ loan.loan_item }}">
+    </div>
+    <div class="form-row">
+        <label for="amount">Amount</label>
+        <input type="number" id="amount" name="amount" value="{{ loan.amount }}">
+    </div>
+    <div class="form-row">
+        <label for="payment_plan">Payment Plan</label>
+        <select id="payment_plan" name="payment_plan">
+            <option value="weekly" {% if loan.payment_plan == "weekly" %}selected{% endif %}>Weekly</option>
+            <option value="monthly" {% if loan.payment_plan == "monthly" %}selected{% endif %}>Monthly</option>
+            <option value="daily" {% if loan.payment_plan == "daily" %}selected{% endif %}>Daily</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="taken_date">Start Date</label>
+        <input type="date" id="taken_date" name="taken_date" value="{{ loan.taken_date|date:'Y-m-d' }}">
+    </div>
+    <div class="form-row">
+        <label for="return_date">End Date</label>
+        <input type="date" id="return_date" name="return_date" value="{{ loan.return_date|date:'Y-m-d' }}" readonly>
+    </div>
+    <div class="form-row">
+        <label for="reason">Reason</label>
+        <input type="text" id="reason" name="reason" value="{{ loan.reason }}">
+    </div>
+    <div class="form-row">
+        <label for="referral">Referral</label>
+        <input type="text" id="referral" name="referral" value="{{ loan.referral }}">
+    </div>
+    <button type="submit">Save</button>
+    <button type="button" onclick="toggleEdit()">Cancel</button>
+</form>
+
+
     <!-- Payment Details Display -->
 <div class="details-section" id="paymentDetails">
   <div class="row"><div class="label">Payment Method</div><div class="value">{{ payment.payment_method|capfirst }}</div></div>
@@ -373,7 +502,7 @@
 <!-- Payment Edit Form (Initially Hidden) -->
 <form id="payment-edit-form" onsubmit="return validatePaymentForm()" style="display: none; margin-top: 20px;" method="POST"  enctype="multipart/form-data">
   {% csrf_token %}
-  
+  <input type="hidden" name="form_type" value="payment_details">
   <div class="row">
     <label class="label">Payment Method</label>
     <select name="payment_method" id="payment-method" onchange="handlePaymentMethod()" required>
@@ -436,6 +565,95 @@
 </form>
 
 <script>
+
+  const paymentPlanSelect = document.getElementById("payment_plan");
+  const takenDateInput = document.getElementById("taken_date");
+  const returnDateInput = document.getElementById("return_date");
+
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const minDate = `${yyyy}-${mm}-${dd}`;
+
+  takenDateInput.setAttribute("min", minDate);
+  // When payment plan changes
+  paymentPlanSelect.addEventListener("change", function () {
+    takenDateInput.value = "";
+    returnDateInput.value = "";
+  });
+
+  // When start date is selected
+  takenDateInput.addEventListener("change", function () {
+    const plan = paymentPlanSelect.value;
+    if (plan === "monthly") {
+      setDueDateMonthly();
+    } else if (plan === "weekly") {
+      setDueDateByDays(98); // 14 weeks
+    } else {
+      setDueDateByDays(100); // One-time (100 days)
+    }
+  });
+
+  function setDueDateByDays(days) {
+    const start = new Date(takenDateInput.value);
+    if (isNaN(start)) return;
+    const due = new Date(start);
+    due.setDate(due.getDate() + days);
+    returnDateInput.value = formatDate(due);
+  }
+
+  function setDueDateMonthly() {
+    const start = new Date(takenDateInput.value);
+    if (isNaN(start)) return;
+    const due = new Date(start);
+    due.setMonth(due.getMonth() + 1);
+    returnDateInput.value = formatDate(due);
+  }
+
+  function formatDate(date) {
+    const year = date.getFullYear();
+    const month = (`0${date.getMonth() + 1}`).slice(-2);
+    const day = (`0${date.getDate()}`).slice(-2);
+    return `${year}-${month}-${day}`;
+  }
+function verifyAndSubmit() {
+  const loanItem = document.getElementById("loan_item").value.trim();
+  const amount = parseFloat(document.getElementById("amount").value);
+  const takenDate = document.getElementById("taken_date").value;
+  const returnDate = document.getElementById("return_date").value;
+
+  if (!loanItem) {
+    alert("Loan item is required.");
+    return false;
+  }
+
+  if (!amount || amount <= 0) {
+    alert("Amount must be greater than 0.");
+    return false;
+  }
+
+  if (!takenDate) {
+    alert("Start date is required.");
+    return false;
+  }
+
+  // ✅ All good
+  return true;
+}
+  function toggleEdit() {
+    const details = document.getElementById('loanDetails');
+    const form = document.getElementById('editForm');
+
+    // Toggle visibility
+    if (form.style.display === 'none') {
+        details.style.display = 'none';
+        form.style.display = 'block';
+    } else {
+        details.style.display = 'block';
+        form.style.display = 'none';
+    }
+}
   function enablePaymentEdit() {
     const form = document.getElementById('payment-edit-form');
     document.getElementById('paymentDetails').style.display = 'none';
@@ -469,7 +687,36 @@
     document.getElementById('upi-section').style.display = ["phonepay", "googlepay", "paytm"].includes(method) ? 'block' : 'none';
     document.getElementById('bank-section').style.display = method === 'bank' ? 'block' : 'none';
   }
-  
+  function showAlert(message = "Success!", type = "green") {
+  const alertBox = document.getElementById('custom-alert');
+  const messageSpan = document.getElementById('custom-alert-message');
+
+  // Reset classes
+  alertBox.classList.remove("red", "yellow");
+
+  // Add color variant
+  if (type === "red") alertBox.classList.add("red");
+  if (type === "yellow") alertBox.classList.add("yellow");
+
+  messageSpan.innerText = message;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.classList.add('fadeOut');
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+      alertBox.classList.remove('fadeOut');
+    }, 500);
+  }, 4000);
+}
+
+{% for message in messages %}
+      {% if message.tags == 'success' %}
+        showAlert("{{message}}", 'green');
+      
+      {% endif %}
+    {% endfor %}
+
 </script>
 
        

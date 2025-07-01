@@ -44,8 +44,9 @@
 </head>
 <body>
     <div class="container">
-        <h2>🟢 Active Loan</h2>
-        <p class="loan-id">Loan ID: <strong>{{ loan.id }}</strong></p>
+        <h2>✔️ Your loan has been processed and is now active.</h2>
+        <h3>🏁 Thank you for choosing us.</h3>
+        <p class="loan-id">Your Loan ID: <strong>{{ loan.id }}</strong></p>
 
         <a href="{% url 'client-login' %}" class="login-link">🔐 Login to View Details</a>
     </div>

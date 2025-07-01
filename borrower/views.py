@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth import update_session_auth_hash,logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from active_loans.models import ActiveLoan,ReturnPayment
@@ -21,10 +21,10 @@ def change_client_password(request):
         else:
             user = request.user
             user.set_password(new_password)
-            user.last_name = ""  # unset first-login flag
+            user.last_name = "borrower"  # unset first-login flag
             user.save()
             update_session_auth_hash(request, user)  # keep the user logged in
-            messages.success(request, "You’ve successfully logged in, and your password has been changed.")
+            messages.success(request, "You’ve successfully logged in and your password has been changed.")
             
             return redirect('client-dashboard') 
 
@@ -76,6 +76,12 @@ def client_dashboard(request):
     ).prefetch_related(
         'activeloan__return_payments'
     )
+    count = borrowed_loans.count()
+    """
+    if count==0:
+        logout(request)
+        return redirect(f"{reverse('client-login')}?user=false")
+    """
     total ,paid , remaining = 0 ,0 ,0
     for loan in borrowed_loans:
         loan.mini = loan.instalment
@@ -89,10 +95,7 @@ def client_dashboard(request):
             loan.schedule = get_installment_schedule(loan)
         if loan.payment_plan == "monthly":
             loan.mini = loan.interest_amount
-    count = borrowed_loans.count()
-    if count==0:
-        
-        return redirect(f"{reverse('client-login')}?user=false")
+    
     lender = borrowed_loans[0].lender
     
     return render(request,'borrower/loan_details.html',

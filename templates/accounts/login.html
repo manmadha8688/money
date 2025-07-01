@@ -352,7 +352,9 @@ if (urlParams.get('logout') === 'true') {
 if (urlParams.get('error') === 'invalid') {
   showAlert("Invalid username or password.", "red");
 }
-
+if (urlParams.get('user') === 'borrower') {
+  showAlert("Not a Lender.", "red");
+}
 </script>
 
 {% endblock %}

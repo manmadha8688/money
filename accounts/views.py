@@ -36,7 +36,9 @@ def login_view(request):
 
         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
+        if user is not None :
+            if user.last_name != "":
+                return redirect(f"{reverse('login')}?user=borrower")
             login(request, user)
             if not remember_me:
                 request.session.set_expiry(0)
@@ -60,13 +62,15 @@ def client_login_view(request):
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
+            if user.last_name == "":
+                return redirect(f"{reverse('client-login')}?user=false")
             login(request, user)
             if not remember_me:
                 request.session.set_expiry(0)
             if user.last_name == "true":
                 return redirect('change-client-password')  # create this URL/view
             else:
-                messages.success(request,'Welcome back')
+                messages.success(request,'Welcome back, '+user.first_name)
                 return redirect('client-dashboard')
         else:
             return redirect(f"{reverse('client-login')}?error=invalid")

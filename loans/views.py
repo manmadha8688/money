@@ -146,7 +146,7 @@ def loan_request(request, lender_id, unique_id):
         if loan.status == "pending" or loan.status == "accepted":
             
 
-            if request.method == 'POST':
+            if request.method == 'POST' and request.POST.get("form_type") == "payment_details":
                 payment_type = request.POST.get('payment_method')
                 payment.payment_method = payment_type
                 if payment_type == 'cash':
@@ -169,8 +169,20 @@ def loan_request(request, lender_id, unique_id):
                         payment.ifsc = request.POST.get('ifsc')
                         payment.bank_name = request.POST.get('bank_name')
                         payment.account_holder = request.POST.get('bank_account_holder_name','').strip()
-                
+
+                messages.success(request, "Payment details updated successfully.")
                 payment.save()
+            elif request.method == 'POST' and request.POST.get("form_type") == "loan_details":
+                loan.loan_item = request.POST.get("loan_item")
+                loan.amount = request.POST.get("amount")
+                loan.payment_plan = request.POST.get("payment_plan")
+                loan.taken_date = request.POST.get("taken_date")
+                loan.return_date = request.POST.get("return_date")
+                loan.reason = request.POST.get("reason")
+                loan.referral = request.POST.get("referral")
+
+                loan.save()
+                messages.success(request, "Loan details updated successfully.")
 
             return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
         elif loan.status== "rejected":

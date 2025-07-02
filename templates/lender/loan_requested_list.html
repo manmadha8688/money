@@ -543,7 +543,7 @@
         overflow: auto;
     ">
 </td>
-        <td>{% if loan.payment %}
+    {% if loan.payment %}
 <script id="payment-data-{{ loan.id }}" type="application/json">
 {
     "amount": "{{ loan.amount|escapejs }}",
@@ -560,7 +560,7 @@
 </script>
 
 {% endif %}
-</td>
+
             </tr>
 
 

@@ -95,7 +95,6 @@
     function generateLoanLink() {
         let lenderId = {{ request.user.id }};  // Injected from Django
         let uniqueId = Math.random().toString(36).substr(2, 9);
-        let phone = document.getElementById("phone").value;
         let loanLink = `${window.location.origin}/loans/new-loan/${lenderId}/${uniqueId}/`;
         document.getElementById("loanLink").value = loanLink;  // Show in input field
     
@@ -107,7 +106,7 @@
                 'X-CSRFToken': '{{ csrf_token }}',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ draft: true , phone: phone })  // Optional flag
+            body: JSON.stringify({ draft: true})  // Optional flag
         })
         .then(response => {
             if (!response.ok) {

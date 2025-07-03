@@ -542,7 +542,82 @@
   box-shadow: 0 2px 8px rgba(0, 123, 255, 0.25);
 }
 
+.submenu-wrapper {
+    position: relative;
+  }
 
+  .submenu {
+    display: none;
+    flex-direction: column;
+    padding-left: 30px;
+    background: #f8f9fa;
+  }
+
+  .submenu.show {
+    display: flex;
+  }
+
+  .submenu a {
+    padding: 8px 18px;
+    font-size: 14px;
+  }
+.repayment-modal {
+  position: fixed;
+  z-index: 9999;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.repayment-modal-box {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+.repayment-close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 30px;
+  color: #777;
+  cursor: pointer;
+}
+
+
+.hidden {
+  display: none;
+}
+  
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.badge-pending {
+  background-color: #f0ad4e; /* Amber/Orange */
+}
+
+.badge-success {
+  background-color: #5cb85c; /* Green */
+}
+
+.badge-failed {
+  background-color: #d9534f; /* Red */
+}
   
 </style>
 </head>
@@ -573,10 +648,62 @@
       <i class="fas fa-ellipsis-v"></i>
     </button>
     <div id="dropdownMenu" class="dropdown-menu">
-      <a href="#" ><i class="fas fa-plus"></i> New Loan</a>
-      <a href="#"><i class="fas fa-file-alt"></i> Payment History</a>
+      
+      <a href="{% url 'client-new-loan'%} " target="_blank"><i class="fas fa-plus"></i> New Loan</a>
+
+      <div class="submenu-wrapper">
+        <a href="#" onclick="toggleSubmenu(event)">
+          🔍 Pending Loans ▸
+        </a>
+        <div class="submenu" id="submenu">
+        {% if pending_loans%}
+
+        {% for loan in pending_loans %}
+       
+          <a href="{% url 'new-loan' lender_id=loan.lender.id unique_id=loan.unique_id %}" target="_blank">
+              📋 <strong>#{{loan.id}}</strong> ₹{{ loan.amount }} {{ loan.payment_plan|capfirst }} Plan<strong>{{ loan.status|capfirst }} </strong>
+          </a><br>
+
+        {% endfor %}
+
+        {% else%}
+         No pending loans
+        {% endif %}
+        </div>
+      </div>
+
+      <a href="javascript:void(0);" onclick="openRepaymentModal('repayment-modal-{{ loan.id }}')">
+  <i class="fas fa-file-alt"></i> Payment History
+</a>
+
       <a href="{% url 'client-logout' %}" ><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
+  </div>
+</div>
+
+<div id="repayment-modal-{{ loan.id }}" class="repayment-modal hidden">
+  <div class="repayment-modal-box">
+    <span class="repayment-close-btn" onclick="closeRepaymentModal('repayment-modal-{{ loan.id }}')">&times;</span>
+
+    {% for loan in loans%}
+    <h3>Repayment History — Loan #{{ loan.id }}</h3>
+    <div class="repayment-list">
+      {% for p in loan.return_payments %}
+        <div style="margin-top: 5px;">
+          ₹{{ p.amount }} — Paid on {{ p.created_at|date:"d M Y" }} — Due on {{ p.due_date|date:"d M Y" }} - 
+          {% if p.status == "pending" %} 
+  <span class="badge badge-pending">Pending</span>
+{% elif p.status == "success" %}
+  <span class="badge badge-success">Success</span>
+{% else %}
+  <span class="badge badge-failed">Failed</span>
+{% endif %}
+
+
+        </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
   </div>
 </div>
 
@@ -628,19 +755,23 @@
         <p>📆 <span style="font-weight: 700;">Start Date :</span> {{ loan.taken_date }}</p>
 <p>💵 <span style="font-weight: 700;">Amount :</span> ₹{{ loan.amount }}</p>
 <p>✅ <span style="font-weight: 700;">Repaid :</span> ₹{{loan.activeloan.total_paid}} | 🔁 <span style="font-weight: 700;">Outstanding :</span> ₹{{ loan.activeloan.remaining_balance }}</p>
-<p>📅 <span style="font-weight: 700;">Next Due Date :</span> {{ loan.activeloan.next_due_date }}</p>
+<p>⏰ <span style="font-weight: 700;">Next Due Date :</span> {{ loan.activeloan.next_due_date }}</p>
 
       </div>
       <button class="toggle-btn" onclick="toggleDetails('{{loan.id}}')">📂 View Details</button>
       {% if loan.activeloan.status == "closed"%}
           
-          {% else %}
+      {% else %}
           <button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} , '{{ loan.activeloan.next_due_date|date:'Y-m-d' }}',{{loan.mini}},{{loan.maxi}})">Pay </button>
-          {% endif %}
+      {% endif %}
         
-          {% if loan.payment_plan == "weekly" %}
+        {% if loan.payment_plan == "weekly" %}
           <button class="schedule-btn" onclick="openScheduleModal({{ loan.id }})">📅 Schedul </button>
-          {% endif %}
+
+        {% endif %}
+       
+      
+
     <div id="scheduleModal-{{ loan.id }}" class="s_modal">
   <div class="s_modal-content">
     <span class="close" onclick="closeScheduleModal({{ loan.id }})">&times;</span>
@@ -793,11 +924,23 @@
 
 <!-- JavaScript -->
 <script> 
+  function openRepaymentModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function closeRepaymentModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
   function toggleDropdown() {
     const menu = document.getElementById("dropdownMenu");
     menu.style.display = menu.style.display === "block" ? "none" : "block";
   }
-
+function toggleSubmenu(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const submenu = document.getElementById("submenu");
+    submenu.classList.toggle("show");
+  }
   // Close dropdown when clicking outside
   document.addEventListener('click', function (e) {
     const menu = document.getElementById("dropdownMenu");
@@ -805,6 +948,7 @@
     if (!menu.contains(e.target) && !toggle.contains(e.target)) {
       menu.style.display = "none";
     }
+    document.getElementById("submenu").classList.remove("show");
   });
   function toggleDetails(id) {
       const el = document.getElementById(id);

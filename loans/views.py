@@ -39,8 +39,6 @@ def apply_filter(loans,request):
 def draft_loan(request, lender_id, unique_id):
     if request.method == 'POST':
         data = json.loads(request.body)
-        phone = data.get('phone')
-        print(phone)
         lender = get_object_or_404(User, id=lender_id)
 
         loan = LoanRequest.objects.filter(lender=lender, unique_id=unique_id).first()

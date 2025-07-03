@@ -8,6 +8,7 @@ from django.urls import reverse
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from loans.views import get_installment_schedule
+from loans.models import LoanRequest
 @login_required
 def change_client_password(request):
     if request.method == "POST":
@@ -69,14 +70,21 @@ def client_dashboard(request):
             return redirect(f"{reverse('client-dashboard')}")
 
     user = request.user
-    borrowed_loans = user.client_loans.select_related(
+    all_loans = user.client_loans.select_related(
         'borrower',
         'payment',
         'activeloan'
     ).prefetch_related(
         'activeloan__return_payments'
+    ).filter(
+        submitted=True
     )
-    count = borrowed_loans.count()
+
+# Now split in Python
+    borrowed_loans = [loan for loan in all_loans if loan.status == "paymentreceived"]
+    pending_loans = [loan for loan in all_loans if loan.status != "paymentreceived"]
+
+    count = len(borrowed_loans)
     """
     if count==0:
         logout(request)
@@ -84,6 +92,9 @@ def client_dashboard(request):
     """
     total ,paid , remaining = 0 ,0 ,0
     for loan in borrowed_loans:
+
+        loan.return_payments = loan.activeloan.return_payments.all()
+
         loan.mini = loan.instalment
         loan.maxi = loan.activeloan.remaining_balance
         loan.percentage = round((loan.activeloan.total_paid / (loan.amount + loan.interest_amount)) * 100 , 2)
@@ -97,9 +108,10 @@ def client_dashboard(request):
             loan.mini = loan.interest_amount
     
     lender = borrowed_loans[0].lender
-    
+
     return render(request,'borrower/loan_details.html',
     {'loans':borrowed_loans ,
+     'pending_loans':pending_loans,
      "lender":lender ,
       'count':count,
       'total':total,
@@ -107,3 +119,28 @@ def client_dashboard(request):
       'remaining':remaining
       }
       )
+
+import random
+import string
+from django.http import JsonResponse
+
+def client_new_loan(request):
+    client = request.user
+    loan = LoanRequest.objects.filter(client=client,submitted=False).first()
+
+    if loan is None:
+        previous_loan = LoanRequest.objects.filter(client=request.user, submitted=True).first()
+        unique_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=9))
+
+        loan = LoanRequest.objects.create(
+            lender=previous_loan.lender,
+            unique_id=unique_id,
+            client = client,
+            borrower = previous_loan.borrower,
+            submitted=False,
+            amount=0,
+        )
+    else:
+        return redirect('new-loan', lender_id=loan.lender.id, unique_id=loan.unique_id)
+        
+    return redirect('new-loan', lender_id=loan.lender.id, unique_id=loan.unique_id)

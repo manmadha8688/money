@@ -1,5 +1,7 @@
 from django.shortcuts import render, get_object_or_404,redirect
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 from django.urls import reverse
 from .models import LoanRequest, Borrower , PaymentDetail ,LoanStatusHistory ,LoanImage
 
@@ -19,6 +21,10 @@ from xhtml2pdf import pisa
 
 from active_loans.models import ActiveLoan,ReturnPayment
 import json
+
+from django.contrib.auth.decorators import login_required
+
+
 def apply_filter(loans,request):
 
     borrower = request.GET.get('borrower', '').strip()
@@ -36,6 +42,8 @@ def apply_filter(loans,request):
         
         loans = loans.filter(borrower__phone__icontains = mobile_number)
     return loans
+    
+@login_required
 def draft_loan(request, lender_id, unique_id):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -64,6 +72,7 @@ def draft_loan(request, lender_id, unique_id):
 
 
 from django.db.models import Sum
+
 
 def get_installment_schedule(loan):
     total_installments = 14
@@ -123,6 +132,7 @@ def get_installment_schedule(loan):
 
 
 
+@login_required
 def loan_request(request, lender_id, unique_id):
     lender = get_object_or_404(User, id=lender_id)
     
@@ -378,6 +388,7 @@ def loan_request(request, lender_id, unique_id):
 
     return render(request, "borrower/loan_request_form.html", {"loan": loan,"payment":payment})
  
+@login_required
 def loan_request_list(request):
     loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status__in = ["pending",'accepted']).select_related('borrower','payment')
     if request.method == "GET":
@@ -385,6 +396,8 @@ def loan_request_list(request):
     return render(request,'lender/loan_requested_list.html',{"loan_requests":loan_requests})
 
 from decimal import Decimal
+ 
+@login_required
 def accept_reject_status(request, loan_id):
      
     loan = get_object_or_404(LoanRequest, id=loan_id)
@@ -408,7 +421,8 @@ def accept_reject_status(request, loan_id):
         
 
         return redirect("loan-request-list")  # your loan list page
-
+ 
+@login_required
 def accepted_list(request):
     loans = LoanRequest.objects.filter(
     lender=request.user,
@@ -419,7 +433,8 @@ def accepted_list(request):
     if request.method == "GET":
         loans = apply_filter(loans,request)
     return render(request,'lender/accepted_list.html',{"loans":loans}) 
-
+ 
+@login_required
 def cancle_loan(request,loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
     if loan.status not in ['pending','accepted']:
@@ -432,7 +447,8 @@ def cancle_loan(request,loan_id):
     unique_id = loan.unique_id
 
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
-
+ 
+@login_required
 def reject_loan(request,loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
     loan.status = "rejected"
@@ -442,7 +458,8 @@ def reject_loan(request,loan_id):
     loan.save()
 
     return redirect('accepted-list')
-
+ 
+@login_required
 def payment_details(request, loan_id):
     loan = get_object_or_404(LoanRequest, id=loan_id)
     lender_id = loan.lender.id
@@ -489,12 +506,15 @@ def payment_details(request, loan_id):
         loan.save()
     
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+     
+@login_required
 def cancel_reject_list(request):
     loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="rejected") | Q(status="cancelled")).select_related('lender__active_user').order_by('-updated_at')
     if request.method == 'GET':
         loans = apply_filter(loans,request)
     return render(request, 'lender/cancel_reject_list.html', {'loans': loans})
-
+ 
+@login_required
 def paymentdone(request,loan_id):
     if request.method == "POST": 
         utr = request.POST.get('utr', '').strip()
@@ -517,11 +537,15 @@ def paymentdone(request,loan_id):
         return redirect(f"{reverse('loan-request-list')}?paymentdone=true&loan_id={loan.id}&amount={loan.amount}")
 
     return redirect("accepted-list")
+     
+@login_required
 def payment_done_check(request,loan_id):
     loan = get_object_or_404(LoanRequest,id=loan_id)
     loan.status = "paymentdone"
     loan.save()
     return redirect("payment-done-list")
+     
+@login_required
 def paymentreceived(request,loan_id):
     loan = get_object_or_404(LoanRequest.objects.select_related('lender__active_user','borrower'), id=loan_id)
     if request.method == "POST":
@@ -554,7 +578,10 @@ def paymentreceived(request,loan_id):
                 username=username,
                 password=default_password,
                 first_name=loan.borrower.name,
-                last_name="true"  # You are using this as a flag
+                last_name="true",
+                lender = loan.lender,
+                borrower = loan.borrower,
+                user_type="client" # You are using this as a flag
                 )
                 loan.client=user1
                 loan.save()
@@ -575,6 +602,8 @@ def paymentreceived(request,loan_id):
     unique_id = loan.unique_id
 
     return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+     
+@login_required
 def payment_done_list(request):
     loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="paymentdone") | Q(status="paymentnotreceived")).select_related('payment','borrower').order_by('-updated_at')
     
@@ -593,7 +622,8 @@ def payment_done_list(request):
     }
     return render(request, 'lender/payment_done_list.html', context)
 
-
+ 
+@login_required
 def loan_status_records(request):
     loans = LoanRequest.objects.filter(lender=request.user , submitted= True).prefetch_related('status_history').order_by('id')
     if request.method == "GET":

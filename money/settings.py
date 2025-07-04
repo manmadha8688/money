@@ -34,6 +34,9 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 't')
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 #ALLOWED_HOSTS =['*']
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
+LOGIN_URL = '/accounts/login/'
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',

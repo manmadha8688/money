@@ -8,6 +8,9 @@ from active_loans.models import ReturnPayment
 from itertools import chain
 
 
+from django.contrib.auth.decorators import login_required
+ 
+@login_required
 def all_transactions(request):
     lender = request.user
 

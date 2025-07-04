@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect
 from .models import Profile
 
+from django.contrib.auth.decorators import login_required
+ 
+@login_required
 def myprofile(request):
     user = request.user
     profile, created = Profile.objects.get_or_create(user=user)

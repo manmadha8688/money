@@ -1,6 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash,logout
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 import random
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -11,6 +13,9 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from loans.views import get_installment_schedule
 from loans.models import LoanRequest
+
+import string
+from django.http import JsonResponse
 @login_required
 def change_client_password(request):
     if request.method == "POST":
@@ -22,10 +27,12 @@ def change_client_password(request):
         elif len(new_password) < 6:
             messages.error(request, "Password must be at least 6 characters.")
         else:
-            user = request.user
+            user = User.objects.select_related('borrower').get(id=request.user.id)
             user.set_password(new_password)
-            user.last_name = "borrower"  # unset first-login flag
+            user.last_name = ""
+            user.borrower.passcode = ""  # unset first-login flag
             user.save()
+            user.borrower.save()
             update_session_auth_hash(request, user)  # keep the user logged in
             messages.success(request, "You’ve successfully logged in and your password has been changed.")
             
@@ -38,12 +45,14 @@ def client_forgot_password(request):
         username = request.POST.get("username")
 
         try:
-            user = User.objects.get(username=username)
+            user = User.objects.select_related('borrower').get(username=username)
 
             passcode = str(random.randint(100000, 999999))
             user.set_password(passcode)
             user.last_name = "true"
-            print(passcode)
+            user.borrower.passcode = passcode
+            
+            user.borrower.save()
             user.save()
             messages.success(request, f"A temporary password has been set. Contact your lender to retrieve it.")
             return redirect('client-login')
@@ -52,19 +61,17 @@ def client_forgot_password(request):
 
     return render(request,'borrower/forgot_password.html')
 
+@login_required
 def client_pass_code(request):
-    flagged_users = User.objects.filter(last_name="true")
-
-    clients = []
-    for client in flagged_users:
-        if client.check_password("client@123"):
-            continue  # skip if password is still default
-        if LoanRequest.objects.filter(client=client, lender=request.user).exists():
-            clients.append(client)
-
+    
+    clients = User.objects.select_related('borrower').filter(
+        last_name="true",
+        borrower__passcode__isnull=False  
+        )
+    
     return render(request,'client_pass_code.html',{'clients':clients})
 
-
+@login_required
 def client_dashboard(request):
     if request.method == "POST":
         id = request.POST.get('loan_id')
@@ -141,7 +148,7 @@ def client_dashboard(request):
         if loan.payment_plan == "monthly":
             loan.mini = loan.interest_amount
     
-    lender = borrowed_loans[0].lender
+    lender = request.user.lender
 
     return render(request,'borrower/loan_details.html',
     {'loans':borrowed_loans ,
@@ -154,23 +161,19 @@ def client_dashboard(request):
       }
       )
 
-import random
-import string
-from django.http import JsonResponse
-
+@login_required
 def client_new_loan(request):
     client = request.user
     loan = LoanRequest.objects.filter(client=client,submitted=False).first()
 
     if loan is None:
-        previous_loan = LoanRequest.objects.filter(client=request.user, submitted=True).first()
         unique_id = ''.join(random.choices(string.ascii_lowercase + string.digits, k=9))
 
         loan = LoanRequest.objects.create(
-            lender=previous_loan.lender,
+            lender=client.lender,
             unique_id=unique_id,
             client = client,
-            borrower = previous_loan.borrower,
+            borrower = client.borrower,
             submitted=False,
             amount=0,
         )

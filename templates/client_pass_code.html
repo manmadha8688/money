@@ -91,7 +91,7 @@
         <thead>
             <tr><th>Date</th>
                 <th>Details</th>
-                <th>Borrower ID</th>
+                 <th>Borrower ID</th>
                 <th>Pass Code</th>
             </tr>
         </thead>
@@ -101,7 +101,7 @@
         <td>{{ client.date_joined|date:"Y-m-d H:i" }}</td>
         <td>{{ client.username }} ({{ client.first_name }})</td>
         <td>{{ client.id }}</td>
-        <td>••••••••</td> <!-- Hidden passcode for safety -->
+        <td>{{ client.borrower.passcode }}</td> <!-- Hidden passcode for safety -->
       </tr>
       {% endfor %}
         </tbody>

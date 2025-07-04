@@ -1,12 +1,14 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
 from django.utils import timezone
 from decimal import Decimal
 class Borrower(models.Model):
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
-
+    passcode = models.CharField(max_length=10,blank=True)
 class PaymentDetail(models.Model):
     PAYMENT_METHODS = [
         ('cash', 'Cash'),

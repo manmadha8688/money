@@ -10,7 +10,10 @@ from decimal import Decimal
 from django.urls import reverse
 
 from loans.views import apply_filter
+
+from django.contrib.auth.decorators import login_required
 # Create your views here.
+@login_required
 def montly_loans(request):
 
     loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived",payment_plan="monthly",activeloan__status__in=["overdue", "Repaying"]).select_related(
@@ -23,6 +26,7 @@ def montly_loans(request):
     ).order_by('id')
     return render(request,'active_loans/montlyloans.html',{"loans" : loans})
 
+@login_required
 def weekly_loans(request):
     loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived", payment_plan="weekly",activeloan__status__in=["overdue", "Repaying"]).select_related(
         'lender__active_user',
@@ -38,6 +42,7 @@ def weekly_loans(request):
 
     return render(request,'active_loans/weeklyloans.html',{"loans" : loans})
 
+@login_required
 def onetime_loans(request):
     loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived" , payment_plan="onetime",activeloan__status__in=["overdue", "Repaying"]).select_related(
         'lender__active_user',
@@ -50,6 +55,7 @@ def onetime_loans(request):
     
     return render(request,'active_loans/onetimeloans.html',{"loans" : loans})
 
+@login_required
 def all_loans(request):
     if request.method == "POST":
         id = request.POST.get('loan_id')
@@ -127,6 +133,7 @@ def all_loans(request):
 
     return render(request,'active_loans/all_loans.html',{"loans" : loans})
 
+@login_required
 def closed_loans(request):
     loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived",activeloan__status="closed").select_related(
         'lender__active_user',
@@ -146,7 +153,7 @@ def closed_loans(request):
 
 
 
-
+@login_required
 def repayment_confirmation(request):
     pending_payments = ReturnPayment.objects.filter(
     status='pending',
@@ -157,6 +164,7 @@ def repayment_confirmation(request):
     )
     return render(request,'repayment_confirmation.html',{'return_payments':pending_payments})
 
+@login_required
 def update_repayment_status(request):
     if request.method == 'POST':
         payment_id = request.POST.get('payment_id')

@@ -370,15 +370,7 @@ button:disabled {
       <p>({{ loan.lender.active_user.tagline }})</p>
     </div>
   </div>
-  {% if messages %}
-  {% for message in messages %}
-  {% if message.tags == 'error' %}
-    <div class="alert-error">
-      {{ message }}
-    </div>
-    {% endif%}
-  {% endfor %}
-{% endif %}
+ 
 
   <div class="container">
     {% if loan.status == "pending" %}
@@ -713,7 +705,9 @@ function verifyAndSubmit() {
 {% for message in messages %}
       {% if message.tags == 'success' %}
         showAlert("{{message}}", 'green');
+      {% elif message.tags == 'error'%}
       
+        showAlert("{{message}}", 'red');
       {% endif %}
     {% endfor %}
 

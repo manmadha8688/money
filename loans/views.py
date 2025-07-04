@@ -171,6 +171,10 @@ def loan_request(request, lender_id, unique_id):
                 messages.success(request, "Payment details updated successfully.")
                 payment.save()
             elif request.method == 'POST' and request.POST.get("form_type") == "loan_details":
+                
+                if loan.status == 'accepted':
+                    messages.error(request,"This loan has already been accepted. Details can no longer be modified. For any queries, please contact the lender directly.")
+                    return render(request, "borrower/payment_process.html", {"loan": loan,"payment":payment})
                 loan.loan_item = request.POST.get("loan_item")
                 loan.amount = request.POST.get("amount")
                 loan.payment_plan = request.POST.get("payment_plan")

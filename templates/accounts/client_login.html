@@ -50,7 +50,7 @@
                     <input type="checkbox" name="remember">
                     <span>Remember me</span>
                 </label>
-                <a href="#" class="forgot-password">Forgot Password?</a>
+                <a href="{% url 'client-forgot-password'%}" class="forgot-password">Forgot Password?</a>
             </div>
 
             <button type="submit" class="auth-button">
@@ -301,6 +301,15 @@ function showAlert(message = "Success!", type = "green") {
   }, 4000);
 }
 
+{% for message in messages %}
+      {% if message.tags == 'success' %}
+        showAlert("{{message}}", 'green');
+      {% elif message.tags == 'error'%}
+      
+        showAlert("{{message}}", 'red');
+      {% endif %}
+    {% endfor %}
+
 // Example triggers based on URL
 const urlParams = new URLSearchParams(window.location.search);
 
@@ -320,5 +329,6 @@ if (urlParams.get('loan') === 'true') {
 if (urlParams.get('user') === 'false') {
   showAlert("Not A Borrower.", "red");
 }
+
 </script>
 

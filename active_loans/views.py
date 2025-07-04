@@ -204,7 +204,7 @@ def update_repayment_status(request):
                 return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
             
         elif action == 'not_paid':
-            print('not paid')
+            payment.delete()
             return redirect(f"{reverse('repayment-confirmation')}?paid=false")
                 
                 

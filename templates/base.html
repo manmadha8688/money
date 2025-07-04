@@ -322,6 +322,10 @@
         .icon-user {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E");
         }
+        .icon-verify{
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3L4 6v6c0 5.25 3.75 10.29 8 12 4.25-1.71 8-6.75 8-12V6l-8-3z'/%3E%3Cpath d='M9 12l2 2 4-4'/%3E%3C/svg%3E");
+  
+        }
 
         .icon-logout {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'%3E%3C/path%3E%3Cpolyline points='16 17 21 12 16 7'%3E%3C/polyline%3E%3Cline x1='21' y1='12' x2='9' y2='12'%3E%3C/line%3E%3C/svg%3E");
@@ -407,6 +411,8 @@
                 <li class="nav-item"><a href="{% url 'loan-status-records'%}" class="nav-link"><span class="icon icon-search"></span> <span>Loan Requests Records</span></a></li>
                 <li class="nav-item"><a href="{% url 'all-transactions'%}" class="nav-link"><span class="icon icon-exchange"></span> <span>Transaction History</span></a></li>
                 <li class="nav-item"><a href="{% url 'myprofile'%}" class="nav-link"><span class="icon icon-user"></span> <span>My Profile</span></a></li>
+                
+                <li class="nav-item"><a href="{% url 'client-pass-code'%}" class="nav-link"><span class="icon icon-verify"></span> <span>Client Pass Code</span></a></li>
             {% if user.is_authenticated %}
                 <li class="nav-item"><a href="{% url 'logout'%}" class="nav-link"><span class="icon icon-logout"></span> <span>Logout</span></a></li>
             {% endif %}

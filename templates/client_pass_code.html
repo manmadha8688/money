@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+{% load static%}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients Pass Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom:20px;
+            margin-top: 70px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        th, td {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        thead {
+            background-color: #f8f8f8;
+        }
+        thead th {
+            position: sticky;
+            top: 15%;
+            background: #f8f8f8;
+            z-index: 101;
+        }
+        
+        tbody tr:hover{
+            background-color: #ccc;
+        }
+        .empty-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 500px;
+            margin: 60px auto;
+            animation: fadeIn 0.5s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .empty-box .icon {
+            font-size: 48px;
+            margin: 0;
+            line-height: 1;
+            display: block;
+            margin-bottom: 50px;
+        }
+        
+        .empty-box h3 {
+            font-size: 22px;
+            margin: 0;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+        
+        .empty-box p {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 0;
+            line-height: 1.4;
+        }
+        </style>
+</head>
+    
+    <h2>Clients New password Requests</h2>
+    {% if clients%}
+
+    <table>
+        <thead>
+            <tr><th>Date</th>
+                <th>Details</th>
+                <th>Borrower ID</th>
+                <th>Pass Code</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for client in clients %}
+      <tr>
+        <td>{{ client.date_joined|date:"Y-m-d H:i" }}</td>
+        <td>{{ client.username }} ({{ client.first_name }})</td>
+        <td>{{ client.id }}</td>
+        <td>••••••••</td> <!-- Hidden passcode for safety -->
+      </tr>
+      {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <div class="empty-box">
+        <div class="icon">📭</div>
+        <h3>No Requests</h3>
+
+    </div>
+    {% endif %}
+</body>
+</html>
+
+{% endblock %}

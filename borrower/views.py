@@ -1,5 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash,logout
+from django.contrib.auth.models import User
+import random
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from active_loans.models import ActiveLoan,ReturnPayment
@@ -30,6 +32,38 @@ def change_client_password(request):
             return redirect('client-dashboard') 
 
     return render(request,'borrower/change_password.html')
+
+def client_forgot_password(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+
+        try:
+            user = User.objects.get(username=username)
+
+            passcode = str(random.randint(100000, 999999))
+            user.set_password(passcode)
+            user.last_name = "true"
+            print(passcode)
+            user.save()
+            messages.success(request, f"A temporary password has been set. Contact your lender to retrieve it.")
+            return redirect('client-login')
+        except User.DoesNotExist:
+            messages.error(request, "Username not found. Please check and try again.")
+
+    return render(request,'borrower/forgot_password.html')
+
+def client_pass_code(request):
+    flagged_users = User.objects.filter(last_name="true")
+
+    clients = []
+    for client in flagged_users:
+        if client.check_password("client@123"):
+            continue  # skip if password is still default
+        if LoanRequest.objects.filter(client=client, lender=request.user).exists():
+            clients.append(client)
+
+    return render(request,'client_pass_code.html',{'clients':clients})
+
 
 def client_dashboard(request):
     if request.method == "POST":
@@ -144,3 +178,4 @@ def client_new_loan(request):
         return redirect('new-loan', lender_id=loan.lender.id, unique_id=loan.unique_id)
         
     return redirect('new-loan', lender_id=loan.lender.id, unique_id=loan.unique_id)
+

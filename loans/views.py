@@ -131,8 +131,7 @@ def get_installment_schedule(loan):
     return schedule
 
 
-
-@login_required
+   
 def loan_request(request, lender_id, unique_id):
     lender = get_object_or_404(User, id=lender_id)
     
@@ -203,9 +202,11 @@ def loan_request(request, lender_id, unique_id):
             return render(request, "borrower/loan_cancelled.html", {"loan": loan})
         
         elif loan.status == "paymentdone" or loan.status == 'paymentnotreceived':
-            
+            accepted = False
+            if request.method == 'POST' and (request.POST.get("form_type") == "payment_details" or request.POST.get("form_type") == "loan_details"):
+                accepted = True
             payment = loan.payment
-            return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment})
+            return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment,"accepted":accepted})
         else :
             return render(request,'borrower/completed_loan.html',{"loan": loan})
         """ 
@@ -388,6 +389,64 @@ def loan_request(request, lender_id, unique_id):
 
     return render(request, "borrower/loan_request_form.html", {"loan": loan,"payment":payment})
  
+def paymentreceived(request,loan_id):
+    loan = get_object_or_404(LoanRequest.objects.select_related('lender__active_user','borrower'), id=loan_id)
+    if request.method == "POST":
+        
+        confirmation = request.POST.get('confirmation')
+        if confirmation == "yes":
+            start_date = loan.taken_date
+            if loan.payment_plan == "weekly":
+                due_date = start_date + timedelta(days=7)
+            elif loan.payment_plan == "monthly":
+                due_date = start_date + relativedelta(months=+1)
+            elif loan.payment_plan == "onetime":
+                due_date =  start_date + timedelta(days=1)
+
+
+            loan.status = "paymentreceived"
+            
+            ActiveLoan.objects.create(
+                loan_request = loan,
+                remaining_balance = loan.amount + loan.interest_amount,
+                next_due_date = due_date
+            )
+            username = loan.borrower.phone
+            default_password = "client@123" # You can also use a fixed one
+    
+            # Create user
+            user = User.objects.filter(username=username)
+            if not user.exists():
+                user1 = User.objects.create_user(
+                username=username,
+                password=default_password,
+                first_name=loan.borrower.name,
+                last_name="true",
+                lender = loan.lender,
+                borrower = loan.borrower,
+                user_type="client" # You are using this as a flag
+                )
+                loan.client=user1
+                loan.save()
+            else:
+                loan.client=user.first()
+                loan.save()
+                return redirect(f"{reverse('client-login')}?loan=true&loan_id={loan.id}")
+            return render(request,'borrower/client_inform.html',{"password":default_password})
+    
+    
+
+        else:
+            loan.status = "paymentnotreceived"
+            loan.save()
+            
+    
+    lender_id = loan.lender.id
+    unique_id = loan.unique_id
+
+    return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
+     
+
 @login_required
 def loan_request_list(request):
     loan_requests = LoanRequest.objects.filter(lender=request.user, submitted=True,status__in = ["pending",'accepted']).select_related('borrower','payment')
@@ -545,64 +604,7 @@ def payment_done_check(request,loan_id):
     loan.save()
     return redirect("payment-done-list")
      
-@login_required
-def paymentreceived(request,loan_id):
-    loan = get_object_or_404(LoanRequest.objects.select_related('lender__active_user','borrower'), id=loan_id)
-    if request.method == "POST":
-        
-        confirmation = request.POST.get('confirmation')
-        if confirmation == "yes":
-            start_date = loan.taken_date
-            if loan.payment_plan == "weekly":
-                due_date = start_date + timedelta(days=7)
-            elif loan.payment_plan == "monthly":
-                due_date = start_date + relativedelta(months=+1)
-            elif loan.payment_plan == "onetime":
-                due_date =  start_date + timedelta(days=1)
 
-
-            loan.status = "paymentreceived"
-            
-            ActiveLoan.objects.create(
-                loan_request = loan,
-                remaining_balance = loan.amount + loan.interest_amount,
-                next_due_date = due_date
-            )
-            username = loan.borrower.phone
-            default_password = "client@123" # You can also use a fixed one
-    
-            # Create user
-            user = User.objects.filter(username=username)
-            if not user.exists():
-                user1 = User.objects.create_user(
-                username=username,
-                password=default_password,
-                first_name=loan.borrower.name,
-                last_name="true",
-                lender = loan.lender,
-                borrower = loan.borrower,
-                user_type="client" # You are using this as a flag
-                )
-                loan.client=user1
-                loan.save()
-            else:
-                loan.client=user.first()
-                loan.save()
-                return redirect(f"{reverse('client-login')}?loan=true")
-            return render(request,'borrower/client_inform.html',{"password":default_password})
-    
-    
-
-        else:
-            loan.status = "paymentnotreceived"
-            loan.save()
-            
-    
-    lender_id = loan.lender.id
-    unique_id = loan.unique_id
-
-    return redirect('new-loan', lender_id=lender_id, unique_id=unique_id)
-     
 @login_required
 def payment_done_list(request):
     loans = LoanRequest.objects.filter(lender=request.user ).filter(Q(status="paymentdone") | Q(status="paymentnotreceived")).select_related('payment','borrower').order_by('-updated_at')

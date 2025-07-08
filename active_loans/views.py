@@ -180,10 +180,12 @@ def update_repayment_status(request):
         ),
         id=payment_id
         )
+        
+        loan = payment.returnloan.loan_request
         if action == 'paid':
                  
 
-                loan = payment.returnloan.loan_request
+                
                 active_loan = payment.returnloan
                 active_loan.last_payment_date = payment.due_date
 
@@ -213,7 +215,7 @@ def update_repayment_status(request):
             
         elif action == 'not_paid':
             payment.delete()
-            return redirect(f"{reverse('repayment-confirmation')}?paid=false")
+            return redirect(f"{reverse('repayment-confirmation')}?paid=false&loan_id={loan.id}&amount={payment.amount}")
                 
                 
 

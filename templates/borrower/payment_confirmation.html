@@ -6,6 +6,7 @@
   <title>Payment Confirmation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
+  <link rel="stylesheet" href="{% static 'css/popup.css' %}">
   <!-- Google Fonts -->
 
   <style>
@@ -147,10 +148,15 @@
       margin-top: 10px;
       font-size: 14px;
   }
+
   
   </style>
 </head>
 <body>
+   <div id="custom-alert">
+  <span id="custom-alert-message"></span>
+</div>
+
   <div class="header">
     <div class="logo-wrapper">
       {% if loan.lender.active_user.company_logo %}
@@ -220,4 +226,31 @@
   </div>
 
 </body>
+<script>
+  function showAlert(message = "Success!", type = "green") {
+  const alertBox = document.getElementById('custom-alert');
+  const messageSpan = document.getElementById('custom-alert-message');
+
+  // Reset classes
+  alertBox.classList.remove("red", "yellow");
+
+  // Add color variant
+  if (type === "red") alertBox.classList.add("red");
+  if (type === "yellow") alertBox.classList.add("yellow");
+
+  messageSpan.innerText = message;
+  alertBox.style.display = 'block';
+
+  setTimeout(() => {
+    alertBox.classList.add('fadeOut');
+    setTimeout(() => {
+      alertBox.style.display = 'none';
+      alertBox.classList.remove('fadeOut');
+    }, 500);
+  }, 4000);
+}
+{% if accepted %}
+      showAlert("This loan has already been Accepted & Payment Successfully Made. Details can no longer be modified. For any queries, please contact the lender directly.","red");
+{% endif %}
+</script>
 </html>

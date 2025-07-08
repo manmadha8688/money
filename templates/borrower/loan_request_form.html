@@ -260,7 +260,7 @@ table {
         </svg>
       </span>
     </label>
-      <input type="text" id="borrower_name" name="borrower_name" value="{{ loan.borrower.name|default:'' }}" required />
+      <input type="text" id="borrower_name" name="borrower_name" value="{{ loan.borrower.name|default:'' }}" {% if loan.borrower.name %}readonly{% endif %}  required />
     </div>
 
     <div class="form-group">
@@ -271,7 +271,7 @@ table {
         </svg>
       </span>
     </label>
-      <input type="text" id="phone" name="phone" minlength="10" maxlength="10" pattern="\d{10}" value="{{ loan.borrower.phone|default:'' }}" required />
+      <input type="text" id="phone" name="phone" minlength="10" maxlength="10" pattern="\d{10}" value="{{ loan.borrower.phone|default:'' }}" {% if loan.borrower.phone %}readonly{% endif %}  required />
     </div>
 
     <div class="form-group">

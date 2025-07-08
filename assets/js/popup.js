@@ -57,3 +57,8 @@ if (urlParams.get('paid') === 'true') {
   const amount = urlParams.get('amount');
   showAlert(`Loan #${loanId}: ₹${amount} confirmed successfully!`,'green');
 }
+if (urlParams.get('paid') === 'false') {
+    const loanId = urlParams.get('loan_id');
+  const amount = urlParams.get('amount');
+  showAlert(`Loan #${loanId}: ₹${amount} deleted successfully!`,'red');
+}

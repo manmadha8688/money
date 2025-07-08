@@ -56,7 +56,7 @@ def login_view(request):
 
     return render(request, "accounts/login.html")
 
-@login_required
+
 def logout_view(request):
     logout(request)
     return redirect(f"{reverse('login')}?logout=true")
@@ -82,10 +82,15 @@ def client_login_view(request):
                 return redirect('client-dashboard')
         else:
             return redirect(f"{reverse('client-login')}?error=invalid")
-
+    if request.user.is_authenticated:
+        if request.user.user_type == "client":
+            if request.GET.get('loan') == 'true':
+                loan_id = request.GET.get('loan_id')
+                messages.success(request,"#"+loan_id+" Loan process completed successfully. Your loan is now active.")
+            return redirect('client-dashboard')
     return render(request, "accounts/client_login.html")
+ 
 
-@login_required
 def client_logout_view(request):
     logout(request)
     return redirect(f"{reverse('client-login')}?logout=true")

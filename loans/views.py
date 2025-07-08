@@ -131,7 +131,8 @@ def get_installment_schedule(loan):
     return schedule
 
 
-   
+
+@login_required
 def loan_request(request, lender_id, unique_id):
     lender = get_object_or_404(User, id=lender_id)
     

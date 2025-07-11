@@ -1,17 +1,18 @@
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from loans.models import LoanRequest
 from django.db.models import Q
 from loans.views import get_installment_schedule
 from .models import ReturnPayment,ActiveLoan
 from datetime import timedelta,datetime
 from dateutil.relativedelta import relativedelta
-from django.shortcuts import get_object_or_404
 from decimal import Decimal
 from django.urls import reverse
 
 from loans.views import apply_filter
 
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import HttpResponseRedirect
 # Create your views here.
 @login_required
 def montly_loans(request):
@@ -168,7 +169,7 @@ def repayment_confirmation(request):
 def update_repayment_status(request):
     if request.method == 'POST':
         payment_id = request.POST.get('payment_id')
-
+        confirm = request.POST.get('confirm', 'false')
         action = request.POST.get('action')  # either 'paid' or 'not_paid'
         
         payment = get_object_or_404(
@@ -183,7 +184,7 @@ def update_repayment_status(request):
         
         loan = payment.returnloan.loan_request
         if action == 'paid':
-                 
+            
 
                 
                 active_loan = payment.returnloan
@@ -197,9 +198,10 @@ def update_repayment_status(request):
                 
                 if active_loan.remaining_balance == 0 :
                     active_loan.status = 'closed'
-                    if  loan.payment_plan == 'weekly':
+                    
+                    if loan.payment_plan  == 'monthly':
                         active_loan.next_due_date = None
-                    elif loan.payment_plan  == 'monthly':
+                    else :
                         active_loan.next_due_date = None
                     active_loan.save()
                     return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
@@ -208,8 +210,7 @@ def update_repayment_status(request):
 
                 if  loan.payment_plan == 'weekly':
                     active_loan.next_due_date = payment.due_date + timedelta(weeks=1)
-                elif loan.payment_plan  == 'monthly':
-                    active_loan.next_due_date = payment.due_date + relativedelta(months=1)
+                
                 active_loan.save()
                 return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
             
@@ -220,3 +221,29 @@ def update_repayment_status(request):
                 
 
     return redirect('repayment-confirmation')
+
+from django.http import JsonResponse, Http404
+from django.shortcuts import get_object_or_404
+
+def check_duplicate_payment(request, payment_id):
+    if not request.method == "GET":
+        raise Http404("Only GET allowed")
+
+    try:
+        payment = get_object_or_404(ReturnPayment, id=payment_id)
+
+        duplicate = ReturnPayment.objects.filter(
+            returnloan=payment.returnloan,
+            due_date=payment.due_date,
+            amount=payment.amount,
+            payment_method=payment.payment_method,
+            utr=payment.utr,
+            cash_person=payment.cash_person,
+            payment_app=payment.payment_app,
+            status='success'
+        ).exists()
+
+        return JsonResponse({'duplicate': duplicate})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)

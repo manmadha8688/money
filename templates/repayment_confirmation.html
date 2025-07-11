@@ -217,7 +217,8 @@
             {% for payment in return_payments %}
             <tr>
                 <td>{{payment.created_at}}</td>
-                <td>{{ payment.returnloan.loan_request.borrower.name }}</td>
+                <td>{{ payment.returnloan.loan_request.borrower.name }} <br>
+                    {{ payment.returnloan.loan_request.borrower.phone }}</td>
                 <td>{{ payment.returnloan.loan_request.id }}</td>
                 <td>₹{{ payment.amount }}</td>
                 <td>{{ payment.payment_method }}</td>
@@ -233,7 +234,8 @@
         <form method="post" action="{% url 'update_repayment_status' %}">
             {% csrf_token %}
             <input type="hidden" name="payment_id" value="{{ payment.id }}">
-            <button type="submit" name="action" value="paid" class="btn btn-accept">Paid</button>
+            <input type="hidden" id="confirmInput" name="confirm" value="false">
+            <button type="submit" name="action" value="paid" class="btn btn-accept" onclick="return checkDuplicate({{ payment.id }})">Paid</button>
             <button type="submit" name="action" value="not_paid" class="btn btn-reject">Not Paid</button>
         </form>
     </td>
@@ -251,6 +253,36 @@
     {% endif %}
     
 <script src="{% static 'js/popup.js' %}"></script>
+<script>
+function checkDuplicate(paymentId) {
+    return fetch(`/active_loans/check-duplicate-payment/${paymentId}/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.duplicate) {
+                return confirm("⚠️ A successful duplicate payment already exists. Do you still want to proceed?");
+            }
+            return true;
+        })
+        .then(proceed => {
+            if (proceed) {
+                document.getElementById("confirmInput").value = "true";
+                return true;
+            }
+            return false;
+        })
+        .catch(error => {
+            alert("Error checking duplicate: " + error.message);
+            return false;
+        });
+}
+
+</script>
+
 </body>
 </html>
 {% endblock %}

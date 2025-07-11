@@ -87,7 +87,7 @@ def client_dashboard(request):
         due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
         existing_payment = ReturnPayment.objects.filter(
             returnloan=activeloan,
-            due_date=due_date, # optionally filter by pending only
+            due_date=due_date, 
             ).first()
 
         if not existing_payment:
@@ -104,10 +104,26 @@ def client_dashboard(request):
              
             messages.success(request,'You have successfully submitted your payment. Your lender will review and confirm it shortly.')
             return redirect(f"{reverse('client-dashboard')}")
+
+        elif activeloan.loan_request.payment_plan == "monthly" :
             
+                payment, created = ReturnPayment.objects.get_or_create(
+                    returnloan=activeloan,
+                    due_date=due_date,
+                    amount=amount,
+                    payment_method=payment_method,
+                    utr=utr,
+                    status ="pending",
+                    cash_person=cash_person,
+                    payment_app=payment_app,
+                )
+                if created:
+                    messages.success(request, 'You have successfully submitted your payment. Your lender will review and confirm it shortly.')
+                else:
+                    messages.error(request,'This Payment is already done and is under confirmation.')
+                return redirect(f"{reverse('client-dashboard')}")
         else:
-            
-            messages.error(request,'already done')
+            messages.error(request,'Payment for this due date is already done and is under confirmation.')
             return redirect(f"{reverse('client-dashboard')}")
 
     user = request.user
@@ -146,7 +162,13 @@ def client_dashboard(request):
             
             loan.schedule = get_installment_schedule(loan)
         if loan.payment_plan == "monthly":
-            loan.mini = loan.interest_amount
+            payment_done = loan.activeloan.return_payments.filter(
+                due_date=loan.activeloan.next_due_date,
+                status='success'
+            ).exists()
+
+            if payment_done:
+                loan.mini = 0
     
     lender = request.user.lender
 

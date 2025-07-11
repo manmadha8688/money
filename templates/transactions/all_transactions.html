@@ -168,6 +168,10 @@
           <label for="borrower">Borrower Name:</label>
           <input type="text" name="borrower" id="borrower" placeholder="e.g., John" value="{{ request.GET.borrower|default:'' }}">
       </div>
+      <div class="filter-group">
+          <label for="borrower">Phone No. :</label>
+          <input type="text" name="mobile_number" id="mobile_number" placeholder="e.g., 1234567890" value="{{ request.GET.mobile_number|default:'' }}">
+      </div>
 
       <div class="filter-group">
           <label for="token">Token ID:</label>

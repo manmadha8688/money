@@ -1070,7 +1070,7 @@ function showAlert(message = "Success!", type = "green") {
       {% if message.tags == 'success' %}
         showAlert("{{message}}", 'green');
       {% elif message.tags == 'error' %}
-        showAlert("Payment for this due date is already done and is under confirmation.", 'red');
+        showAlert("{{message}}", 'red');
       
       {% endif %}
     {% endfor %}

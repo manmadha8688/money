@@ -659,7 +659,7 @@ function calculateInterest(loanId, changedField = null) {
             instalment = Math.round((amount + finalInterestAmount) / 100);
         }
        else{
-        instalment =  Math.round(amount + finalInterestAmount);
+        instalment =  Math.round(finalInterestAmount);
        }
         if (instalment) {
             instalmentEl.value = instalment;

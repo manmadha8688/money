@@ -97,7 +97,7 @@ def get_installment_schedule(loan):
         paid_this_due_date = 0
         payment_details =[]
         # If due_date is before next_due_date, consider it paid (or partially paid)
-        status = due_date < next_due_date
+        status = next_due_date and due_date < next_due_date
         if status:
             due_payments = repayments.filter(due_date=due_date)
             paid_this_due_date = due_payments.aggregate(
@@ -400,7 +400,7 @@ def paymentreceived(request,loan_id):
                 due_date = start_date + timedelta(days=7)
             elif loan.payment_plan == "monthly":
                 due_date = start_date + relativedelta(months=+1)
-            elif loan.payment_plan == "onetime":
+            elif loan.payment_plan == "daily":
                 due_date =  start_date + timedelta(days=1)
 
 

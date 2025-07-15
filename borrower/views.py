@@ -75,7 +75,7 @@ def client_pass_code(request):
 def client_dashboard(request):
     if request.method == "POST":
         id = request.POST.get('loan_id')
-        activeloan = ActiveLoan.objects.select_related('loan_request').get(id=id)
+        activeloan = ActiveLoan.objects.select_related('loan_request').prefetch_related('return_payments').get(id=id)
 
         amount = request.POST.get('amount')
         amount = Decimal(amount)
@@ -85,10 +85,12 @@ def client_dashboard(request):
         payment_app = request.POST.get('platform', '')
 
         due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
-        existing_payment = ReturnPayment.objects.filter(
-            returnloan=activeloan,
-            due_date=due_date, 
-            ).first()
+        
+        existing_payment = next(
+            (p for p in activeloan.return_payments.all() if p.due_date == due_date),
+            None
+            )
+
 
         if not existing_payment:
             payment = ReturnPayment(

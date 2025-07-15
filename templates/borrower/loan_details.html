@@ -739,10 +739,10 @@
       {% else%}
       <span class="status overdue">Overdue</span>
       <div class="loan-progress-bar">
-        <div class="fill" style="width: 36%;"></div>
+        <div class="fill" style="width: {{loan.percentage}}%;"></div>
         
       </div>
-      <div style="font-size: 12px; color: #555; margin-top: 2px;">36% Paid</div>
+      <div style="font-size: 12px; color: #555; margin-top: 2px;">{{loan.percentage}}% Paid</div>
 
        {% endif %}
 
@@ -829,6 +829,8 @@
         {% endif %}
         <tr><td>Total Paid</td><td>:</td><td>₹ {{loan.activeloan.total_paid}}</td></tr>
         <tr><td>Remaining</td><td>:</td><td style="color: orange;">₹ {{ loan.activeloan.remaining_balance }}</td></tr>
+        {% if loan.payment_plan == "monthly" %}
+        {% else %}
         <tr><td>Last Paid Due_date (paid_on)</td><td>:</td><td>
         {% if loan.activeloan.last_payment_date %}
   {{ loan.activeloan.last_payment_date }} 
@@ -836,7 +838,7 @@
   {% for payment in loan.activeloan.return_payments.all %}
     {% if payment.due_date == loan.activeloan.last_payment_date %}
       
-        {{ payment.created_at|date:"d M Y, h:i A" }}
+        {{ payment.created_at|date:"d M Y, h:i A" }} , 
        
     {% endif %}
   {% endfor %}
@@ -846,6 +848,7 @@
     {% endif %}
       </td>
     </tr>
+    {% endif %}
         <tr><td>Next Due Date</td><td>:</td><td>{{ loan.activeloan.next_due_date }}</td></tr>
       </table>
     </div>

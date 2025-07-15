@@ -13,6 +13,8 @@ from loans.views import apply_filter
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponseRedirect
+
+from django.utils import timezone
 # Create your views here.
 @login_required
 def montly_loans(request):
@@ -45,7 +47,7 @@ def weekly_loans(request):
 
 @login_required
 def onetime_loans(request):
-    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived" , payment_plan="onetime",activeloan__status__in=["overdue", "Repaying"]).select_related(
+    loans = LoanRequest.objects.filter(lender=request.user ,status="paymentreceived" , payment_plan="daily",activeloan__status__in=["overdue", "Repaying"]).select_related(
         'lender__active_user',
         'borrower',
         'payment',
@@ -60,7 +62,7 @@ def onetime_loans(request):
 def all_loans(request):
     if request.method == "POST":
         id = request.POST.get('loan_id')
-        activeloan = ActiveLoan.objects.select_related('loan_request').get(id=id)
+        activeloan = ActiveLoan.objects.select_related('loan_request').prefetch_related('return_payments').get(id=id)
 
         amount = request.POST.get('amount')
         amount = Decimal(amount)
@@ -70,10 +72,10 @@ def all_loans(request):
         payment_app = request.POST.get('platform', '')
 
         due_date = datetime.strptime(request.POST["due_date"], "%Y-%m-%d").date()
-        existing_payment = ReturnPayment.objects.filter(
-            returnloan=activeloan,
-            due_date=due_date, # optionally filter by pending only
-            ).first()
+        existing_payment = next(
+            (p for p in activeloan.return_payments.all() if p.due_date == due_date),
+            None
+            )
 
         if not existing_payment:
             payment = ReturnPayment(
@@ -94,22 +96,51 @@ def all_loans(request):
 
             if activeloan.remaining_balance == 0 :
                 activeloan.status = 'closed'
-                if  ctiveloan.loan_request.payment_plan == 'weekly':
-                    activeloan.next_due_date = None
-                elif activeloan.loan_request.payment_plan  == 'monthly':
-                    activeloan.next_due_date = None
+                activeloan.next_due_date = None
                 activeloan.save()
                 return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
+                
             
             
             if  activeloan.loan_request.payment_plan == 'weekly':
                 activeloan.next_due_date = payment.due_date + timedelta(weeks=1)
-            elif activeloan.loan_request.payment_plan  == 'monthly':
-                activeloan.next_due_date = payment.due_date + relativedelta(months=1)
+            elif activeloan.loan_request.payment_plan  == "daily":
+                activeloan.next_due_date = payment.due_date + timedelta(days=1)
+
             activeloan.save()
-            
             return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
+        elif activeloan.loan_request.payment_plan == "monthly" :
             
+                payment, created = ReturnPayment.objects.get_or_create(
+                    returnloan=activeloan,
+                    due_date=due_date,
+                    amount=amount,
+                    payment_method=payment_method,
+                    utr=utr,
+                    status ="pending",
+                    cash_person=cash_person,
+                    payment_app=payment_app,
+                )
+                if created:
+                    activeloan.total_paid += payment.amount
+            
+                    activeloan.remaining_balance -= payment.amount
+                    activeloan.last_payment_date = payment.due_date
+
+                    if activeloan.remaining_balance == 0 :
+                        activeloan.status = 'closed'
+                        activeloan.next_due_date = None
+                        activeloan.save()
+                        return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
+
+                    activeloan.save()
+                    return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
+           
+                    
+                else:
+                    return redirect(f"{reverse('all-loans')}?paymentexists=true")
+                
+
         else:
             return redirect(f"{reverse('all-loans')}?paymentexists=true")
 
@@ -198,11 +229,9 @@ def update_repayment_status(request):
                 
                 if active_loan.remaining_balance == 0 :
                     active_loan.status = 'closed'
-                    
-                    if loan.payment_plan  == 'monthly':
-                        active_loan.next_due_date = None
-                    else :
-                        active_loan.next_due_date = None
+                    active_loan.next_due_date = None
+                    if loan.payment_plan =="weekly":
+                        active_loan.next_due_date += timedelta(weeks=week + 1)                                          
                     active_loan.save()
                     return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
             
@@ -210,6 +239,8 @@ def update_repayment_status(request):
 
                 if  loan.payment_plan == 'weekly':
                     active_loan.next_due_date = payment.due_date + timedelta(weeks=1)
+                elif loan.payment_plan == "daily":
+                    active_loan.next_due_date = payment.due_date + timedelta(days=1)
                 
                 active_loan.save()
                 return redirect(f"{reverse('repayment-confirmation')}?paid=true&loan_id={loan.id}&amount={payment.amount}")
@@ -247,3 +278,29 @@ def check_duplicate_payment(request, payment_id):
     
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+
+@login_required
+def update_due_dates(request):
+    today = timezone.now().date()
+    active_loans = ActiveLoan.objects.filter(status='Repaying').select_related('loan_request').prefetch_related('return_payments')
+
+    for loan in active_loans:
+        previous_due_date = loan.next_due_date
+        
+        repayment_exists = any(
+            rp.due_date == previous_due_date and rp.status == 'success'
+            for rp in loan.return_payments.all()
+            )
+        if (previous_due_date < today) :
+
+            if not repayment_exists :
+                loan.status = 'overdue'
+            
+            elif loan.loan_request.payment_plan == 'monthly' :
+                loan.next_due_date += relativedelta(months=1)
+            
+            loan.save()
+
+    return redirect('dashboard')  # or wherever you want to redirect

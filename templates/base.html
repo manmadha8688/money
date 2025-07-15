@@ -338,11 +338,9 @@
             <div class="sidebar-header">
             {% if user.is_authenticated %}
             {% if profile %}
-                {% if profile.company_logo %}
-                            <img src="{{ profile.company_logo.url }}" alt="Profile Picture" class="profile-image">
-                        {% else %}
-                            <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="profile-image">
-                        {% endif %}
+                
+                        <a href="{% url 'myprofile'%}"><img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="profile-image"></a>
+                        
                         <h3 class="company-name">{{ profile.company_name|default:'Company Name'}}</h3>
                         <h5 class="company-tagline">({{ profile.tagline|default:'tagline' }})</h5>
                     {% else %}
@@ -402,8 +400,6 @@
               </li>
                 <li class="nav-item"><a href="{% url 'repayment-confirmation'%}" class="nav-link"><span class="icon icon-money"></span> <span>Payment Confirmation</span></a></li>
 
-                <li class="nav-item"><a href="{% url 'dashboard'%}" class="nav-link"><span class="icon icon-users"></span> <span>Paid Members</span></a></li>
-                <li class="nav-item"><a href="{% url 'dashboard'%}" class="nav-link"><span class="icon icon-warning"></span> <span>Overdue Members</span></a></li>
                 
                         <li class="nav-item"><a href="{% url 'cancel-reject-list'%}" class="nav-link"><span class="icon icon-warning"></span> <span>Cancelled/Rejected</span></a></li>
                         <li class="nav-item"><a href="{% url 'closed-loans'%}" class="nav-link"><span class="icon icon-money"></span> <span>Closed Loans</span></a></li>

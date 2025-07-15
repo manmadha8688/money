@@ -1,2 +1,88 @@
-<h1>sample</h1>
-{{count}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Calendar Heatmap Fixed</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- ✅ Correct CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.3.4/cal-heatmap.css" />
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f3f4f6;
+      padding: 2rem;
+    }
+
+    .heatmap-container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    #calendar-heatmap {
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="heatmap-container">
+    <h2>📆 Payments Due Calendar</h2>
+    <p>Shows payments due each day (demo data)</p>
+    <div id="calendar-heatmap"></div>
+  </div>
+
+  <!-- ✅ Correct JS (UMD working build) -->
+  <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.3.4/dist/umd/cal-heatmap.min.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const cal = new CalHeatmap(); // ✅ Works with the UMD version
+
+      const data = {
+        "2025-07-10": 2,
+        "2025-07-11": 4,
+        "2025-07-12": 7,
+        "2025-07-13": 1,
+        "2025-07-14": 5,
+        "2025-07-15": 0,
+        "2025-07-16": 6,
+        "2025-07-17": 3,
+        "2025-07-18": 8,
+        "2025-07-19": 2
+      };
+
+      const transformed = Object.entries(data).map(([date, value]) => ({
+        date: new Date(date),
+        value: value
+      }));
+
+      cal.paint({
+        range: 1,
+        domain: "month",
+        subDomain: "day",
+        date: { start: new Date("2025-07-01") },
+        itemSelector: "#calendar-heatmap",
+        data: {
+          type: "json",
+          source: transformed,
+          x: "date",
+          y: "value"
+        },
+        scale: {
+          color: {
+            type: "linear",
+            range: ["#d1fae5", "#10b981"]
+          }
+        },
+        domainLabel: { text: "July 2025", position: "top" },
+        legend: [1, 3, 5, 7]
+      });
+    });
+  </script>
+</body>
+</html>

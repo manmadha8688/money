@@ -20,10 +20,8 @@ class CustomUser(AbstractUser):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='clients',
-        limit_choices_to={'user_type': 'lender'},
-        help_text="Lender assigned to this user (if client)"
-        )
+        related_name='lender_clients',
+    )
     borrower = models.ForeignKey(  # 👈 ForeignKey to another user (the lender)
         'loans.Borrower',
         on_delete=models.SET_NULL,

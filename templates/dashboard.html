@@ -1,265 +1,613 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <style>
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: var(--space-lg);
-            margin-bottom: var(--space-xl);
-        }
+{% load humanize %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        .stat-card {
-            background: var(--white);
-            padding: var(--space-lg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            transition: all var(--transition-normal);
-            position: relative;
-            overflow: hidden;
-        }
+<style>
+:root {
+    --primary: #3b82f6;
+    --success: #10b981;
+    --danger: #ef4444;
+    --gray-600: #4b5563;
+    --gray-500: #6b7280;
+    --gray-100: #f3f4f6;
+    --gray-50: #f9fafb;
+    --white: #ffffff;
+    --dark: #111827;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+    --transition-normal: 0.3s ease;
+    --transition-fast: 0.2s ease;
+}
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
+body {
+    background-color: #f9fafb;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--primary);
-        }
+/* Alert */
+#custom-alert {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: white;
+    background-color: var(--success);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    display: none;
+    transition: all 0.3s ease;
+}
+#custom-alert.red { background-color: var(--danger); }
+#custom-alert.yellow { background-color: #f59e0b; }
+@keyframes fadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+.fadeOut { animation: fadeOut 0.5s forwards; }
 
-        .stat-card h3 {
-            margin: 0 0 var(--space-sm);
-            font-size: 1rem;
-            color: var(--gray-600);
-            font-weight: 500;
-        }
+/* Welcome section */
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-xl);
+}
+.welcome-section h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark);
+}
+.quick-action-btn {
+    background-color: var(--primary);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+.quick-action-btn:hover {
+    background-color: #2563eb;
+}
 
-        .stat-card .value {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--dark);
-            margin: 0;
-        }
+/* Stat Cards */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+}
+.stat-card {
+    background: var(--white);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-normal);
+    position: relative;
+    overflow: hidden;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--primary);
+}
+.stat-card h3 {
+    margin: 0 0 var(--space-sm);
+    font-size: 1rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+.stat-card .value {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+.stat-card .trend {
+    display: flex;
+    align-items: center;
+    margin-top: var(--space-sm);
+    font-size: 0.875rem;
+    color: var(--gray-500);
+}
+.stat-card .trend.up { color: var(--success); }
+.stat-card .trend.down { color: var(--danger); }
 
-        .stat-card .trend {
-            display: flex;
-            align-items: center;
-            margin-top: var(--space-sm);
-            font-size: 0.875rem;
-            color: var(--gray-500);
-        }
-
-        .stat-card .trend.up {
-            color: var(--success);
-        }
-
-        .stat-card .trend.down {
-            color: var(--danger);
-        }
-
-        .stats-container {
-            background: var(--white);
-            padding: var(--space-lg);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-md);
-            margin-top: var(--space-lg);
-        }
-
-        .stats-container h3 {
-            font-size: 1.125rem;
-            margin-bottom: var(--space-md);
-            color: var(--dark);
-            font-weight: 600;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: var(--space-md);
-        }
-
-        .stat-item {
-            padding: var(--space-md);
-            background: var(--gray-50);
-            border-radius: var(--radius-md);
-            transition: all var(--transition-fast);
-        }
-
-        .stat-item:hover {
-            background: var(--gray-100);
-        }
-
-        .stat-item h4 {
-            margin: 0 0 var(--space-xs);
-            font-size: 0.875rem;
-            color: var(--gray-600);
-            font-weight: 500;
-        }
-
-        .stat-item p {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: var(--dark);
-        }
-
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        #custom-alert {
-  position: fixed;
-  top: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  padding: 0.75rem 1.5rem;
+/* Key Statistics */
+.stats-container {
+    background: var(--white);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    margin-top: var(--space-lg);
+}
+.stats-container h3 {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-md);
+    color: var(--dark);
+    font-weight: 600;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--space-md);
+}
+.stat-item {
+    padding: var(--space-md);
+    background: var(--gray-50);
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+}
+.stat-item:hover {
+    background: var(--gray-100);
+}
+.stat-item h4 {
+    margin: 0 0 var(--space-xs);
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+.stat-item p {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+.quick-action-btn {
+  background-color: var(--primary);
+  color: white;
+  padding: 0.6rem 1.2rem;
   border-radius: 0.5rem;
   font-size: 0.95rem;
   font-weight: 500;
-  color: white;
-  background-color: #10b981; /* green by default */
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.3s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-btn:hover {
+  background-color: #2563eb;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.copy-status {
+  font-size: 0.9rem;
+  color: green;
   display: none;
-  transition: all 0.3s ease;
 }
 
-/* Red alert variant */
-#custom-alert.red {
-  background-color: #ef4444;
+.loan-risk-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 0.7rem;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
 }
 
-/* Yellow alert variant */
-#custom-alert.yellow {
-  background-color: #f59e0b;
+.loan-risk-table thead {
+  background-color: grey; /* Dark navy */
+  color: white;
 }
 
-/* Fade out animation */
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
+.loan-risk-table th {
+  padding: .5rem;
+}
+.loan-risk-table th,
+.loan-risk-table td {
+  text-align: center;
 }
 
-.fadeOut {
-  animation: fadeOut 0.5s forwards;
+
+
+
+.loan-risk-table tbody tr {
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease;
+  
+  padding: .5rem;
 }
-    </style>
-<div id="custom-alert">
-  <span id="custom-alert-message"></span>
+
+.loan-risk-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+
+
+.loan-risk-table td.amount {
+  color: #10b981;
+  font-weight: bold;
+}
+
+.loan-risk-table td.due-date {
+  color: #f59e0b;
+}
+
+.loan-risk-table .empty-row {
+  text-align: center;
+  background-color: #f3f4f6;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  font-style: italic;
+  color: #6b7280;
+}
+.badge {
+  display: inline-block;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-today {
+  background-color: #fde68a;
+  color: #92400e;
+}
+
+.badge-tomorrow {
+  background-color: #e0f2fe;
+  color: #0369a1;
+}
+
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    .dashboard, .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+
+<!-- ALERT -->
+<div id="custom-alert"><span id="custom-alert-message"></span></div>
+
+<!-- WELCOME -->
+<div class="welcome-section">
+    <div>
+        <h2>👋 Welcome back, {{ request.user.first_name|default:"User" }}</h2>
+        <p style="color: var(--gray-500);">Here's an overview of your current lending status.</p>
+    </div>
+    <div style="display: flex; gap: 1rem;">
+        <!-- One-Click Copy Button -->
+  <button class="quick-action-btn copy-btn" onclick="generateAndCopyLink()">
+    <i class="fas fa-link"></i> Copy Client Login Link
+  </button>
+
+  <a href="{% url 'update-due-dates' %}" >
+    <button class="quick-action-btn calendar-btn" onclick="updateduedates()">
+    <i class="fas fa-calendar-check"></i> Update Due Dates
+    </button>
+  </a>
+
+  </div>
 </div>
-    <div class="dashboard">
-        <div class="stat-card">
-            <h3>Total Loans Issued</h3>
-            <p class="value">$50,000</p>
-            <div class="trend up">
-                <span class="icon icon-chart"></span>
-                <span>+12% from last month</span>
-            </div>
+
+ 
+<!-- STAT CARDS -->
+<div class="dashboard">
+    <div class="stat-card">
+        <h3>💸 Total Capital Lent</h3>
+
+        <p class="value">₹ {{ total_lent| intcomma }}</p>
+        {% if trend_lent.direction == 'up' %}
+    <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_lent.change }}% in last 30 days</div>
+  {% elif trend_lent.direction == 'down' %}
+    <div class="trend down"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_lent.change }}% in last 30 days</div>
+  {% else %}
+    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
+  {% endif %}
+    </div>
+    <div class="stat-card">
+        <h3>⏳ Awaiting Collections</h3>
+        <p class="value">₹ {{ total_pending | intcomma }}</p>
+    </div>
+    <div class="stat-card">
+        <h3>💰 Successful Collections </h3>
+        <p class="value">₹ {{total_collected| intcomma}}</p>
+       {% if trend_lent.direction == 'up' %}
+    <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_collected.change }}% in last 30 days</div>
+  {% elif trend_lent.direction == 'down' %}
+    <div class="trend down"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_collected.change }}% in last 30 days</div>
+  {% else %}
+    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
+  {% endif %}
+    </div>
+    <div class="stat-card">
+        <h3>🚨 Overdue Balances </h3>
+        <p class="value">₹ {{total_overdue| intcomma}}</p>
+        {% if trend_lent.direction == 'up' %}
+    <div class="trend down"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_overdue.change }}% in last 30 days</div>
+  {% elif trend_lent.direction == 'down' %}
+    <div class="trend up"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_overdue.change }}% in last 30 days</div>
+  {% else %}
+    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
+  {% endif %}
+    </div>
+    <!-- ✅ Collected Money Breakdown Card -->
+<div class="stat-card">
+    <h3>🔔 Today’s Expected Income</h3>
+    <p style="display: flex;justify-content:center;" > <strong>₹{{today_payable_planwise.total | intcomma}}</strong></p>
+    <div style="margin-top: 1rem; font-size: 0.875rem;">
+        <div style="display: flex; justify-content: space-between;">
+            <span>Monthly</span><strong>₹{{ today_payable_planwise.monthly|default:"0"|intcomma }}</strong>
         </div>
-        <div class="stat-card">
-            <h3>Pending Payments</h3>
-            <p class="value">$7,200</p>
-            <div class="trend down">
-                <span class="icon icon-warning"></span>
-                <span>-5% from last month</span>
-            </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Weekly</span><strong>₹{{ today_payable_planwise.weekly|default:"0"|intcomma }}</strong>
         </div>
-        <div class="stat-card">
-            <h3>Collected Payments</h3>
-            <p class="value">$42,800</p>
-            <div class="trend up">
-                <span class="icon icon-money"></span>
-                <span>+8% from last month</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <h3>Monthly Revenue</h3>
-            <p class="value">$5,000</p>
-            <div class="trend up">
-                <span class="icon icon-chart"></span>
-                <span>+15% from last month</span>
-            </div>
-        </div>
-        <div class="stat-card">
-            <h3>Total Interest Earned</h3>
-            <p class="value">$3,200</p>
-            <div class="trend up">
-                <span class="icon icon-money"></span>
-                <span>+10% from last month</span>
-            </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Daily</span><strong>₹{{ today_payable_planwise.daily|default:"0"|intcomma }}</strong>
         </div>
     </div>
+</div>
 
-    <div class="stats-container">
+<!-- ✅ Upcoming Payments Card -->
+<div class="stat-card">
+    <h3>⏭️ Tomorrow's Dues </h3>
+    <p style="display: flex;justify-content:center;" > <strong>₹{{tomorrow_payable_planwise.total | intcomma}}</strong></p>
+    <div style="margin-top: 1rem; font-size: 0.875rem;">
+        <div style="display: flex; justify-content: space-between;">
+            <span>Monthly</span><strong>₹{{ tomorrow_payable_planwise.monthly|default:"0"|intcomma }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Weekly</span><strong>₹{{ tomorrow_payable_planwise.weekly|default:"0"|intcomma }}</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+            <span>Daily</span><strong>₹{{ tomorrow_payable_planwise.daily|default:"0"|intcomma }}</strong>
+        </div>
+    </div>
+</div>
+
+    <div class="stat-card">
+        <h3>📊 Interest Revenue</h3>
+        <p class="value">₹{{total_interest_earned | intcomma}}</p>
+        {% if trend_lent.direction == 'up' %}
+    <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_interest.change }}% in last 30 days</div>
+  {% elif trend_lent.direction == 'down' %}
+    <div class="trend down"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_interest.change }}% in last 30 days</div>
+  {% else %}
+    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
+  {% endif %}
+    </div>
+    
+    
+</div>
+
+<div class="stats-container" style="display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap;">
+    
+    <!-- Pie Chart aligned to right -->
+    <div style="flex: 1 1 300px; max-width: 350px;">
+        <h3>Loan Status Distribution</h3>
+        <canvas id="loanStatusPieChart" height="250" width="250"></canvas>
+    </div>
+
+    <!-- Key Statistics -->
+    <div style="flex: 2 1 500px;">
         <h3>Key Statistics</h3>
         <div class="stats-grid">
+            <div class="stat-item"><h4>Total Borrowers</h4><p>{{total_borrowers}}</p></div>
+            <div class="stat-item"><h4>Total Loans</h4><p>{{total_loans}}</p></div>
+            <div class="stat-item"><h4>Average Loan Amount</h4><p> ₹{{avg_loan_amount|intcomma}}</p></div>
+            <div class="stat-item"><h4>Monthly Loans</h4><p>{{loans_planwise.monthly}}</p></div>
+            <div class="stat-item"><h4>Weekly Loans</h4><p>{{loans_planwise.weekly}}</p></div>
+            <div class="stat-item"><h4>Daily Loans</h4><p>{{loans_planwise.daily}}</p></div>
             <div class="stat-item">
-                <h4>Total Borrowers</h4>
-                <p>25</p>
+                <h4>This Month's Loans</h4>
+                <p>₹{{this_month_amount|intcomma}}</p>
+                <small style="font-size: 0.8rem; color: green;">{{this_month_loans}} Loans</small>
             </div>
             <div class="stat-item">
-                <h4>Overdue Payments</h4>
-                <p>$3,000</p>
+                <h4>Last Month's Loans</h4>
+                <p>₹{{last_month_amount}}</p>
+                <small style="font-size: 0.8rem; color: green;">{{last_month_loans|intcomma}}  Loans</small>
             </div>
             <div class="stat-item">
-                <h4>Upcoming Payments</h4>
-                <p>$2,500</p>
-            </div>
-            <div class="stat-item">
-                <h4>Average Loan Size</h4>
-                <p>$2,000</p>
+                <h4>Last Month’s Overdues</h4>
+                <p>₹ {{last_month_overdue_amount | intcomma}}</p>
+                <small style="font-size: 0.8rem; color: #b91c1c;">{{last_month_overdue_loans}} Loans overdue</small>
             </div>
         </div>
     </div>
-    <script>
+
+
+</div>
+<div class="stats-container" style="margin-top: 2rem;">
+  <h3>🔔 Loans At Risk (Due Soon)</h3>
+  <table class="loan-risk-table">
+  <thead>
+    <tr>
+      <th>👤 Borrower</th>
+      <th>🔢 Loan ID</th>
+      <th>💰 Amount Due</th>
+      <th>📅 Due Date</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in loans_at_risk %}
+    <tr>
+      <td>{{ item.loan.borrower.name }}</td>
+      <td>#{{ item.loan.id }}</td>
+      <td class="amount">₹{{ item.loan.amount }}</td>
+      <td class="due-date">
+  {% if item.due == 'Today' %}
+    <span class="badge badge-today">🟠 Today</span>
+  {% elif item.due == 'Tomorrow' %}
+    <span class="badge badge-tomorrow">🟡 Tomorrow</span>
+  {% else %}
+    {{ item.due }}
+  {% endif %}
+</td>
+
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" class="empty-row">✅ No loans due today or tomorrow!</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+</div>
+
+
+<!-- BAR CHART -->
+<div class="stats-container">
+    <h3>Loan Collection Summary (Plan-wise)</h3>
+    <canvas id="planBarChart" height="100"></canvas>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+    function updateduedates(){
+        
+           showAlert("Due Dates are Updated successfully...!","green");
+        
+        
+    }
+    function generateAndCopyLink() {
+    const loginLink = `${window.location.origin}/accounts/client-login/`;
+
+    navigator.clipboard.writeText(loginLink).then(() => {
+        
+            showAlert('✅ Link copied successfully...!',"");
+        
+    });
+}
 function showAlert(message = "Success!", type = "green") {
-  const alertBox = document.getElementById('custom-alert');
-  const messageSpan = document.getElementById('custom-alert-message');
-
-  // Reset classes
-  alertBox.classList.remove("red", "yellow");
-
-  // Add color variant
-  if (type === "red") alertBox.classList.add("red");
-  if (type === "yellow") alertBox.classList.add("yellow");
-
-  messageSpan.innerText = message;
-  alertBox.style.display = 'block';
-
-  setTimeout(() => {
-    alertBox.classList.add('fadeOut');
+    const alertBox = document.getElementById('custom-alert');
+    const messageSpan = document.getElementById('custom-alert-message');
+    alertBox.classList.remove("red", "yellow");
+    if (type === "red") alertBox.classList.add("red");
+    if (type === "yellow") alertBox.classList.add("yellow");
+    messageSpan.innerText = message;
+    alertBox.style.display = 'block';
     setTimeout(() => {
-      alertBox.style.display = 'none';
-      alertBox.classList.remove('fadeOut');
-    }, 500);
-  }, 4000);
+        alertBox.classList.add('fadeOut');
+        setTimeout(() => {
+            alertBox.style.display = 'none';
+            alertBox.classList.remove('fadeOut');
+        }, 500);
+    }, 4000);
 }
 
-// Example triggers based on URL
 const urlParams = new URLSearchParams(window.location.search);
-
 if (urlParams.get('login') === 'success') {
-  showAlert("Login successful!", "green");
+    showAlert("Login successful!", "green");
 }
 
-</script>
+// Bar Chart (Plan-wise Summary)
+const barCtx = document.getElementById('planBarChart').getContext('2d');
+new Chart(barCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Daily', 'Weekly', 'Monthly'],
+        datasets: [
+            {
+                label: 'Lent Amount',
+                data: [{{total_amount_planwise.daily}}, {{total_amount_planwise.weekly}}, {{total_amount_planwise.monthly}}],
+                backgroundColor: '#3b82f6'
+            },
+            {
+                label: 'Collected Amount',
+                data: [{{total_amount_collected_planwise.daily}}, {{total_amount_collected_planwise.weekly}}, {{total_amount_collected_planwise.monthly}}],
+                backgroundColor: '#10b981'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    callback: value =>  value,
+                    font: { size: 13,weight:500 },
+                padding: 8,
+                },
+                title: {
+                display: true,
+                text: 'Amount (₹)',
+                font: { size: 14, weight: 900 }
+                }
+            },
+            x: {
+            ticks: {
+                font: { size: 13,weight:600}
+            },
+            title: {
+                display: true,
+                text: 'Plans',
+                font: { size: 14, weight: 1000 }
+                }
+            }
+        }
+    }
+});
 
+// Pie Chart (Loan Status Distribution)
+const pieCtx = document.getElementById('loanStatusPieChart').getContext('2d');
+new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Overdue', 'Ongoing', 'Closed'],
+        datasets: [{
+            data: [{{overdue_loans}}, {{ongoing_loans}}, {{closed_loans}}], // Default values
+            backgroundColor: ['#ef4444', '#3b82f6', '#10b981'],
+            hoverOffset: 10
+        }]
+    },
+    options: {
+        plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const value = context.raw;
+                        const percentage = ((value / total) * 100).toFixed(1);
+                        return `${context.label}: ${value} (${percentage}%)`;
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
 {% endblock %}

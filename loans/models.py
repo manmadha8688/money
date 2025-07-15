@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
-
+from django.conf import settings
 from django.utils import timezone
 from decimal import Decimal
 class Borrower(models.Model):
@@ -66,8 +66,8 @@ class LoanRequest(models.Model):
         ('weekly', 'Weekly'),
         ('monthly', 'Monthly'),
     ]
-    lender = models.ForeignKey(User, on_delete=models.CASCADE,related_name="lender_loans")
-    client = models.ForeignKey(User, on_delete=models.CASCADE,null=True, related_name='client_loans')
+    lender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,related_name="lender_loans")
+    client = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,null=True, related_name='client_loans')
     borrower = models.ForeignKey(Borrower,null=True, on_delete=models.CASCADE) 
     payment = models.OneToOneField(PaymentDetail,on_delete=models.CASCADE,null=True,related_name="payment_details") # Links to Borrower model
     

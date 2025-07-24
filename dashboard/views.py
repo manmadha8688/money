@@ -146,7 +146,7 @@ def dashboard(request):
     closed_loans,ongoing_loans,overdue_loans = 0,0,0
     today_loans = []
     tomorrow_loans = []
-
+    overdue_members = []
     for borrower in borrowers:
         for loan in borrower.active_loans:
             total_lent += loan.amount
@@ -172,6 +172,12 @@ def dashboard(request):
                 if active.status == 'overdue':
                     total_overdue += loan.instalment
                     overdue_loans += 1
+                    overdue_members.append({
+                        'borrower': loan.borrower,
+                        'loan': loan,
+                        'due_date': active.next_due_date,
+                        'amount': loan.instalment,
+                        })
 
                     
                     if start_current <= active.next_due_date <= today:
@@ -214,18 +220,11 @@ def dashboard(request):
 
                     if start_current <= payment_date <= today:
                         total_collected_now += payment.amount
-                        if loan.payment_plan == 'monthly':
-                            interest_now += earned_interest_monthly(loan)
-                        else :
-                            interest_now += interest_earned(loan)
+                        
                     elif start_previous <= payment_date < start_current:
                         total_collected_prev += payment.amount
-                        if loan.payment_plan == 'monthly':
-                            interest_prev += earned_interest_monthly(loan)
-                        else :
-                            interest_prev += interest_earned(loan)
+                        
 
-           
     trend_lent = get_trend_data(total_lent_now, total_lent_prev)
     trend_collected = get_trend_data(total_collected_now, total_collected_prev)
     trend_overdue = get_trend_data(total_overdue_now, total_overdue_prev)
@@ -264,7 +263,9 @@ def dashboard(request):
         'trend_collected': trend_collected,
         'trend_overdue': trend_overdue,
         'trend_interest': trend_interest,
-        'loans_at_risk' : loans_at_risk
+        'loans_at_risk' : loans_at_risk,
+
+        'overdue_members':overdue_members
 
 
     }

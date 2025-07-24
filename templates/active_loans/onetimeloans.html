@@ -37,7 +37,7 @@
         }
         thead th {
             position: sticky;
-            top: 15%;
+            top: 15px;
             background: #f8f8f8;
             z-index: 101;
         }
@@ -129,7 +129,7 @@
   {% for payment in loan.activeloan.return_payments.all %}
     {% if payment.due_date == loan.activeloan.last_payment_date %}
       
-        {{ payment.created_at|date:"d M Y, h:i A" }}/
+        {{ payment.created_at|date:"d M Y, h:i A" }}/<br>
   {{ loan.activeloan.last_payment_date }}
        
     {% endif %}

@@ -211,7 +211,7 @@
 
     .toggle-password {
         position: absolute;
-        right: var(--space-md);
+        right: 0px;
         top: 50%;
         transform: translateY(-50%);
         background: none;
@@ -298,11 +298,50 @@
         fill: currentColor;
     }
 
-    @media (max-width: 480px) {
-        .auth-card {
-            padding: var(--space-lg);
-        }
+    @media (max-width: 760px) {
+        
+    .auth-container {
+      padding: var(--space-md);
+      min-height: 70vh;
     }
+
+    .auth-card {
+      padding: var(--space-lg);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+    }
+
+    .auth-header h2 {
+      font-size: 1.5rem;
+    }
+
+    .auth-form {
+      gap: var(--space-sm);
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+    }
+
+    .input-group input {
+      font-size: 0.85rem;
+      padding: var(--space-sm) var(--space-md) var(--space-sm) calc(var(--space-md) * 3);
+    }
+
+    .auth-button {
+      padding: var(--space-sm);
+      font-size: 0.9rem;
+    }
+
+    .auth-footer {
+      font-size: 0.8rem;
+    }
+
+    .icon {
+      width: 18px;
+      height: 18px;
+    }
+  }
 </style>
 
 <script>

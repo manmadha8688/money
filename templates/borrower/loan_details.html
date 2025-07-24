@@ -3,6 +3,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>{{request.user.first_name}} Loans Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -198,100 +200,110 @@
       transform: scale(0.98);
     }
 
-    @media (max-width: 600px) {
-      .pay-btn {
-        width: 100%;
-      }
-    }
+    
 
-  /* Modal overlay */
-  .modal {
-    display: none;
-    position: fixed;
-    z-index: 999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    overflow: auto;
-    font-family: 'Segoe UI', sans-serif;
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  overflow: auto;
+  font-family: 'Segoe UI', sans-serif;
+  padding: 10px; /* Space for mobile edges */
+}
+
+/* Modal box */
+.modal-content {
+  background-color: #fff;
+  margin: 5% auto;
+  padding: 30px 25px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  animation: slideDown 0.3s ease-out;
+  box-sizing: border-box;
+}
+
+/* Slide animation */
+@keyframes slideDown {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
   }
-
-  /* Modal box */
-  .modal-content {
-    background-color: #fff;
-    margin: 5% auto;
-    padding: 30px;
-    border-radius: 16px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-    animation: slideDown 0.3s ease-out;
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
+}
 
-  @keyframes slideDown {
-    from { transform: translateY(-50px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-  }
+/* Headings and text */
+.modal-content h2 {
+  margin-top: 0;
+  font-size: 1.8rem;
+  color: #1abc9c;
+  text-align: center;
+}
 
-  /* Headings and text */
-  .modal-content h2 {
-    margin-top: 0;
-    font-size: 1.8rem;
-    color: #1abc9c;
-    text-align: center;
-  }
+.modal-content p {
+  font-size: 1rem;
+  color: #555;
+  margin: 10px 0;
+}
 
-  .modal-content p {
-    font-size: 1rem;
-    color: #555;
-    margin: 10px 0;
-  }
+/* Form controls */
+.form-group {
+  margin: 15px 0;
+}
 
-  .form-group {
-    margin: 15px 0;
-  }
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+}
 
-  .form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    color: #333;
-  }
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+}
 
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 10px 12px;
-    font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    transition: border-color 0.3s;
-  }
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #1abc9c;
+  box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+}
 
-  .form-group input:focus,
-  .form-group select:focus {
-    outline: none;
-    border-color: #1abc9c;
-    box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
-  }
+/* Buttons */
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
 
-  .modal-buttons {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    margin-top: 20px;
-  }
-
-  .modal-buttons button {
-    flex: 1;
-    padding: 12px;
-    font-size: 1rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
+.modal-buttons button {
+  flex: 1;
+  padding: 12px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 45%;
+}
   .modal-buttons .confirm {
     background-color: #1abc9c;
     color: white;
@@ -310,17 +322,7 @@
     background-color: #c0392b;
   }
 
-  /* Responsive improvements */
-  @media (max-width: 480px) {
-    .modal-content {
-      padding: 20px;
-      margin: 10% auto;
-    }
-
-    .modal-buttons {
-      flex-direction: column;
-    }
-  }
+  
   .s_modal {
   display: none;
   position: fixed;
@@ -466,20 +468,7 @@
   transform: translateY(-2px);
 }
 
-/* Responsive for mobile */
-@media (max-width: 768px) {
-  .button-container {
-    position: static;
-    flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
 
-  .button-link {
-    margin: 5px;
-  }
-}
  .dropdown-wrapper {
     position: absolute;
     top: 120px;
@@ -570,28 +559,31 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 10px; /* Adds space on smaller screens */
 }
 
 .repayment-modal-box {
   background: #fff;
-  padding: 20px;
+  padding: 20px 15px;
   border-radius: 12px;
-  width: 90%;
+  width: 100%;
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
 }
 
 .repayment-close-btn {
   position: absolute;
   top: 10px;
   right: 15px;
-  font-size: 30px;
+  font-size: 26px;
   color: #777;
   cursor: pointer;
 }
+
 
 
 .hidden {
@@ -618,12 +610,352 @@
 .badge-failed {
   background-color: #d9534f; /* Red */
 }
+
+
+/* 🟢 Small Mobile Devices (<=480px) */
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    text-align: center;
+    padding: 10px;
+  }
+ 
+  .repayment-modal-box {
+    padding: 15px 10px;
+    max-height: 85vh;
+    font-size: 14px;
+  }
+
+  .repayment-close-btn {
+    font-size: 24px;
+    top: 4px;
+    right: 40px;
+    color: red;
+  }
+
+  .company-info h1 {
+    font-size: 20px;
+  }
+
+  .company-info p {
+    font-size: 13px;
+  }
+ .dropdown-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transition: all 0.3s ease;
+}
+
+.dropdown-wrapper.fixed {
+  position: fixed;
+  top: 2px;
+  right: 12px;
+  background: white;
+  border-radius: 10px;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+
+  .dropdown-container {
+    display: block;
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+  }
+  .loan-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .loan-progress-bar {
+    width: 100%;
+  }
+  .modal{
+    z-index: 9999;
+  }
+  .modal-content {
+    padding: 20px 15px ;
+  }
+
+  .modal-content h2 {
+    font-size: 1.4rem;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 0.95rem;
+    padding: 10px;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .modal-buttons button {
+    width: 100%;
+    font-size: 1rem;
+  }
+  .s_modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+}
+.s_modal-content {
+  overflow-x: auto; /* Enables horizontal scroll on small screens */
+  max-width: 100%;  /* Keeps it within screen */
+}
+
+.s_modal-content table {
+  font-size: 14px;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.s_modal-content th,
+.s_modal-content td {
+  padding: 10px 8px;
+  font-size: 13px;
+  white-space: nowrap;    /* Prevents line break */
+  overflow-wrap: normal;
+}
+
+
+  .close {
+    font-size: 24px;
+    margin-right: 50px;
+    color: red;
+  }
+  .loan-cards {
+      display: flex;
+      flex-direction: column;
+      gap: px;
+    }
+  .auth-card,
+  .loan-card {
+    padding: 16px;
+    margin: 10% auto;
+    width: 95%;
+  }
+
+  .modal-buttons {
+    flex-direction: column;
+  }
+
+  .form-group input,
+  .form-group select {
+    font-size: 14px;
+  }
+
+  .pay-btn,
+  .schedule-btn {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  .loan-status {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.loan-summary {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .loan-summary span {
+    display: block;
+  }
   
+}
+
+
+/* 🔵 Tablets and Small Laptops (<=768px) */
+@media (max-width: 768px) {
+  body{
+    padding: 5px;
+  }
+  .modal-content {
+    padding: 24px 18px;
+    font-size: 0.95rem;
+  }
+  .dropdown-wrapper {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  transition: all 0.3s ease;
+}
+
+.dropdown-wrapper.fixed {
+  position: fixed;
+  top: 0;
+  right: 10px;
+  background: white;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+  .modal-content h2 {
+    font-size: 1.5rem;
+  }
+
+  .modal-buttons button {
+    font-size: 0.95rem;
+  }
+  .modal{
+    z-index: 9999;
+  }
+  .loan-summary {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+  }
+  .s_modal-content {
+  overflow-x: auto; /* Enables horizontal scroll on small screens */
+  max-width: 100%;  /* Keeps it within screen */
+}
+
+.s_modal-content table {
+  font-size: 14px;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.s_modal-content th,
+.s_modal-content td {
+  padding: 10px 8px;
+  font-size: 13px;
+  white-space: nowrap;    /* Prevents line break */
+  overflow-wrap: normal;
+}
+
+
+  .close {
+    font-size: 24px;
+    color: red;
+  }
+
+  .loan-summary span {
+    display: block;
+  }
+  .loan-status {
+  position: absolute;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+  .header {
+    flex-direction: column;
+    text-align: center;
+    padding:8px;
+
+  }
+
+  .logo-wrapper {
+    left: 10px;
+  }
+
+  .company-logo {
+    width: 60px;
+  }
+
+  .loan-card {
+    padding: 10px;
+  }
+
+   .dropdown-wrapper {
+    position: fixed;
+    top: auto;
+    right: 10px;
+    z-index: 1000;
+  }
+
+  .dropdown-container {
+    display: block;
+  }
+
+  .dropdown-menu {
+    right: 0;
+    left: auto;
+    min-width: 180px;
+  }
+
+  .button-container {
+    position: static;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 20px;
+  }
+
+  .button-link {
+    padding: 8px 12px;
+    font-size: 14px;
+    margin: 5px;
+  }
+
+  .dropdown-toggle {
+    font-size: 18px;
+  }
+
+  .modal-content,
+  .repayment-modal-box,
+  .s_modal-content {
+    width: 100%;
+    padding: 20px;
+    margin: 10% auto;
+  }
+
+  .loan-details td:first-child {
+    width: 40%;
+  }
+
+  .loan-details td:last-child {
+    width: 60%;
+  }
+
+  .pay-btn,
+  .schedule-btn {
+    width: 100%;
+    margin: 10px 0;
+  }
+}
+.loan-status{
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.loan-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.loan-summary span {
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
 <body>
- <div id="custom-alert">
+<div id="custom-alert">
   <span id="custom-alert-message"></span>
 </div>
 
@@ -642,7 +974,7 @@
 
 </div>
 
-<div class="dropdown-wrapper">
+<div class="dropdown-wrapper" id="dropdown">
   <div class="dropdown-container">
     <button class="dropdown-toggle" onclick="toggleDropdown()">
       <i class="fas fa-ellipsis-v"></i>
@@ -715,7 +1047,12 @@
     <p>📞 +91 - {{request.user.username}}</p>
     <p>🎭 User ID - <strong>{{request.user.user_id}}</strong></p>
     <p>📋 Total Loans: <strong>{{count}}</strong></p>
-    <p>💰 Total Borrowed: ₹ {{total}} | Paid: ₹ {{paid}} | Outstanding: ₹ {{remaining}}</p>
+    <p class="loan-summary">
+  <span>💰 Total Borrowed: ₹ {{ total }}</span>
+  <span>Paid: ₹ {{ paid }}</span>
+  <span>Outstanding: ₹ {{ remaining }}</span>
+</p>
+
   </div>
 
       {% for loan in loans%}
@@ -724,7 +1061,7 @@
     <div class="loan-card">
       <div class="loan-header">
         <h3> {{ loan.payment_plan }} - Loan  #{{loan.id}}</h3>
-        <div style="display: flex; flex-direction: column; align-items: flex-end;">
+        <div class="loan-status">
        {% if loan.activeloan.status == "Repaying"%}
       <span class="status active">Active</span>
       <div class="loan-progress-bar">
@@ -791,10 +1128,10 @@
       <tbody>
         {% for item in loan.schedule %}
         <tr>
-          <td>Week {{ item.week }}</td>
+          <td> {{ item.week }}</td>
           <td>{{ item.due_date }}</td>
           <td class="{% if item.status %}status-paid{% else %}status-unpaid{% endif %}">
-            {% if item.status %}✅ Paid{% else %}❌ Not Paid{% endif %}
+            {% if item.status %}Paid{% else %}Not Paid{% endif %}
           </td>
           <td>₹{{ item.paid_this_due_date }}</td>
           <td>
@@ -927,6 +1264,15 @@
 
 <!-- JavaScript -->
 <script> 
+  window.addEventListener('scroll', function () {
+  const dropdown = document.getElementById('dropdown');
+  if (window.scrollY > 100) {
+    dropdown.classList.add('fixed');
+  } else {
+    dropdown.classList.remove('fixed');
+  }
+});
+
   function openRepaymentModal(id) {
   document.getElementById(id).classList.remove('hidden');
 }

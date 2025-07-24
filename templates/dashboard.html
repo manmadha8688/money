@@ -277,18 +277,160 @@ body {
   color: #0369a1;
 }
 
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.modal-content th, .modal-content td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ccc;
+  text-align: left;
+}
+
+.modal-content h3 {
+  margin-top: 0;
+}
+
+.close {
+  float: right;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: red;
+}
+
+@media (max-width: 760px) {
+  body {
+    padding: 0 1rem;
+  }
+
+  .welcome-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    text-align: left;
+  }
+
+  .welcome-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .quick-action-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+  }
+
+  .dashboard,
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stat-card .value {
+    font-size: 1.5rem;
+  }
+
+  .stat-card h3,
+  .stat-item h4 {
+    font-size: 0.9rem;
+  }
+
+  .stat-item p {
+    font-size: 1.1rem;
+  }
+
+  .stats-container {
+    padding: var(--space-md);
+  }
+
+  .loan-risk-table thead {
+    display: none;
+  }
+
+  .loan-risk-table, 
+  .loan-risk-table tbody, 
+  .loan-risk-table tr, 
+  .loan-risk-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .loan-risk-table tr {
+    margin-bottom: 1.2rem;
+    box-shadow: var(--shadow-md);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    background-color: var(--white);
+  }
+
+  .loan-risk-table td {
+    text-align: right;
+    padding: 0.5rem 0;
+    position: relative;
+  }
+
+  .loan-risk-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    text-align: left;
+    font-weight: bold;
+    color: var(--gray-600);
+  }
+
+  .modal-content {
+    padding: 1rem;
+    width: 95%;
+    max-width: 95%;
+  }
+
+  .modal-content th, .modal-content td {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .copy-status {
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
 
 
-/* Responsive */
-@media (max-width: 768px) {
-    .welcome-section {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-    .dashboard, .stats-grid {
-        grid-template-columns: 1fr;
-    }
+  
 }
 </style>
 
@@ -347,7 +489,7 @@ body {
     <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
   {% endif %}
     </div>
-    <div class="stat-card">
+    <div class="stat-card" onclick="openOverdueModal()">
         <h3>🚨 Overdue Balances </h3>
         <p class="value">₹ {{total_overdue| intcomma}}</p>
         {% if trend_lent.direction == 'up' %}
@@ -358,6 +500,36 @@ body {
     <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
   {% endif %}
     </div>
+
+    <div id="overdueModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" onclick="closeOverdueModal()">&times;</span>
+    <h3>Overdue Members</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Borrower</th>
+          <th>Loan ID</th>
+          <th>Amount</th>
+          <th>Due Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in overdue_members %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ item.borrower.first_name }} </td>
+          <td>{{ item.loan.id }}</td>
+          <td>₹ {{ item.amount|intcomma }}</td>
+          <td>{{ item.due_date }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
     <!-- ✅ Collected Money Breakdown Card -->
 <div class="stat-card">
     <h3>🔔 Today’s Expected Income</h3>
@@ -395,6 +567,7 @@ body {
     <div class="stat-card">
         <h3>📊 Interest Revenue</h3>
         <p class="value">₹{{total_interest_earned | intcomma}}</p>
+        <!--
         {% if trend_lent.direction == 'up' %}
     <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_interest.change }}% in last 30 days</div>
   {% elif trend_lent.direction == 'down' %}
@@ -402,6 +575,7 @@ body {
   {% else %}
     <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
   {% endif %}
+    -->
     </div>
     
     
@@ -422,9 +596,9 @@ body {
             <div class="stat-item"><h4>Total Borrowers</h4><p>{{total_borrowers}}</p></div>
             <div class="stat-item"><h4>Total Loans</h4><p>{{total_loans}}</p></div>
             <div class="stat-item"><h4>Average Loan Amount</h4><p> ₹{{avg_loan_amount|intcomma}}</p></div>
-            <div class="stat-item"><h4>Monthly Loans</h4><p>{{loans_planwise.monthly}}</p></div>
-            <div class="stat-item"><h4>Weekly Loans</h4><p>{{loans_planwise.weekly}}</p></div>
-            <div class="stat-item"><h4>Daily Loans</h4><p>{{loans_planwise.daily}}</p></div>
+            <div class="stat-item"><h4>Monthly Loans</h4><p>{{loans_planwise.monthly|default:0}}</p></div>
+            <div class="stat-item"><h4>Weekly Loans</h4><p>{{loans_planwise.weekly | default:0}}</p></div>
+            <div class="stat-item"><h4>Daily Loans</h4><p>{{loans_planwise.daily | default:0}}</p></div>
             <div class="stat-item">
                 <h4>This Month's Loans</h4>
                 <p>₹{{this_month_amount|intcomma}}</p>
@@ -459,7 +633,7 @@ body {
   <tbody>
     {% for item in loans_at_risk %}
     <tr>
-      <td>{{ item.loan.borrower.name }}</td>
+      <td>{{ item.loan.borrower.name }} <br>{{ item.loan.borrower.phone }} </td>
       <td>#{{ item.loan.id }}</td>
       <td class="amount">₹{{ item.loan.amount }}</td>
       <td class="due-date">
@@ -492,6 +666,13 @@ body {
 
 <!-- SCRIPTS -->
 <script>
+    function openOverdueModal() {
+    document.getElementById('overdueModal').classList.remove('hidden');
+  }
+
+  function closeOverdueModal() {
+    document.getElementById('overdueModal').classList.add('hidden');
+  }
     function updateduedates(){
         
            showAlert("Due Dates are Updated successfully...!","green");
@@ -501,12 +682,20 @@ body {
     function generateAndCopyLink() {
     const loginLink = `${window.location.origin}/accounts/client-login/`;
 
-    navigator.clipboard.writeText(loginLink).then(() => {
-        
-            showAlert('✅ Link copied successfully...!',"");
-        
-    });
+    if (!navigator.clipboard) {
+        showAlert('❌ Clipboard not supported on this browser.', '');
+        return;
+    }
+
+    navigator.clipboard.writeText(loginLink)
+        .then(() => {
+            showAlert('✅ Link copied successfully...!', '');
+        })
+        .catch(() => {
+            showAlert('❌ Failed to copy the link.', '');
+        });
 }
+
 function showAlert(message = "Success!", type = "green") {
     const alertBox = document.getElementById('custom-alert');
     const messageSpan = document.getElementById('custom-alert-message');

@@ -179,9 +179,7 @@
         /* Main Content */
         .main-content {
             flex: 1;
-            margin-left: 280px;
-            padding: var(--space-xl);
-            min-height: 100vh;
+            margin-left: 260px;
         }
 
         .content-box {
@@ -238,41 +236,6 @@
             }
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 70px;
-                padding: var(--space-md);
-            }
-
-            .sidebar-header {
-                padding-bottom: var(--space-md);
-            }
-
-            .profile-image {
-                width: 40px;
-                height: 40px;
-            }
-
-            .company-name,
-            .company-tagline,
-            .nav-link span {
-                display: none;
-            }
-
-            .nav-link {
-                justify-content: center;
-                padding: var(--space-sm);
-            }
-
-            .nav-icon {
-                margin: 0;
-            }
-
-            .main-content {
-                margin-left: 70px;
-            }
-        }
 
         /* Custom Icons */
         .icon {
@@ -330,9 +293,179 @@
         .icon-logout {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4'%3E%3C/path%3E%3Cpolyline points='16 17 21 12 16 7'%3E%3C/polyline%3E%3Cline x1='21' y1='12' x2='9' y2='12'%3E%3C/line%3E%3C/svg%3E");
         }
+
+
+/* Mobile Menu Toggle Button (Hamburger) */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 28px;
+  height: 22px;
+  cursor: pointer;
+  position: fixed;
+  top: 15px;
+  left: 20px;
+  z-index: 1100;
+}
+
+.mobile-menu-toggle span {
+  height: 3px;
+  width: 100%;
+  background-color: #333;
+  border-radius: 2px;
+}
+.mobile-menu-toggle.active span {
+    background-color: white;
+}
+/* Mobile Slide-In Menu */
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100vh;
+  background-color: #1a1a1a;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+  z-index: 1050;
+  padding-top: 60px;
+  overflow-y: auto;
+}
+
+.mobile-menu.active {
+  transform: translateX(0);
+  display: block;
+}
+
+/* Mobile Menu Items */
+.mobile-menu .nav-item {
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  padding: 15px 20px;
+  border-bottom: 1px solid #333;
+  font-size: 16px;
+}
+
+.mobile-menu .nav-item:hover {
+  background-color: #2a2a2a;
+}
+
+/* Submenu (dropdown inside mobile) */
+.submenu1 {
+  display: none;
+  background-color: #2a2a2a;
+}
+
+.submenu1 a {
+  display: block;
+  padding: 12px 35px;
+  color: #ddd;
+  font-size: 14px;
+  border-top: 1px solid #3a3a3a;
+  text-decoration: none;
+}
+
+.submenu1 a:hover {
+  background-color: #3a3a3a;
+}
+
+.submenu1.active {
+  display: block;
+}
+
+/* Desktop Styles (min-width 761px) */
+@media (min-width: 761px) {
+  .mobile-menu,
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+
+  .sidebar {
+    display: block;
+  }
+}
+
+/* Mobile Styles (max-width 760px) */
+@media (max-width: 760px) {
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-menu-toggle {
+    display: flex;
+  }
+
+  .mobile-menu {
+    display: block;
+  }
+  .main-content {
+    margin-left: 0;
+    padding: 15px; /* optional: add some breathing room */
+  }
+
+  .content-box {
+    padding: var(--space-md); /* reduce padding for smaller screens */
+    border-radius: var(--radius-md); /* slightly smaller radius */
+  }
+}
+
+
+       
     </style>
 </head>
 <body> 
+
+    <div class="mobile-menu-toggle" id="mobile-menu-toggle" onclick="toggleMobileMenu()">
+    <span></span>
+    <span></span>
+    <span></span>
+</div>
+
+
+<div id="mobileMenu" class="mobile-menu">
+    <a class="nav-item" href="{% url 'dashboard'%}">Dashboard</a>
+    <a class="nav-item" href="{% url 'new-loan'%}">Create New Loan</a>
+
+    <div class="nav-item" onclick="toggleSubMenu('mobileLoan')">
+        New Loans
+        <svg class="icon" viewBox="0 0 24 24" style="width: 22px; height: 22px; margin-left: 8px;fill:white;">
+                            <path d="M7 10l5 5 5-5z"/>
+                        </svg>
+        <div id="mobileLoan" class="submenu1">
+            <a href="{% url 'loan-request-list'%}">Loan Requests</a>
+            <a href="{% url 'payment-done-list'%}">Payments Confirmation</a>
+        </div>
+    </div>
+
+    <div class="nav-item" onclick="toggleSubMenu('mobileReports')">
+        Active Loans
+        <svg class="icon" viewBox="0 0 24 24" style="width: 22px; height: 22px; margin-left: 8px;fill:white;">
+                            <path d="M7 10l5 5 5-5z"/>
+                        </svg>
+        <div id="mobileReports" class="submenu1">
+            <a href="{% url 'all-loans'%}">All Loans</a>
+            <a href="{% url 'montly-loans'%}">Monthly</a>
+            <a href="{% url 'weekly-loans'%}">Weekly</a>
+            <a href="{% url 'onetime-loans'%}">Daily</a>
+        </div>
+    </div>
+
+    <a class="nav-item" href="{% url 'repayment-confirmation'%}">Payment Confirmation</a>
+    <a class="nav-item" href="{% url 'cancel-reject-list'%}">Cancelled/Rejected</a>
+    <a class="nav-item" href="{% url 'closed-loans'%}">Closed Loans</a>
+    <a class="nav-item" href="{% url 'loan-status-records'%}">Loan Requests Records</a>
+    <a class="nav-item" href="{% url 'all-transactions'%}">Transaction History</a>
+    <a class="nav-item" href="{% url 'myprofile'%}">My Profile</a>
+    <a class="nav-item" href="{% url 'client-pass-code'%}">Client Pass Code</a>
+    {% if user.is_authenticated %}
+    <a class="nav-item" href="{% url 'logout'%}">Logout</a>
+    {% endif %}
+</div>
+
+
     <div class="app-container">
     <div class="sidebar">
             <div class="sidebar-header">
@@ -423,20 +556,49 @@
     </div>
     
     <script>
-        // Restore dropdown state on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const activeDropdown = localStorage.getItem('activeDropdown');
-            if (activeDropdown) {
-                const menu = document.getElementById(activeDropdown);
-                if (menu) {
-                    menu.classList.add('active');
-                    const toggleButton = menu.previousElementSibling;
-                    if (toggleButton) {
-                        toggleButton.classList.add('active');
-                    }
-                }
-            }
-        });
+  function toggleMobileMenu() {
+    const menu = document.getElementById("mobileMenu");
+    const toggle = document.getElementById("mobile-menu-toggle");
+    const spans = toggle.querySelectorAll("span");
+
+    const isActive = menu.classList.toggle("active");
+
+    if (isActive) {
+      toggle.classList.add("active");
+      spans.forEach(span => span.style.backgroundColor = "white");
+      document.addEventListener("click", handleOutsideClick);
+    } else {
+      toggle.classList.remove("active");
+      spans.forEach(span => span.style.backgroundColor = "#333");
+      document.removeEventListener("click", handleOutsideClick);
+    }
+  }
+
+  function handleOutsideClick(event) {
+    const menu = document.getElementById("mobileMenu");
+    const toggle = document.getElementById("mobile-menu-toggle");
+
+    if (
+      !menu.contains(event.target) &&
+      !toggle.contains(event.target)
+    ) {
+      // Hide menu
+      menu.classList.remove("active");
+      toggle.classList.remove("active");
+
+      const spans = toggle.querySelectorAll("span");
+      spans.forEach(span => span.style.backgroundColor = "#333");
+
+      // Remove listener
+      document.removeEventListener("click", handleOutsideClick);
+    }
+  }
+
+  function toggleSubMenu(id) {
+    const submenu = document.getElementById(id);
+    submenu.classList.toggle("active");
+  }
+
 
         function toggleDropdown(targetId) {
             const menu = document.getElementById(targetId);

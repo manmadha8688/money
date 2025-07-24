@@ -289,7 +289,14 @@
     border-bottom: 1px solid #ddd;
     width: max-content;
 }
-
+ @media (max-width: 768px) {
+    .filter-bar{
+        margin-left: 0px;
+    }
+    .filter-sticky-wrapper{
+        padding: 10px 50px;
+    }
+}
 
 .filter-bar {
     min-width: 1200px; /* Match or exceed your table width */
@@ -424,7 +431,7 @@
 <td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; font-size: 15px; color: {% if loan.activeloan.status == 'active' %}#27ae60{% else %}#c0392b{% endif %};">
     {{ loan.activeloan.status|title }}
 </td>
-<td><button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} , '{{ loan.activeloan.next_due_date|date:'Y-m-d' }}')">Pay </button></td>
+<td><button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} ,{{loan.id}} ,'{{ loan.activeloan.next_due_date|date:'Y-m-d' }}')">Pay </button></td>
 <td>PDF</td>    
 </tr>
 
@@ -508,6 +515,7 @@
       
   <input type="hidden" name="due_date" id="dueDateInput" />
       <!-- Amount (common) -->
+       <div> Loan #<span id="paying_loan"></span></div>
       <div class="form-group">
         <label for="amount">Enter Amount </label>
         <input type="number" id="amount" name="amount"
@@ -568,10 +576,12 @@
 
 <!-- JavaScript -->
 <script>
-  function openModal(loanId,dueDate) {
+  function openModal(loanId,paying_loan,dueDate) {
     document.getElementById("paymentModal").style.display = "block";
      document.getElementById("loanIdInput").value = loanId;
     document.getElementById("dueDateInput").value = dueDate;
+    
+     document.getElementById("paying_loan").innerHTML = paying_loan;
 
 
   }

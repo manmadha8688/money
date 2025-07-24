@@ -1,4 +1,7 @@
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+</head>
 <div id="custom-alert">
   <span id="custom-alert-message"></span>
 </div>
@@ -112,7 +115,7 @@
 }
 
 
-    body {
+  body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(to right, #e0f7fa, #e1bee7);
   margin: 0;
@@ -249,6 +252,55 @@
   fill: white;
   width: 20px;
   height: 20px;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 20px;
+    height: auto;
+    background: white;
+  }
+
+  .auth-container {
+    flex-direction: column;
+    padding: 10px;
+    align-items: stretch;
+  }
+
+  .auth-card {
+    padding: 25px 20px;
+    border-radius: 12px;
+    max-width: 100%;
+  }
+
+  .auth-header h2 {
+    font-size: 22px;
+    text-align: center;
+  }
+
+  .auth-header p {
+    text-align: center;
+    font-size: 14px;
+  }
+
+  .auth-form label {
+    font-size: 14px;
+  }
+
+  .input-group input {
+    font-size: 14px;
+  }
+
+  .auth-button {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
 }
 
 

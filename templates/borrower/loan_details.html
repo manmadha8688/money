@@ -784,6 +784,11 @@
   
 }
 
+.mobile-break {
+  display: none;
+}
+
+
 
 /* 🔵 Tablets and Small Laptops (<=768px) */
 @media (max-width: 768px) {
@@ -935,6 +940,14 @@
   .schedule-btn {
     width: 100%;
     margin: 10px 0;
+  }
+  .mobile-break {
+    display: block;
+  }
+
+  .loan-body p {
+    font-size: 15px;
+    line-height: 1.6;
   }
 }
 .loan-status{
@@ -1091,7 +1104,13 @@
       <div class="loan-body">
         <p>📆 <span style="font-weight: 700;">Start Date :</span> {{ loan.taken_date }}</p>
 <p>💵 <span style="font-weight: 700;">Amount :</span> ₹{{ loan.amount }}</p>
-<p>✅ <span style="font-weight: 700;">Repaid :</span> ₹{{loan.activeloan.total_paid}} | 🔁 <span style="font-weight: 700;">Outstanding :</span> ₹{{ loan.activeloan.remaining_balance }}</p>
+<p>
+  ✅ <span style="font-weight: 700;">Repaid :</span>
+  <span class="repaid">₹{{loan.activeloan.total_paid}}</span>
+  <br class="mobile-break">
+  🔁 <span style="font-weight: 700;">Outstanding :</span>
+  <span class="outstanding">₹{{ loan.activeloan.remaining_balance }}</span>
+</p>
 <p>⏰ <span style="font-weight: 700;">Next Due Date :</span> {{ loan.activeloan.next_due_date }}</p>
 
       </div>

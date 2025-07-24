@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <title>Loan Under Review</title>
   
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="{% static 'css/popup.css' %}">
   <style>
-    * { box-sizing: border-box; }
 
     body {
       font-family: "Segoe UI", sans-serif;
@@ -177,14 +177,7 @@
       }
   }
 
-  @media (max-width: 600px) {
-      .loan-details span {
-          width: 120px;
-      }
-      .message-box {
-          padding: 30px 20px;
-      }
-  }
+  
   #payment-edit-form {
     background-color: #f9f9f9;
     border-radius: 12px;
@@ -348,6 +341,98 @@ button:disabled {
     cursor: not-allowed;
     box-shadow: none;
 }
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+   .company-info h1 {
+    font-size: 20px;
+  }
+
+  .company-info p {
+    font-size: 13px;
+  }
+  .logo-wrapper {
+    left: 10px;
+  }
+  .company-logo {
+    width: 60px;
+  }
+
+  
+  
+  .container {
+    margin: 20px 12px;
+    padding: 16px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .message {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .toggle-btn {
+    font-size: 14px;
+    
+  }
+
+  .details-section .row {
+    flex-direction: column;
+    font-size: 14px;
+  }
+
+  .label {
+    min-width: unset;
+    margin-bottom: 4px;
+  }
+.loan-details p {
+      margin: 6px 0;
+      font-size: 14px;
+      color: #333;
+  }
+
+  .loan-details span {
+      font-weight: 600;
+      display: inline-block;
+      width: 140px;
+  }
+  
+  #payment-edit-form {
+    padding: 16px;
+  }
+
+  #payment-edit-form .row {
+    margin-bottom: 12px;
+  }
+
+  #payment-edit-form input,
+  #payment-edit-form select {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  button {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  .form-row {
+    margin-bottom: 16px;
+  }
+
+  .form-row input,
+  .form-row select {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
 
   </style>
 </head>

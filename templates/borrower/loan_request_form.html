@@ -108,6 +108,7 @@ table {
       flex: 1;
       position: relative;
     }
+    
 
     .circle {
       width: 40px;
@@ -207,6 +208,107 @@ table {
   text-align: left;
   color: #0f72dcdb;
 }
+/* ===== Responsive Styles ===== */
+@media (max-width: 768px) {
+  .container {
+    margin: 20px 10px;
+    padding: 20px 15px;
+    border-radius: 8px;
+  }
+
+  .label {
+    font-size: 15px;
+    min-width: auto;
+    text-align: center;
+    flex-wrap: wrap;
+  }
+
+  .step {
+      z-index: 1;
+      text-align: center;
+      flex: 1;
+      position: relative;
+    }
+    .steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-bottom: 40px;
+    }
+  
+
+  table {
+    width: 100%;
+    font-size: 14px;
+  }
+
+  td:first-child {
+    padding-left: 5%;
+    width: 40%;
+    font-size: 14px;
+  }
+
+  td:last-child {
+    font-size: 14px;
+  }
+
+  
+  .btns {
+      display: flex;
+      justify-content: space-between;
+      gap:15px;
+      margin-top: 30px;
+    }
+
+  button,
+  .proceed-btn {
+    width: 100%;
+    font-size: 15px;
+    padding: 12px;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  .custom-checkbox-label {
+    flex-direction: row;
+    font-size: 14px;
+    align-items: flex-start;
+    margin-top: 20px;
+  }
+
+  .custom-checkbox-label input[type="checkbox"] {
+    margin-top: 4px;
+  }
+
+  .checkbox-text {
+    font-size: 14px;
+  }
+  .header {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+   .company-info h1 {
+    font-size: 20px;
+  }
+
+  .company-info p {
+    font-size: 13px;
+  }
+  .logo-wrapper {
+    left: 10px;
+  }
+  .company-logo {
+    width: 60px;
+  }
+ 
+}
+
+
 
     
   </style>
@@ -214,11 +316,9 @@ table {
 <body>
   <div class="header">
     <div class="logo-wrapper">
-      {% if loan.lender.active_user.company_logo %}
-        <img src="{{ loan.lender.active_user.company_logo.url }}" alt="Company Logo" class="company-logo">
-      {% else %}
+      
         <img src="{% static 'images/default_logo.jpeg' %}" alt="Default Logo" class="company-logo">
-      {% endif %}
+      
     </div>
     <div class="company-info">
       <h1>{{ loan.lender.active_user.company_name }}</h1>

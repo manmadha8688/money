@@ -2,7 +2,7 @@
 
 {% load static%}
 {% block content %}
-
+{% load humanize%}
 <style>
   .btn {
     padding: 6px 12px;
@@ -222,7 +222,7 @@
         <td>{{ forloop.counter }}</td>
         <td>{{ loan.done_at }}</td>
         <td>{{ loan.id }}</td>
-        <td>₹{{ loan.amount }}</td>
+        <td>₹{{ loan.amount  | intcomma  }}</td>
         <td>{{ loan.borrower.name }}<br>{{ loan.borrower.phone }}</td>
         <td>
           {% if loan.payment %}
@@ -263,7 +263,7 @@
     <td>{{ forloop.counter }}</td>
     <td>{{ loan.created_at }}</td>  {# Return payment creation date #}
     <td>{{ loan.returnloan.loan_request.id }}</td>  {# Original LoanRequest ID #}
-    <td>₹{{ loan.amount }}</td>
+    <td>₹{{ loan.amount | intcomma  }}</td>
     <td>{{ loan.returnloan.loan_request.borrower.name }}<br>{{ loan.returnloan.loan_request.borrower.phone }}</td>
     <td>
       {{ loan.get_payment_method_display }}

@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
+{% load humanize%}
 <!DOCTYPE html>
 <html lang="en">
 <head> 
@@ -331,6 +332,23 @@
 .btn-done:hover {
     background-color: #1c638f;
 }
+.pdf-button {
+      background: rgb(21, 141, 21);
+      color: white;
+      padding: 6px 15px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .pdf-button:hover {
+      background:rgb(14, 129, 167);
+    }
+
 </style>
 </head>
 <body>
@@ -406,12 +424,12 @@
       {% endif %}
       <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
       <td>{{loan.payment_plan}}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount | intcomma }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount | intcomma }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount | intcomma}}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment | intcomma }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid | intcomma }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance | intcomma }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">
   
   {% if loan.activeloan.last_payment_date %}
@@ -432,7 +450,16 @@
     {{ loan.activeloan.status|title }}
 </td>
 <td><button class="pay-btn"  onclick="openModal({{ loan.activeloan.id }} ,{{loan.id}} ,'{{ loan.activeloan.next_due_date|date:'Y-m-d' }}')">Pay </button></td>
-<td>PDF</td>    
+
+   <td>
+  <a href="{% url 'generate-loan-agreement' loan.id %}" 
+     target="_blank" 
+     class="pdf-button" 
+     >
+    ⬇Download
+  </a>
+</td>
+
 </tr>
 
     <!-- Expandable row -->
@@ -462,7 +489,7 @@
                   ❌ Unpaid
                 {% endif %} 
               </td>
-              <td>₹{{ item.paid_this_due_date }}</td>
+              <td>₹{{ item.paid_this_due_date | intcomma }}</td>
                   <td>
                     {% if item.payment_details %}
                         
@@ -482,8 +509,8 @@
                     {% endif %}
                 </td>
               
-                  <td>₹{{ item.total_paid }}</td>
-                  <td>₹{{ item.remaining }}</td>
+                  <td>₹{{ item.total_paid | intcomma }}</td>
+                  <td>₹{{ item.remaining | intcomma }}</td>
             </tr>
             {% endfor %}
           </tbody>

@@ -72,6 +72,36 @@ def get_trend_data(current, previous):
         'direction': 'up' if diff > 0 else 'down'
     }
 
+def calculate_overdue_by_custom_weeks(due_date, today, installment):
+    first_overdue_day = due_date + timedelta(days=1)
+    if today < first_overdue_day:
+        return 0
+    days_passed = (today - first_overdue_day).days
+    weeks_passed = days_passed // 7 + 1  # include the first overdue installment
+    return weeks_passed * installment
+
+def calculate_monthly_overdue(due_date, today, monthly_installment):
+    first_overdue_day = due_date + timedelta(days=1)
+    if today < first_overdue_day:
+        return 0
+    
+    months_passed = 0
+    check_date = first_overdue_day
+
+    # Count how many full months passed (each interval is 1 month from first overdue)
+    while check_date <= today:
+        months_passed += 1
+        check_date += relativedelta(months=1)
+    
+    return months_passed * monthly_installment
+    
+def calculate_daily_overdue(due_date, today, daily_installment):
+    first_overdue_day = due_date + timedelta(days=1)
+    if today < first_overdue_day:
+        return 0
+    overdue_days = (today - first_overdue_day).days + 1  # include today
+    return overdue_days * daily_installment
+
 @login_required
 def dashboard(request):
     
@@ -102,18 +132,7 @@ def dashboard(request):
     start_previous = start_current - timedelta(days=30)
     end_previous = start_current
 
-# Totals
-    total_lent_now = Decimal(0)
-    total_lent_prev = Decimal(0)
 
-    total_collected_now = Decimal(0)
-    total_collected_prev = Decimal(0)
-
-    total_overdue_now = Decimal(0)
-    total_overdue_prev = Decimal(0)
-
-    interest_now = Decimal(0)
-    interest_prev = Decimal(0)
 
     current_month = today.month
     current_year = today.year
@@ -148,7 +167,13 @@ def dashboard(request):
     tomorrow_loans = []
     overdue_members = []
     for borrower in borrowers:
+        borrower.status = "Good"
+        borrower.total_lent = 0
+        borrower.total_paid = 0
+        borrower.loans = 0
         for loan in borrower.active_loans:
+            borrower.loans += 1
+            borrower.total_lent += loan.amount
             total_lent += loan.amount
             total_loans += 1
             loans_planwise[loan.payment_plan] += 1
@@ -168,25 +193,36 @@ def dashboard(request):
             if hasattr(loan, 'activeloan'):
                 active = loan.activeloan
                 total_collected += active.total_paid
+                borrower.total_paid += active.total_paid
+                
 
                 if active.status == 'overdue':
-                    total_overdue += loan.instalment
+                    borrower.status = 'overdue'
+                    if loan.payment_plan == "weekly":
+                        overdue_amount = calculate_overdue_by_custom_weeks(active.next_due_date, today, loan.instalment)
+                    elif loan.payment_plan == "monthly":
+                        overdue_amount = calculate_monthly_overdue(active.next_due_date, today, loan.instalment)
+                    else:
+                        overdue_amount = calculate_daily_overdue(active.next_due_date, today, loan.instalment)
+                    total_overdue += overdue_amount
                     overdue_loans += 1
+
                     overdue_members.append({
                         'borrower': loan.borrower,
                         'loan': loan,
                         'due_date': active.next_due_date,
-                        'amount': loan.instalment,
+                        'amount': overdue_amount,
                         })
 
                     
-                    if start_current <= active.next_due_date <= today:
-                        total_overdue_now += loan.instalment
-                    elif start_previous <= active.next_due_date < start_current:
-                        total_overdue_prev += loan.instalment
-
                     if active.next_due_date.month == last_month and active.next_due_date.year == last_month_year:
-                        last_month_overdue_amount += loan.instalment
+                        if loan.payment_plan == "monthly":
+
+                            last_month_overdue_amount += loan.instalment
+                        elif loan.payment_plan=="weekly":
+                            last_month_overdue_amount += calculate_overdue_by_custom_weeks(active.next_due_date, today.replace(day=1), loan.instalment)
+                        else:
+                            last_month_overdue_amount += calculate_daily_overdue(active.next_due_date, today.replace(day=1), loan.instalment)
                         last_month_overdue_loans += 1
                 elif active.status == "closed":
                     closed_loans += 1
@@ -205,35 +241,20 @@ def dashboard(request):
                     tomorrow_payable_planwise[loan.payment_plan] += loan.instalment or 0
                     tomorrow_payable_planwise['total'] += loan.instalment or 0
                     tomorrow_loans.append({'loan': loan, 'due':'Tomorrow'})
-
-
-                taken_date = loan.taken_date 
            
-                if start_current <= taken_date <= today:
-                    total_lent_now += loan.amount
-                elif start_previous <= taken_date < start_current:
-                    total_lent_prev += loan.loan_amount
+                
 
                 for payment in active.return_payments.all():
                     total_amount_collected_planwise[loan.payment_plan] += payment.amount
                     payment_date = payment.created_at.date()
 
-                    if start_current <= payment_date <= today:
-                        total_collected_now += payment.amount
-                        
-                    elif start_previous <= payment_date < start_current:
-                        total_collected_prev += payment.amount
-                        
-
-    trend_lent = get_trend_data(total_lent_now, total_lent_prev)
-    trend_collected = get_trend_data(total_collected_now, total_collected_prev)
-    trend_overdue = get_trend_data(total_overdue_now, total_overdue_prev)
-    trend_interest = get_trend_data(interest_now, interest_prev)
-
-    total_pending = total_lent - total_collected
+        
+    total_pending = max(total_lent - total_collected,0)
     loans_at_risk = today_loans + tomorrow_loans
-    avg_loan_amount = total_lent / total_loans if total_loans > 0 else 0
+    avg_loan_amount = round(total_lent / total_loans) if total_loans > 0 else 0
+
     context = {
+        'borrowers':borrowers,
         'total_lent':total_lent,
         'total_collected':total_collected,
         'total_pending':total_pending,
@@ -259,10 +280,7 @@ def dashboard(request):
         'last_month_overdue_loans' : last_month_overdue_loans,
         'total_interest_earned' : total_interest_earned,
 
-        'trend_lent': trend_lent,
-        'trend_collected': trend_collected,
-        'trend_overdue': trend_overdue,
-        'trend_interest': trend_interest,
+        
         'loans_at_risk' : loans_at_risk,
 
         'overdue_members':overdue_members

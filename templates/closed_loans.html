@@ -292,12 +292,12 @@
       {% endif %}
       <td style="padding: 12px; border: 1px solid #ddd; color: #2c3e50; font-size: 15px;">{{ loan.taken_date }}</td>
       <td>{{loan.payment_plan}}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid }}</td>
-<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #244667; font-weight: 500; font-size: 15px;">₹{{ loan.amount | intcomma  }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #8e44ad; font-weight: 500; font-size: 15px;">₹{{ loan.interest_amount | intcomma  }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; background-color: #ecf0f1; font-weight: bold; font-size: 15px;">₹{{ loan.amount|add:loan.interest_amount | intcomma  }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #2980b9; font-weight: 500; font-size: 15px;">₹{{ loan.instalment  | intcomma }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #27ae60; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.total_paid  | intcomma }}</td>
+<td style="padding: 12px; border: 1px solid #ddd; color: #c0392b; font-weight: 500; font-size: 15px;">₹{{ loan.activeloan.remaining_balance | intcomma  }}</td>
 <td style="padding: 12px; border: 1px solid #ddd; color: #7f8c8d; font-size: 15px;">
   
   {% if loan.activeloan.last_payment_date %}
@@ -345,7 +345,7 @@
                   ❌ Unpaid
                 {% endif %} 
               </td>
-              <td>₹{{ item.paid_this_due_date }}</td>
+              <td>₹{{ item.paid_this_due_date  | intcomma  }}</td>
                   <td>
                     {% if item.payment_details %}
                         
@@ -365,8 +365,8 @@
                     {% endif %}
                 </td>
               
-                  <td>₹{{ item.total_paid }}</td>
-                  <td>₹{{ item.remaining }}</td>
+                  <td>₹{{ item.total_paid | intcomma  }}</td>
+                  <td>₹{{ item.remaining | intcomma  }}</td>
             </tr>
             {% endfor %}
           </tbody>

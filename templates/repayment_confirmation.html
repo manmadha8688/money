@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static%}
 {% block content %}
-
+{% load humanize%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -289,7 +289,7 @@
                 <td>{{ payment.returnloan.loan_request.borrower.name }} <br>
                     {{ payment.returnloan.loan_request.borrower.phone }}</td>
                 <td>{{ payment.returnloan.loan_request.id }}</td>
-                <td>₹{{ payment.amount }}</td>
+                <td>₹{{ payment.amount | intcomma  }}</td>
                 <td>{{ payment.payment_method }}</td>
                 <td>
                     {% if payment.payment_method == 'cash' %}
@@ -330,13 +330,8 @@ function checkDuplicate(paymentId) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             return response.json();
-        })
-        .then(data => {
-            if (data.duplicate) {
-                return confirm("⚠️ A successful duplicate payment already exists. Do you still want to proceed?");
-            }
-            return true;
-        })
+        }) 
+        
         .then(proceed => {
             if (proceed) {
                 document.getElementById("confirmInput").value = "true";

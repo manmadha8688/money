@@ -157,9 +157,12 @@ def client_dashboard(request):
         loan.mini = loan.instalment
         loan.maxi = loan.activeloan.remaining_balance
         loan.percentage = round((loan.activeloan.total_paid / (loan.amount + loan.interest_amount)) * 100 , 2)
-        total += loan.amount
-        paid += loan.activeloan.total_paid
-        remaining += loan.activeloan.remaining_balance
+        if loan.activeloan.status == "closed":
+            pass
+        else :
+            total += loan.amount
+            paid += loan.activeloan.total_paid
+            remaining += loan.activeloan.remaining_balance
         if loan.payment_plan == "weekly":
             
             loan.schedule = get_installment_schedule(loan)

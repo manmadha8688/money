@@ -327,11 +327,27 @@ body {
   cursor: pointer;
   color: red;
 }
+.no-overdue-box {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px auto;
+  width: fit-content;
+  font-size: 1.1rem;
+}
 
 @media (max-width: 760px) {
   body {
     padding: 0 1rem;
   }
+  .no-overdue {
+    font-size: 1rem;
+    padding: 10px 14px;
+  }
+
 
   .welcome-section {
     flex-direction: column;
@@ -466,13 +482,7 @@ body {
         <h3>💸 Total Capital Lent</h3>
 
         <p class="value">₹ {{ total_lent| intcomma }}</p>
-        {% if trend_lent.direction == 'up' %}
-    <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_lent.change }}% in last 30 days</div>
-  {% elif trend_lent.direction == 'down' %}
-    <div class="trend down"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_lent.change }}% in last 30 days</div>
-  {% else %}
-    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
-  {% endif %}
+        
     </div>
     <div class="stat-card">
         <h3>⏳ Awaiting Collections</h3>
@@ -481,30 +491,19 @@ body {
     <div class="stat-card">
         <h3>💰 Successful Collections </h3>
         <p class="value">₹ {{total_collected| intcomma}}</p>
-       {% if trend_lent.direction == 'up' %}
-    <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_collected.change }}% in last 30 days</div>
-  {% elif trend_lent.direction == 'down' %}
-    <div class="trend down"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_collected.change }}% in last 30 days</div>
-  {% else %}
-    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
-  {% endif %}
+       
     </div>
     <div class="stat-card" onclick="openOverdueModal()">
         <h3>🚨 Overdue Balances </h3>
         <p class="value">₹ {{total_overdue| intcomma}}</p>
-        {% if trend_lent.direction == 'up' %}
-    <div class="trend down"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_overdue.change }}% in last 30 days</div>
-  {% elif trend_lent.direction == 'down' %}
-    <div class="trend up"><i class="fas fa-arrow-down"></i>&nbsp;-{{ trend_overdue.change }}% in last 30 days</div>
-  {% else %}
-    <p class="text-sm text-gray-500"><i class="fas fa-minus"></i> No change</p>
-  {% endif %}
+        
     </div>
 
     <div id="overdueModal" class="modal hidden">
   <div class="modal-content">
     <span class="close" onclick="closeOverdueModal()">&times;</span>
     <h3>Overdue Members</h3>
+    {% if overdue_members%}
     <table>
       <thead>
         <tr>
@@ -519,7 +518,7 @@ body {
         {% for item in overdue_members %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ item.borrower.first_name }} </td>
+          <td>{{ item.borrower.name }}<br> {{item.borrower.phone}} </td>
           <td>{{ item.loan.id }}</td>
           <td>₹ {{ item.amount|intcomma }}</td>
           <td>{{ item.due_date }}</td>
@@ -527,22 +526,28 @@ body {
         {% endfor %}
       </tbody>
     </table>
+    {% else %}
+
+    <h3 class="no-overdue-box">No Overdue Borrowers</h3>
+
+
+    {% endif %}
   </div>
 </div>
 
     <!-- ✅ Collected Money Breakdown Card -->
 <div class="stat-card">
     <h3>🔔 Today’s Expected Income</h3>
-    <p style="display: flex;justify-content:center;" > <strong>₹{{today_payable_planwise.total | intcomma}}</strong></p>
+    <p style="display: flex;justify-content:center;" > <strong>₹ {{today_payable_planwise.total | intcomma}}</strong></p>
     <div style="margin-top: 1rem; font-size: 0.875rem;">
         <div style="display: flex; justify-content: space-between;">
-            <span>Monthly</span><strong>₹{{ today_payable_planwise.monthly|default:"0"|intcomma }}</strong>
+            <span>Monthly</span><strong>₹ {{ today_payable_planwise.monthly|default:"0"|intcomma }}</strong>
         </div>
         <div style="display: flex; justify-content: space-between;">
-            <span>Weekly</span><strong>₹{{ today_payable_planwise.weekly|default:"0"|intcomma }}</strong>
+            <span>Weekly</span><strong>₹ {{ today_payable_planwise.weekly|default:"0"|intcomma }}</strong>
         </div>
         <div style="display: flex; justify-content: space-between;">
-            <span>Daily</span><strong>₹{{ today_payable_planwise.daily|default:"0"|intcomma }}</strong>
+            <span>Daily</span><strong>₹ {{ today_payable_planwise.daily|default:"0"|intcomma }}</strong>
         </div>
     </div>
 </div>
@@ -550,23 +555,23 @@ body {
 <!-- ✅ Upcoming Payments Card -->
 <div class="stat-card">
     <h3>⏭️ Tomorrow's Dues </h3>
-    <p style="display: flex;justify-content:center;" > <strong>₹{{tomorrow_payable_planwise.total | intcomma}}</strong></p>
+    <p style="display: flex;justify-content:center;" > <strong>₹ {{tomorrow_payable_planwise.total | intcomma}}</strong></p>
     <div style="margin-top: 1rem; font-size: 0.875rem;">
         <div style="display: flex; justify-content: space-between;">
-            <span>Monthly</span><strong>₹{{ tomorrow_payable_planwise.monthly|default:"0"|intcomma }}</strong>
+            <span>Monthly</span><strong>₹ {{ tomorrow_payable_planwise.monthly|default:"0"|intcomma }}</strong>
         </div>
         <div style="display: flex; justify-content: space-between;">
-            <span>Weekly</span><strong>₹{{ tomorrow_payable_planwise.weekly|default:"0"|intcomma }}</strong>
+            <span>Weekly</span><strong>₹ {{ tomorrow_payable_planwise.weekly|default:"0"|intcomma }}</strong>
         </div>
         <div style="display: flex; justify-content: space-between;">
-            <span>Daily</span><strong>₹{{ tomorrow_payable_planwise.daily|default:"0"|intcomma }}</strong>
+            <span>Daily</span><strong>₹ {{ tomorrow_payable_planwise.daily|default:"0"|intcomma }}</strong>
         </div>
     </div>
 </div>
 
     <div class="stat-card">
         <h3>📊 Interest Revenue</h3>
-        <p class="value">₹{{total_interest_earned | intcomma}}</p>
+        <p class="value">₹ {{total_interest_earned | intcomma}}</p>
         <!--
         {% if trend_lent.direction == 'up' %}
     <div class="trend up"><i class="fas fa-arrow-up"></i>&nbsp; +{{ trend_interest.change }}% in last 30 days</div>
@@ -588,25 +593,62 @@ body {
         <h3>Loan Status Distribution</h3>
         <canvas id="loanStatusPieChart" height="250" width="250"></canvas>
     </div>
+<div id="borrowerModal" class="modal hidden">
+  <div class="modal-content">
+    <span class="close" onclick="closeBorrowerModal()">&times;</span>
+    <h3>Borrowers List</h3>
+
+    {% if borrowers %}
+    <div class="table-wrapper">
+      <table class="responsive-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Borrower</th>
+            <th>Loans</th>
+            <th>Amount</th>
+            <th>Paid</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for borrower in borrowers %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ borrower.first_name }}<br>{{borrower.username}}</td>
+            <td>{{borrower.loans}}</td>
+            <td>₹ {{borrower.total_lent | intcomma }}</td>
+            <td>₹ {{borrower.total_paid | intcomma }}</td>
+            <td>{{borrower.status}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <h3 class="no-overdue-box">No Borrowers Yet</h3>
+    {% endif %}
+  </div>
+</div>
 
     <!-- Key Statistics -->
     <div style="flex: 2 1 500px;">
         <h3>Key Statistics</h3>
         <div class="stats-grid">
-            <div class="stat-item"><h4>Total Borrowers</h4><p>{{total_borrowers}}</p></div>
+            <div class="stat-item" onclick="openBorrowerModal()"><h4>Total Borrowers</h4><p>{{total_borrowers}}</p></div>
             <div class="stat-item"><h4>Total Loans</h4><p>{{total_loans}}</p></div>
-            <div class="stat-item"><h4>Average Loan Amount</h4><p> ₹{{avg_loan_amount|intcomma}}</p></div>
+            <div class="stat-item"><h4>Average Loan Amount</h4><p> ₹ {{avg_loan_amount|intcomma}}</p></div>
             <div class="stat-item"><h4>Monthly Loans</h4><p>{{loans_planwise.monthly|default:0}}</p></div>
             <div class="stat-item"><h4>Weekly Loans</h4><p>{{loans_planwise.weekly | default:0}}</p></div>
             <div class="stat-item"><h4>Daily Loans</h4><p>{{loans_planwise.daily | default:0}}</p></div>
             <div class="stat-item">
                 <h4>This Month's Loans</h4>
-                <p>₹{{this_month_amount|intcomma}}</p>
+                <p>₹ {{this_month_amount|intcomma}}</p>
                 <small style="font-size: 0.8rem; color: green;">{{this_month_loans}} Loans</small>
             </div>
             <div class="stat-item">
                 <h4>Last Month's Loans</h4>
-                <p>₹{{last_month_amount}}</p>
+                <p>₹ {{last_month_amount | intcomma }}</p>
                 <small style="font-size: 0.8rem; color: green;">{{last_month_loans|intcomma}}  Loans</small>
             </div>
             <div class="stat-item">
@@ -635,7 +677,7 @@ body {
     <tr>
       <td>{{ item.loan.borrower.name }} <br>{{ item.loan.borrower.phone }} </td>
       <td>#{{ item.loan.id }}</td>
-      <td class="amount">₹{{ item.loan.amount }}</td>
+      <td class="amount">₹ {{ item.loan.amount | intcomma  }}</td>
       <td class="due-date">
   {% if item.due == 'Today' %}
     <span class="badge badge-today">🟠 Today</span>
@@ -666,6 +708,13 @@ body {
 
 <!-- SCRIPTS -->
 <script>
+  function openBorrowerModal() {
+    document.getElementById('borrowerModal').classList.remove('hidden');
+  }
+
+  function closeBorrowerModal() {
+    document.getElementById('borrowerModal').classList.add('hidden');
+  }
     function openOverdueModal() {
     document.getElementById('overdueModal').classList.remove('hidden');
   }

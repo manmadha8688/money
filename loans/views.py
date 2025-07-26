@@ -205,7 +205,7 @@ def loan_request(request, lender_id, unique_id):
             accepted = False
             if request.method == 'POST' and (request.POST.get("form_type") == "payment_details" or request.POST.get("form_type") == "loan_details"):
                 accepted = True
-            payment = loan.payment
+            
             return render(request, "borrower/payment_confirmation.html", {"loan": loan,"payment":payment,"accepted":accepted})
         else :
             return render(request,'borrower/completed_loan.html',{"loan": loan})
@@ -670,15 +670,20 @@ def delete_loan_item_image(request,image_id):
 
 def generate_pdf(request,loan_id):
     agreement_date = now().strftime('%d-%m-%Y')   # ✅ Correct usage
-    loan = get_object_or_404(LoanRequest,id=loan_id)
+    
+    loan = get_object_or_404(
+        LoanRequest.objects.select_related(
+        'lender__active_user',
+        'borrower',
+        'payment', 
+    ),
+        id=loan_id
+    )
+    payment = loan.payment
+
     context = {
-        'agreement_date': agreement_date,
-        'lender_name': loan.lender.active_user.company_name,
-        'borrower_name': loan.borrower.name,
-        'loan_amount': loan.amount,
-        'interest_amount': loan.interest_amount,
-        'loan_start_date': loan.taken_date,
-        'loan_end_date': loan.return_date,
+        "loan":loan,
+        "payment":payment
     }
 
     template = get_template("lender/terms_conditions.html")

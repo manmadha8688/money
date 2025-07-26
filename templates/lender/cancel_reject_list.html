@@ -2,6 +2,7 @@
 
 {% load static%}
 {% block content %}
+{% load humanize%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -281,8 +282,8 @@
                         <td>{{ loan.borrower.name }}<br>
                         {{ loan.borrower.phone }}</td>
                         <td>{{ loan.loan_item }}</td>
-                        <td class="highlight-amount">₹{{ loan.amount }}</td>
-                        <td class="highlight-interest">₹{{ loan.interest_amount }}</td>
+                        <td class="highlight-amount">₹{{ loan.amount | intcomma  }}</td>
+                        <td class="highlight-interest">₹{{ loan.interest_amount | intcomma  }}</td>
                         <td>{{ loan.taken_date }}</td>
                         <td>{{ loan.return_date }}</td>
                         <td>{{ loan.reason|default:"-" }}</td>

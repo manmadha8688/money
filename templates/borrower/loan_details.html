@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1006,7 +1007,7 @@
         {% for loan in pending_loans %}
        
           <a href="{% url 'new-loan' lender_id=loan.lender.id unique_id=loan.unique_id %}" target="_blank">
-              📋 <strong>#{{loan.id}}</strong> ₹{{ loan.amount }} {{ loan.payment_plan|capfirst }} Plan<strong>{{ loan.status|capfirst }} </strong>
+              📋 <strong>#{{loan.id}}</strong> ₹{{ loan.amount |intcomma }} {{ loan.payment_plan|capfirst }} Plan<strong>{{ loan.status|capfirst }} </strong>
           </a><br>
 
         {% endfor %}
@@ -1035,7 +1036,7 @@
     <div class="repayment-list">
       {% for p in loan.return_payments %}
         <div style="margin-top: 5px;">
-          ₹{{ p.amount }} — Paid on {{ p.created_at|date:"d M Y" }} — Due on {{ p.due_date|date:"d M Y" }} - 
+          ₹{{ p.amount | intcomma }} — Paid on {{ p.created_at|date:"d M Y" }} — Due on {{ p.due_date|date:"d M Y" }} - 
           {% if p.status == "pending" %} 
   <span class="badge badge-pending">Pending</span>
 {% elif p.status == "success" %}
@@ -1061,9 +1062,9 @@
     <p>🎭 User ID - <strong>{{request.user.user_id}}</strong></p>
     <p>📋 Total Loans: <strong>{{count}}</strong></p>
     <p class="loan-summary">
-  <span>💰 Total Borrowed: ₹ {{ total }}</span>
-  <span>Paid: ₹ {{ paid }}</span>
-  <span>Outstanding: ₹ {{ remaining }}</span>
+  <span>💰 Total Borrowed: ₹ {{ total | intcomma }}</span>
+  <span>Paid: ₹ {{ paid | intcomma }}</span>
+  <span>Outstanding: ₹ {{ remaining | intcomma }}</span>
 </p>
 
   </div>
@@ -1103,13 +1104,13 @@
 
       <div class="loan-body">
         <p>📆 <span style="font-weight: 700;">Start Date :</span> {{ loan.taken_date }}</p>
-<p>💵 <span style="font-weight: 700;">Amount :</span> ₹{{ loan.amount }}</p>
+<p>💵 <span style="font-weight: 700;">Amount :</span> ₹{{ loan.amount  | intcomma }}</p>
 <p>
   ✅ <span style="font-weight: 700;">Repaid :</span>
-  <span class="repaid">₹{{loan.activeloan.total_paid}}</span>
+  <span class="repaid">₹{{loan.activeloan.total_paid  | intcomma}}</span>
   <br class="mobile-break">
   🔁 <span style="font-weight: 700;">Outstanding :</span>
-  <span class="outstanding">₹{{ loan.activeloan.remaining_balance }}</span>
+  <span class="outstanding">₹{{ loan.activeloan.remaining_balance  | intcomma }}</span>
 </p>
 <p>⏰ <span style="font-weight: 700;">Next Due Date :</span> {{ loan.activeloan.next_due_date }}</p>
 
@@ -1122,7 +1123,7 @@
       {% endif %}
         
         {% if loan.payment_plan == "weekly" %}
-          <button class="schedule-btn" onclick="openScheduleModal({{ loan.id }})">📅 Schedul </button>
+          <button class="schedule-btn" onclick="openScheduleModal({{ loan.id }})">📅 Schedule </button>
 
         {% endif %}
        
@@ -1152,7 +1153,7 @@
           <td class="{% if item.status %}status-paid{% else %}status-unpaid{% endif %}">
             {% if item.status %}Paid{% else %}Not Paid{% endif %}
           </td>
-          <td>₹{{ item.paid_this_due_date }}</td>
+          <td>₹{{ item.paid_this_due_date  | intcomma }}</td>
           <td>
             {% if item.payment_details %}
               {% for payment in item.payment_details %}
@@ -1163,8 +1164,8 @@
               {% endfor %}
             {% else %}-{% endif %}
           </td>
-          <td>₹{{ item.total_paid }}</td>
-          <td>₹{{ item.remaining }}</td>
+          <td>₹{{ item.total_paid  | intcomma }}</td>
+          <td>₹{{ item.remaining  | intcomma }}</td>
         </tr>
         {% endfor %}
       </tbody>
@@ -1176,15 +1177,15 @@
       <table>
         <tr><td>Token ID</td><td>:</td><td>{{loan.id}}</td></tr>
         <tr><td>Start Date (Date of taken)</td><td>:</td><td>{{loan.taken_date}}</td></tr>
-        <tr><td>Loan Amount</td><td>:</td><td>₹ {{ loan.amount }}</td></tr>
-        <tr><td>Interest</td><td>:</td><td>₹ {{loan.interest_amount}}</td></tr>
-        <tr><td>Total Repayable Amount</td><td>:</td><td style="color: green;"> ₹ {{ loan.amount|add:loan.interest_amount }}</td></tr>
+        <tr><td>Loan Amount</td><td>:</td><td>₹ {{ loan.amount  | intcomma }}</td></tr>
+        <tr><td>Interest</td><td>:</td><td>₹ {{loan.interest_amount | intcomma}}</td></tr>
+        <tr><td>Total Repayable Amount</td><td>:</td><td style="color: green;"> ₹ {{ loan.amount|add:loan.interest_amount | intcomma }}</td></tr>
         {% if loan.payment_plan == "monthly" %}
         {% else %}
-        <tr><td>Intalment</td><td>:</td><td>₹ {{loan.instalment}}</td></tr>
+        <tr><td>Intalment</td><td>:</td><td>₹ {{loan.instalment  | intcomma}}</td></tr>
         {% endif %}
-        <tr><td>Total Paid</td><td>:</td><td>₹ {{loan.activeloan.total_paid}}</td></tr>
-        <tr><td>Remaining</td><td>:</td><td style="color: orange;">₹ {{ loan.activeloan.remaining_balance }}</td></tr>
+        <tr><td>Total Paid</td><td>:</td><td>₹ {{loan.activeloan.total_paid  | intcomma}}</td></tr>
+        <tr><td>Remaining</td><td>:</td><td style="color: orange;">₹ {{ loan.activeloan.remaining_balance  | intcomma }}</td></tr>
         {% if loan.payment_plan == "monthly" %}
         {% else %}
         <tr><td>Last Paid Due_date (paid_on)</td><td>:</td><td>
@@ -1206,6 +1207,16 @@
     </tr>
     {% endif %}
         <tr><td>Next Due Date</td><td>:</td><td>{{ loan.activeloan.next_due_date }}</td></tr>
+        <tr> <td>Agreement </td><td>:</td>
+          <td>
+  <a href="{% url 'generate-loan-agreement' loan.id %}" 
+     target="_blank" 
+     class="pdf-button" 
+     >
+    ⬇Download
+  </a>
+</td>
+</tr>
       </table>
     </div>
     </div>

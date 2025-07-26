@@ -97,6 +97,8 @@ def all_loans(request):
             if activeloan.remaining_balance == 0 :
                 activeloan.status = 'closed'
                 activeloan.next_due_date = None
+                
+                activeloan.closed_date = payment.created_at
                 activeloan.save()
                 return redirect(f"{reverse('all-loans')}?paidpayment=true&loan_id={activeloan.loan_request.id}&amount={amount}")
                 
@@ -230,6 +232,7 @@ def update_repayment_status(request):
                 if active_loan.remaining_balance == 0 :
                     active_loan.status = 'closed'
                     active_loan.next_due_date = None
+                    active_loan.closed_date = payment.created_at
                     if loan.payment_plan =="weekly":
                         active_loan.next_due_date += timedelta(weeks=week + 1)                                          
                     active_loan.save()
@@ -284,23 +287,25 @@ def check_duplicate_payment(request, payment_id):
 @login_required
 def update_due_dates(request):
     today = timezone.now().date()
-    active_loans = ActiveLoan.objects.filter(status='Repaying').select_related('loan_request').prefetch_related('return_payments')
+    active_loans = ActiveLoan.objects.filter(status__in=['Repaying','overdue']).select_related('loan_request').prefetch_related('return_payments')
 
     for loan in active_loans:
         previous_due_date = loan.next_due_date
         
-        repayment_exists = any(
-            rp.due_date == previous_due_date and rp.status == 'success'
-            for rp in loan.return_payments.all()
-            )
+        
         if (previous_due_date < today) :
-
+            repayment_exists = any(
+                rp.due_date == previous_due_date and rp.status == 'success'
+                for rp in loan.return_payments.all()
+                )
             if not repayment_exists :
                 loan.status = 'overdue'
             
             elif loan.loan_request.payment_plan == 'monthly' :
                 loan.next_due_date += relativedelta(months=1)
-            
-            loan.save()
+        if loan.status == 'overdue' and loan.next_due_date >= today:
+            loan.status = 'Repaying'
+
+        loan.save()
 
     return redirect('dashboard')  # or wherever you want to redirect

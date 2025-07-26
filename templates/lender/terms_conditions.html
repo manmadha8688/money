@@ -39,11 +39,10 @@
     <h1>Loan Agreement</h1>
 
     <p>
-        This Loan Agreement is entered into on <strong>{{ agreement_date }}</strong>, between
-        <strong>{{ lender_name }}</strong> (“Lender”) and <strong>{{ borrower_name }}</strong> (“Borrower”).
-        The Lender agrees to provide a loan of <strong>{{ loan_amount }}</strong>/- Rupees only to the Borrower at an
-        interest amount of <strong>{{ interest_amount }}</strong> , starting from
-        <strong>{{ loan_start_date }}</strong> and ending on <strong>{{ loan_end_date }}</strong>.
+        This Loan Agreement is entered into on <strong>{{ loan.apply_date }}</strong>, between
+        <strong>{{ loan.lender.first_name }}</strong> (“Lender”) and <strong>{{ loan.borrower.name }}</strong> (“Borrower”).
+        The Lender agrees to provide a loan of <strong>{{ loan.amount }}</strong>/- Rupees only to the Borrower at an
+        interest, starting from <strong>{{ loan.taken_date }}</strong>.
         The Borrower agrees to repay the loan in accordance with the agreed repayment schedule.
         Both parties acknowledge and accept the terms and conditions
         outlined below, and agree that this agreement is legally binding under the applicable laws of India.
@@ -58,13 +57,44 @@
         <li>With all necessary documentation, only the loan will be provided.</li>
         <li>You have to obeyed the legally binding contracts under the Indian Contract Act, 1872.</li>
         <li>
-            <strong>Condition Regarding Enforcement of Security Interest under Section 13(4) of the SARFAESI Act, 2002:</strong><br>
+            <strong>Condition Regarding Enforcement of Security Interest under Section 13(4) of the SARFAESI Act, 2002: </strong>
             The Borrower expressly acknowledges and agrees that, in the event of default in repayment of the secured debt or failure to comply with the terms of the loan agreement, the Secured Creditor shall be entitled to invoke its rights under Section 13(4) of the Securitisation and Reconstruction of Financial Assets and Enforcement of Security Interest Act, 2002 (SARFAESI Act). This includes, but is not limited to, the right to take possession of, manage, or sell the secured assets without the intervention of a court, in order to recover the outstanding dues.
         </li>
         <li>If interest remains unpaid for over two months, Section 13(4) of the SARFAESI Act, 2002 applies.</li>
         <li>We are not responsible for your assets' damages or if it was in non-working conditions at the time of return.</li>
         <li>These Terms, along with Company’s Privacy Policy, as amended and updated from time to time, constitute the entire agreement between the User(s) and company, superseding any prior written or oral contracts in relation to the same subject matter herein.</li>
     </ul>
+
+    <h2>Loan Details</h2>
+<ul>
+    <li><strong>Borrower Name:</strong> {{ loan.borrower.name }}</li>
+    <li><strong>Item:</strong> {{ loan.loan_item }}</li>
+    <li><strong>Loan Amount:</strong> {{ loan.amount }}</li>
+    <li><strong>Loan Start Date:</strong> {{ loan.taken_date }}</li>
+    <li><strong>Paymeny Plan:</strong> {{ loan.payment_plan }}</li>
+</ul>
+<h2>Payment Details</h2>
+
+<ul>
+    <li><strong>Payment Method :</strong> {{ payment.payment_method|capfirst }}</li>
+    <li><strong>Given on :</strong> {{ payment.updated_at|date:"d M Y, H:i" }}</li>
+
+      {% if payment.payment_method == 'cash' %}
+   
+    <li><strong>Cash Request From :</strong> {{ payment.cash_from|capfirst }}</li>
+    <li><strong>Cash Provided By :</strong> {{ payment.person|default:'-'|capfirst }}</li>
+
+    {% elif payment.payment_method == 'online' %}
+    
+    <li><strong>Online Platform :</strong> {{ payment.online_method|capfirst }}</li>
+    <li><strong>UPI_Id/Phone :</strong> {{ payment.upi_number }}</li>
+    <li><strong>UTR Number :</strong> {{ payment.utr }}</li>
+
+    
+          {% endif %}
+</ul>
+
+
 
 </body>
 </html>

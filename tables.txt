@@ -1,7 +1,24 @@
+fruits = [0,0,1,1,2,2,2,3,2]
+l=0
+trees = []
+index =dict()
+res = 0
+for i in range(len(fruits)):
+    if fruits[i] not in trees:
+        print("not in ",i)
+        trees.append(fruits[i])
+        
+        index[fruits[i]] = i
+        if len(trees) == 3:
+            print(">2 ",i)
+            
+            l = index[fruits[trees[0]]] 
+            print('==3',l)
+            trees.pop(0)   
 
-Borrower
-PaymentDetail 
-LoanRequest   --->  ActiveLoan ---> payments from borrower
-LoanStatusHistory
-LoanImage
-Profile 
+    else:
+        index[fruits[i]] = i
+    print("l = ",i,l)
+    res = max(res,i-l+1)
+    print(res)
+print(res)

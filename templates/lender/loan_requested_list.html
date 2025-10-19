@@ -430,12 +430,12 @@
                     
                     
                       <td>
-                        <input type="number" name="amount" value="{{ loan.amount | intcomma }}" class="editable-input highlight-amount" id="amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
+                        <input type="number" name="amount" value="{{ loan.amount }}" class="editable-input highlight-amount" id="amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
                     </td>
                     <td>
-                        <input type="number" name="interest" value="{{ loan.interest  | intcomma }}" class="editable-input highlight-interest" id="interest_{{ loan.id }}" data-loan-id="{{ loan.id }}">
+                        <input type="number" name="interest" value="{{ loan.interest }}" class="editable-input highlight-interest" id="interest_{{ loan.id }}" data-loan-id="{{ loan.id }}">
                         <br><br>
-                        <input type="number" name="interest_amount" value="{{ loan.interest_amount  | intcomma}}" class="editable-input highlight-interest" id="interest_amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
+                        <input type="number" name="interest_amount" value="{{ loan.interest_amount }}" class="editable-input highlight-interest" id="interest_amount_{{ loan.id }}" data-loan-id="{{ loan.id }}">
                     </td>
 
                     <td><b>{{loan.payment_plan|capfirst}}</b><br><br>
@@ -552,7 +552,7 @@
     {% if loan.payment %}
 <script id="payment-data-{{ loan.id }}" type="application/json">
 {
-    "amount": "{{ loan.amount|escapejs | intcomma }}",
+    "amount": "{{ loan.amount|escapejs }}",
     "method": "{{ loan.payment.payment_method|escapejs }}",
     "cash_from": "{{ loan.payment.cash_from|default:''|escapejs }}",
     "online_method": "{{ loan.payment.online_method|default:''|escapejs }}",
